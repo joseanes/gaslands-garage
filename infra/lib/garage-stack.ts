@@ -51,12 +51,26 @@ export class GarageStack extends cdk.Stack {
     /* ----------------------------------------------------------------
        CloudFront distribution
        ---------------------------------------------------------------- */
-    const cdn = new Distribution(this, 'CDN', {
-      defaultBehavior: {
-        origin: new S3Origin(siteBucket),
-        viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
-      }
-    });
+const cdn = new Distribution(this, 'CDN', {
+  defaultBehavior: {
+    origin: new S3Origin(siteBucket),
+    viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+  },
+  errorResponses: [
+    {
+      httpStatus: 403,
+      responseHttpStatus: 200,
+      responsePagePath: '/index.html',
+      ttl: cdk.Duration.minutes(1)
+    },
+    {
+      httpStatus: 404,
+      responseHttpStatus: 200,
+      responsePagePath: '/index.html',
+      ttl: cdk.Duration.minutes(1)
+    }
+  ]
+});
 
     /* ----------------------------------------------------------------
        Outputs

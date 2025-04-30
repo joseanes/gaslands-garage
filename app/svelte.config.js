@@ -1,10 +1,12 @@
-// app/svelte.config.js
 import adapter from '@sveltejs/adapter-static';
 
-/** @type {import('@sveltejs/kit').Config} */
 export default {
   kit: {
-    adapter: adapter()
+    adapter: adapter({
+      // 👇 any path that isn’t found in S3 will serve this file
+      fallback: 'index.html'
+    })
   }
 };
+
 
