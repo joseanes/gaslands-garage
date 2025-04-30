@@ -1,3 +1,4 @@
+export const prerender = false; 
 import { loadSponsors, loadVehicles } from '$lib/rules/loadRules';
 
 export async function load() {

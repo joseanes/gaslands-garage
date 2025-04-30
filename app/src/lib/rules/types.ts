@@ -1,4 +1,4 @@
-iimport { z } from 'zod';
+import { z } from "zod";
 
 /* ---------- schemas ---------- */
 export const Sponsor = z.object({
