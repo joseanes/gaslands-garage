@@ -1,10 +1,9 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-# import { Bucket, BucketEncryption, RemovalPolicy } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import { Bucket, BucketEncryption } from 'aws-cdk-lib/aws-s3';
 import { Distribution, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as cdk from 'aws-cdk-lib';
+import { Construct } from 'constructs';
 
 export class GarageStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
