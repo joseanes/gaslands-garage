@@ -1,0 +1,6 @@
+[
+  { "id": "car",   "name": "Car",   "maxGear": 6, "baseCost": 10, "maxHull": 4 },
+  { "id": "buggy", "name": "Buggy", "maxGear": 6, "baseCost":  8, "maxHull": 4  },
+  { "id": "truck", "name": "Truck", "maxGear": 5, "baseCost": 15, "maxHull": 6  }
+]
+

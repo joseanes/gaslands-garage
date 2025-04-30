@@ -1,7 +1,12 @@
 <script lang="ts">
-  import { sponsors, vehicleTypes } from '$lib/mock-rules';
   import { nanoid } from 'nanoid';
+  // ---- data from the load() function ----
+  export let data: {
+    sponsors:      typeof import('$lib/rules/types').Sponsor[];
+    vehicleTypes:  typeof import('$lib/rules/types').Vehicle[];
+  };
 
+  const { sponsors, vehicleTypes } = data;
   // ---- state ----
   let sponsorId: string = sponsors[0].id;
   type Veh = { id: string; type: string; name: string; cost: number };

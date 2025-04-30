@@ -1,0 +1,5 @@
+[
+  { "id": "mg_front", "name": "Machine-Gun (Front)", "cost": 3, "slots": 2, "type": "weapon" },
+  { "id": "ram_plate","name": "Ram Plate",           "cost": 2, "slots": 1, "type": "upgrade" }
+]
+
