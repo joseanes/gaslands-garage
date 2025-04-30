@@ -1,5 +1,7 @@
-export const prerender = false; 
+// runs in browser *and* during dev SSR
 import { loadSponsors, loadVehicles } from '$lib/rules/loadRules';
+
+export const prerender = false;   // keep SPA behaviour
 
 export async function load() {
   return {

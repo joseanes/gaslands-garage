@@ -1,0 +1,7 @@
+[
+  { "id": "car",   "name": "Car",   "baseCost": 10, "maxHull": 4, "weaponSlots": 4, "maxGear":6 },
+  { "id": "buggy", "name": "Buggy", "baseCost":  8, "maxHull": 4, "weaponSlots": 2, "maxGear":6 },
+  { "id": "truck", "name": "Truck", "baseCost": 15, "maxHull": 6, "weaponSlots": 6, "maxGear":6 }
+]
+
+

@@ -1,61 +1,29 @@
+
 // app/src/lib/rules/loadRules.ts
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import { Sponsor, Vehicle, Weapon, Perk } from './types';
 
-import {
-  Sponsor,
-  Vehicle,
-  Weapon,
-  Perk,
-  type Sponsor as SponsorT,
-  type Vehicle as VehicleT,
-  type Weapon as WeaponT,
-  type Perk as PerkT
-} from './types';
-
-/* ------------------------------------------------------------------
-   Absolute path to <repo-root>/rules
-   ------------------------------------------------------------------ */
-const RULES_DIR = path.join(process.cwd(), '..', 'rules');
-
-/* ------------------------------------------------------------------
-   Generic helper for JSON arrays
-   ------------------------------------------------------------------ */
-async function loadJsonArray<T>(
-  relPath: string,
-  schema: ReturnType<typeof Sponsor.array>
-): Promise<T[]> {
-  const json = JSON.parse(
-    await fs.readFile(path.join(RULES_DIR, relPath), 'utf-8')
-  );
-  return schema.parse(json) as T[];
+/* ── sponsors (one file per sponsor) ───────────────────────── */
+const sponsorMods = import.meta.glob('../../data/rules/sponsors/*.json', {
+  eager: true
+});
+export function loadSponsors() {
+  return Object.values(sponsorMods).map((m: any) => Sponsor.parse(m.default));
 }
 
-/* ------------------------------------------------------------------
-   Public loaders
-   ------------------------------------------------------------------ */
-export async function loadSponsors(): Promise<SponsorT[]> {
-  const dir = path.join(RULES_DIR, 'sponsors');
-  const files = await fs.readdir(dir);
-
-  return Promise.all(
-    files.map(async (file) =>
-      Sponsor.parse(
-        JSON.parse(await fs.readFile(path.join(dir, file), 'utf-8'))
-      )
-    )
-  );
+/* ── vehicles.json ─────────────────────────────────────────── */
+import vehiclesRaw from '../../data/rules/vehicles.json';
+export function loadVehicles() {
+  return Vehicle.array().parse(vehiclesRaw);
 }
 
-export async function loadVehicles(): Promise<VehicleT[]> {
-  return loadJsonArray<VehicleT>('vehicles.json', Vehicle.array());
+/* ── weapons.json ──────────────────────────────────────────── */
+import weaponsRaw from '../../data/rules/weapons.json';
+export function loadWeapons() {
+  return Weapon.array().parse(weaponsRaw);
 }
 
-export async function loadWeapons(): Promise<WeaponT[]> {
-  return loadJsonArray<WeaponT>('weapons.json', Weapon.array());
+/* ── perks.json ────────────────────────────────────────────── */
+import perksRaw from '../../data/rules/perks.json';
+export function loadPerks() {
+  return Perk.array().parse(perksRaw);
 }
-
-export async function loadPerks(): Promise<PerkT[]> {
-  return loadJsonArray<PerkT>('perks.json', Perk.array());
-}
-

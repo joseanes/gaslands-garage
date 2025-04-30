@@ -24,9 +24,10 @@ export const Weapon = z.object({
   id: z.string(),
   name: z.string(),
   cost: z.number().int().nonnegative(),
-  slots: z.number().int().nonnegative(),
+  slots: z.number().int().positive(),
   type: z.enum(['weapon', 'upgrade'])
 });
+
 export type Weapon = z.infer<typeof Weapon>;
 
 export const Perk = z.object({

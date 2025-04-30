@@ -1,0 +1,21 @@
+[
+  { "id": "mg_front",   "name": "Machine-Gun (Front)",       "cost": 3, "slots": 2, "type": "weapon" },
+  { "id": "mg_rear",    "name": "Machine-Gun (Rear)",        "cost": 3, "slots": 2, "type": "weapon" },
+{
+  "id": "hmg_front",
+  "name": "Heavy Machine-Gun (Front)",
+  "cost": 5,
+  "slots": 3,
+  "type": "weapon",
+  "unique": true          
+},
+  { "id": "shotgun",    "name": "Shotgun (Front)",           "cost": 4, "slots": 2, "type": "weapon" },
+  { "id": "flamer",     "name": "Flamethrower (Front)",      "cost": 4, "slots": 3, "type": "weapon" },
+  { "id": "grenade",    "name": "Grenade Launcher (Roof)",   "cost": 6, "slots": 3, "type": "weapon" },
+  { "id": "rocket",     "name": "Rocket Pod (Roof)",         "cost": 6, "slots": 3, "type": "weapon" },
+  { "id": "ram",        "name": "Ram",                       "cost": 2, "slots": 1, "type": "weapon" },
+
+  { "id": "nitro",      "name": "Nitro Booster",             "cost": 4, "slots": 1, "type": "upgrade" },
+  { "id": "rollcage",   "name": "Roll Cage",                 "cost": 3, "slots": 1, "type": "upgrade" }
+]
+
