@@ -1,0 +1,45 @@
+name: Build-and-Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write      # keep if you’ll use OIDC; delete if using PAT/keys
+      contents: read
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: pnpm/action-setup@v3
+      with: { version: 9, run_install: false }
+
+    - uses: actions/setup-node@v4
+      with: { node-version: '20', cache: 'pnpm' }
+
+    - name: Install root deps
+      run: pnpm install
+
+    # -------- SvelteKit build --------
+    - name: Build SvelteKit
+      working-directory: app
+      run: pnpm run build
+
+    # -------- CDK deploy --------
+    - name: Configure AWS creds
+      # choose ONE method:
+      # (A) OIDC — uncomment next 4 lines and replace the role ARN
+      # uses: aws-actions/configure-aws-credentials@v4
+      # with:
+      #   role-to-assume: arn:aws:iam::321114838170:role/github-cdk-deploy
+      #   aws-region: us-east-1
+      #
+      # (B) Static keys — store AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY as repo secrets
+      env:
+        AWS_REGION: us-east-1
+      run: |
+        cd infra
+        pnpm run build    # compile TypeScript
+        npx cdk deploy --require-approval never
