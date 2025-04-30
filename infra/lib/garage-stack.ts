@@ -17,7 +17,6 @@ export class GarageStack extends cdk.Stack {
 
       /**  ---- PUBLIC READ, STATIC-SITE STYLE ----  */
       publicReadAccess: true,              // ⬅️ add this line
-      blockPublicAccess: BlockPublicAccess.NONE, // ⬅️ make sure this is NONE
 
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true
