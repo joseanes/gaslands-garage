@@ -11,12 +11,13 @@
 		sponsors: import('$lib/rules/types').Sponsor[];
 		vehicleTypes: import('$lib/rules/types').Vehicle[];
 		weapons: import('$lib/rules/types').Weapon[];
+		upgrades: import('$lib/rules/types').Upgrade[];
 	};
-	const { sponsors, vehicleTypes, weapons } = data;
+	const { sponsors, vehicleTypes, weapons, upgrades } = data;
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
-	type Veh = { id: string; type: string; name: string; weapons: string[]; perks: string[] };
+	type Veh = { id: string; type: string; name: string; weapons: string[]; upgrades: string[]; perks: string[] };
 	let vehicles: Veh[] = [];
 
 	function addVehicle(type = vehicleTypes[0]?.id) {
@@ -28,6 +29,7 @@
 				type: vt.id,
 				name: `New ${vt.name}`,
 				weapons: [],
+				upgrades: [],
 				perks: []
 			}
 		];
@@ -49,6 +51,22 @@
 		vehicles = vehicles.map(v =>
 			v.id === vehicleId ?
 			{ ...v, weapons: v.weapons.filter((_, idx) => idx !== weaponIndex) } :
+			v
+		);
+	}
+
+	function addUpgrade(vehicleId: string, upgradeId: string) {
+		vehicles = vehicles.map(v =>
+			v.id === vehicleId ?
+			{ ...v, upgrades: [...v.upgrades, upgradeId] } :
+			v
+		);
+	}
+
+	function removeUpgrade(vehicleId: string, upgradeIndex: number) {
+		vehicles = vehicles.map(v =>
+			v.id === vehicleId ?
+			{ ...v, upgrades: v.upgrades.filter((_, idx) => idx !== upgradeIndex) } :
 			v
 		);
 	}
@@ -242,8 +260,57 @@
 								</div>
 							</div>
 							
+							<!-- Upgrades section -->
+							<div class="mb-4 mt-6">
+								<h3 class="font-bold text-stone-800 mb-2 flex items-center border-b border-stone-300 pb-1">
+									<span class="bg-stone-300 px-2 py-1 rounded-t mr-2">UPGRADES</span>
+								</h3>
+								
+								{#if v.upgrades.length === 0}
+									<p class="text-stone-500 text-sm italic px-2">No upgrades installed.</p>
+								{:else}
+									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
+										{#each v.upgrades as upgradeId, i}
+											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
+												<div class="flex-1">
+													<span class="text-stone-700 font-medium block">{upgrades.find(u => u.id === upgradeId)?.name || upgradeId}</span>
+													<span class="text-stone-500 text-xs">{upgrades.find(u => u.id === upgradeId)?.specialRules || ""}</span>
+												</div>
+												<button
+													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
+													on:click={() => removeUpgrade(v.id, i)}
+													aria-label="Remove upgrade"
+												>
+													<span>×</span>
+													<span class="sr-only">Remove upgrade</span>
+												</button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+								
+								<div class="relative">
+									<select
+										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+										on:change={e => {
+											const upgradeId = e.target.value;
+											if (upgradeId) {
+												addUpgrade(v.id, upgradeId);
+												e.target.value = ""; // Reset selection
+											}
+										}}
+										aria-label="Add an upgrade"
+									>
+										<option value="" disabled selected>+ Add upgrade</option>
+										{#each upgrades as u}
+											<option value={u.id}>{u.name}</option>
+										{/each}
+									</select>
+								</div>
+							</div>
+							
 							<!-- Vehicle stats -->
-							<div class="grid grid-cols-3 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
+							<div class="grid grid-cols-4 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
 								<div class="bg-stone-300 rounded p-2 text-center">
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
 									<span class="font-bold text-lg">
@@ -261,6 +328,12 @@
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
 									<span class="font-bold text-lg">
 										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
+									</span>
+								</div>
+								<div class="bg-stone-300 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Upgrades</span>
+									<span class="font-bold text-lg">
+										{v.upgrades.length} / {vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || '2'}
 									</span>
 								</div>
 							</div>

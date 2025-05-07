@@ -5,11 +5,13 @@ import {
   loadSponsors,
   loadVehicles,
   loadWeapons,
+  loadUpgrades,
   loadPerks
 } from '$lib/rules/loadRules';
 import {
   vehicleBaseCost,
   weaponCost,
+  upgradeCost,
   perkCost
 } from './calc';
 
@@ -17,10 +19,11 @@ const TEAM_CAP = 50;
 
 export async function validateDraft(draft: Draft): Promise<Validation> {
   /* 1 — load all rule data */
-  const [sponsors, vehicles, weapons, perks] = await Promise.all([
+  const [sponsors, vehicles, weapons, upgrades, perks] = await Promise.all([
     loadSponsors(),
     loadVehicles(),
     loadWeapons(),
+    loadUpgrades(),
     loadPerks()
   ]);
 
@@ -51,6 +54,9 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
           weapons: v.weapons
             .map(id => weapons.find(w => w.id === id))
             .filter((w): w is NonNullable<typeof w> => w !== undefined),
+          upgrades: (v.upgrades || [])  // Handle existing drafts without upgrades
+            .map(id => upgrades.find(u => u.id === id))
+            .filter((u): u is NonNullable<typeof u> => u !== undefined),
           perks: v.perks
             .map(id => perks.find(p => p.id === id))
             .filter((p): p is NonNullable<typeof p> => p !== undefined)
@@ -72,11 +78,12 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
     // Calculate total cans safely
     const baseCost = vehicleBaseCost(v.class);
     const weaponsCost = v.weapons.reduce((s, w) => s + (w ? weaponCost(w) : 0), 0);
+    const upgradesCost = (v.upgrades || []).reduce((s, u) => s + (u ? upgradeCost(u) : 0), 0);
     const perksCost = v.perks.reduce((s, p) => s + (p ? perkCost(p) : 0), 0);
     
     return {
       vehicleId: v.instance.id,
-      cans: baseCost + weaponsCost + perksCost,
+      cans: baseCost + weaponsCost + upgradesCost + perksCost,
       errors: []
     };
   });

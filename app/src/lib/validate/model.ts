@@ -8,6 +8,7 @@ export interface Draft {
     id: VehicleID;
     type: string;
     weapons: string[];
+    upgrades?: string[];  // Optional for backward compatibility
     perks: string[];
     name: string;
   }[];
@@ -31,6 +32,7 @@ export interface Team {
     instance: Draft['vehicles'][0];
     class: import('$lib/rules/types').Vehicle;
     weapons: import('$lib/rules/types').Weapon[];
+    upgrades: import('$lib/rules/types').Upgrade[];
     perks: import('$lib/rules/types').Perk[];
   }[];
 }

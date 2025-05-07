@@ -3,7 +3,7 @@ export function sum(nums: number[]) {
   return nums.reduce((s, n) => s + n, 0);
 }
 
-import type { Vehicle, Weapon, Perk } from '$lib/rules/types';
+import type { Vehicle, Weapon, Perk, Upgrade } from '$lib/rules/types';
 
 export function vehicleBaseCost(v: Vehicle) {
   return v.baseCost;
@@ -11,6 +11,10 @@ export function vehicleBaseCost(v: Vehicle) {
 
 export function weaponCost(w: Weapon) {
   return w.cost;
+}
+
+export function upgradeCost(u: Upgrade) {
+  return u.cost;
 }
 
 export function perkCost(p: Perk) {

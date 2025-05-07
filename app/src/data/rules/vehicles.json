@@ -1,7 +1,6 @@
 [
-  { "id": "car",   "name": "Car",   "baseCost": 10, "maxHull": 4, "weaponSlots": 4, "maxGear":6 },
-  { "id": "buggy", "name": "Buggy", "baseCost":  8, "maxHull": 4, "weaponSlots": 2, "maxGear":6 },
-  { "id": "truck", "name": "Truck", "baseCost": 15, "maxHull": 6, "weaponSlots": 6, "maxGear":6 }
+  { "id": "car",   "name": "Car",   "baseCost": 10, "maxHull": 4, "weaponSlots": 4, "upgradeSlots": 2, "color": "#f59e0b", "maxGear":6 },
+  { "id": "buggy", "name": "Buggy", "baseCost":  8, "maxHull": 4, "weaponSlots": 2, "upgradeSlots": 2, "color": "#0ea5e9", "maxGear":6 },
+  { "id": "truck", "name": "Truck", "baseCost": 15, "maxHull": 6, "weaponSlots": 6, "upgradeSlots": 3, "color": "#10b981", "maxGear":6 }
 ]
-
 

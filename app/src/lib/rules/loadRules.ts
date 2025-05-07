@@ -1,6 +1,6 @@
 
 // app/src/lib/rules/loadRules.ts
-import { Sponsor, Vehicle, Weapon, Perk } from './types';
+import { Sponsor, Vehicle, Weapon, Upgrade, Perk } from './types';
 
 /* ── sponsors (one file per sponsor) ───────────────────────── */
 const sponsorMods = import.meta.glob('../../data/rules/sponsors/*.json', {
@@ -20,6 +20,12 @@ export function loadVehicles() {
 import weaponsRaw from '../../data/rules/weapons.json';
 export function loadWeapons() {
   return Weapon.array().parse(weaponsRaw);
+}
+
+/* ── upgrades.json ─────────────────────────────────────────── */
+import upgradesRaw from '../../data/rules/upgrades.json';
+export function loadUpgrades() {
+  return Upgrade.array().parse(upgradesRaw);
 }
 
 /* ── perks.json ────────────────────────────────────────────── */

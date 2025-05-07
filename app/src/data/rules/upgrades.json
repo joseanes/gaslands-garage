@@ -1,0 +1,82 @@
+[
+  {
+    "id": "nitro",
+    "name": "Nitro Booster",
+    "cost": 4,
+    "slots": 1,
+    "specialRules": "Once per game, when this vehicle activates, it gains the 'Up to Full' effect without spending a hazard token.",
+    "type": "upgrade"
+  },
+  {
+    "id": "rollcage",
+    "name": "Roll Cage",
+    "cost": 3,
+    "slots": 1,
+    "specialRules": "This vehicle may re-roll one skid die for each collision or wipeout it suffers.",
+    "type": "upgrade"
+  },
+  {
+    "id": "armor",
+    "name": "Armor Plating",
+    "cost": 4,
+    "slots": 1,
+    "specialRules": "This vehicle gains +1 hull point (included in its max hull).",
+    "type": "upgrade"
+  },
+  {
+    "id": "ram",
+    "name": "Ram",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle gains +1 attack die when it causes a collision.",
+    "type": "upgrade"
+  },
+  {
+    "id": "spiked_ram",
+    "name": "Spiked Ram",
+    "cost": 3,
+    "slots": 2,
+    "specialRules": "This vehicle gains +2 attack dice when it causes a collision.",
+    "type": "upgrade"
+  },
+  {
+    "id": "tank_tracks",
+    "name": "Tank Tracks",
+    "cost": 4,
+    "slots": 2,
+    "specialRules": "This vehicle ignores rough terrain penalties and may re-roll up to two skid dice each time it suffers a collision or wipeout.",
+    "type": "upgrade"
+  },
+  {
+    "id": "truck_cab",
+    "name": "Truck Cab",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle can tow trailers and other vehicles.",
+    "type": "upgrade"
+  },
+  {
+    "id": "extra_crew",
+    "name": "Extra Crew",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle may re-roll one attack die or one defense die per phase.",
+    "type": "upgrade"
+  },
+  {
+    "id": "bullet_proof_tires",
+    "name": "Bullet-Proof Tires",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle treats tire blowouts as superficial damage.",
+    "type": "upgrade"
+  },
+  {
+    "id": "reinforced_frame",
+    "name": "Reinforced Frame",
+    "cost": 5,
+    "slots": 2,
+    "specialRules": "This vehicle gains +2 hull points (included in its max hull).",
+    "type": "upgrade"
+  }
+]
