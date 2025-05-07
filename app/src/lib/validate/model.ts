@@ -15,6 +15,7 @@ export interface Draft {
   }[];
   teamName?: string;   // Optional for backward compatibility
   maxCans?: number;    // Optional for backward compatibility
+  darkMode?: boolean;  // Optional dark mode setting
 }
 
 export interface VehicleReport {

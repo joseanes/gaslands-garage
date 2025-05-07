@@ -1,3 +1,4 @@
+<!-- Updated from the content provided by the user -->
 <script lang="ts">
 	import { nanoid } from 'nanoid';
 	import { validateDraft } from '$lib/validate';
@@ -134,6 +135,7 @@
 	let includeAdvanced = true;
 	let maxCans = 50;
 	let teamName = "My Gaslands Team";
+	let darkMode = false;
 
 	/* ---------- menu actions ---------- */
 	async function copyDraft() {
@@ -153,10 +155,8 @@
 	}
 
 	async function printTeam() {
-		// Generate QR code if it doesn't exist yet
-		if (!qrDataUrl) {
-			qrDataUrl = await draftToDataURL(currentDraft);
-		}
+		// Always generate a fresh QR code before printing
+		qrDataUrl = await draftToDataURL(currentDraft);
 		window.print();
 	}
 
@@ -184,6 +184,11 @@
 				maxCans = draft.maxCans;
 			}
 			
+			// Import darkMode if available
+			if (draft.darkMode !== undefined) {
+				darkMode = draft.darkMode;
+			}
+			
 			importString = '';
 			showImportModal = false;
 		} else {
@@ -193,6 +198,13 @@
 
 	/* ---------- load from URL param (once) ---------- */
 	if (typeof window !== 'undefined') {
+		// First load settings from localStorage if available
+		const savedDarkMode = localStorage.getItem('darkMode');
+		if (savedDarkMode !== null) {
+			darkMode = savedDarkMode === 'true';
+		}
+
+		// Then check for URL params (these override localStorage)
 		const url = new URL(window.location.href);
 		const encoded = url.searchParams.get('draft');
 		if (encoded) {
@@ -209,6 +221,11 @@
 				// Import maxCans if available
 				if (imported.maxCans) {
 					maxCans = imported.maxCans;
+				}
+				
+				// Import darkMode if available
+				if (imported.darkMode !== undefined) {
+					darkMode = imported.darkMode;
 				}
 			}
 		}
@@ -232,10 +249,21 @@
 	$: if (!includeAdvanced) {
 		vehicles = vehicles.map(v => ({
 			...v,
-			weapons: v.weapons.filter(weaponId => {
-				const weapon = weapons.find(w => w.id === weaponId);
+			weapons: v.weapons.filter(weaponInstanceId => {
+				// Extract the base weapon ID from the instance ID (format: baseId_instanceHash)
+				const baseWeaponId = weaponInstanceId.split('_')[0];
+				const weapon = weapons.find(w => w.id === baseWeaponId);
 				return weapon && !weapon.advanced;
-			})
+			}),
+			// Also clean up any facings for removed weapons
+			weaponFacings: v.weaponFacings ? 
+				Object.fromEntries(
+					Object.entries(v.weaponFacings).filter(([weaponInstanceId]) => {
+						const baseWeaponId = weaponInstanceId.split('_')[0];
+						const weapon = weapons.find(w => w.id === baseWeaponId);
+						return weapon && !weapon.advanced;
+					})
+				) : {}
 		}));
 	}
 	
@@ -257,13 +285,25 @@
 			perks: []
 		}));
 	}
+	
+	// Save dark mode preference to localStorage when it changes
+	$: if (typeof window !== 'undefined') {
+		localStorage.setItem('darkMode', darkMode.toString());
+		// Add dark mode class to html element for global styling
+		if (darkMode) {
+			document.documentElement.classList.add('dark-mode');
+		} else {
+			document.documentElement.classList.remove('dark-mode');
+		}
+	}
 
 	/* ---------- draft & validation ---------- */
 	$: currentDraft = { 
 		sponsor: sponsorId, 
 		vehicles,
 		teamName,
-		maxCans
+		maxCans,
+		darkMode
 	} satisfies Draft;
 	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
 	$: validateDraft(currentDraft).then((r) => {
@@ -322,12 +362,14 @@
 			<span class="logo-highlight">Gaslands</span> Garage
 		</span>
 		
-		<button type="button" class="menu-item" on:click={copyDraft}>Copy Draft</button>
-		<button type="button" class="menu-item" on:click={shareLink}>Share Link</button>
-		<button type="button" class="menu-item" on:click={generateQRCode}>Generate QR Code</button>
-		<button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
-		<button type="button" class="menu-item" on:click={importBuild}>Import Build</button>
-		<button type="button" class="menu-item" on:click={openSettings}>Settings</button>
+		<div class="flex flex-wrap items-center" style="gap: 16px;">
+			<button type="button" class="menu-item" on:click={copyDraft}>Copy Draft</button>
+			<button type="button" class="menu-item" on:click={shareLink}>Share Link</button>
+			<button type="button" class="menu-item" on:click={generateQRCode}>Generate QR Code</button>
+			<button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
+			<button type="button" class="menu-item" on:click={importBuild}>Import Build</button>
+			<button type="button" class="menu-item" on:click={openSettings}>Settings</button>
+		</div>
 	</div>
 </div>
 
@@ -338,6 +380,9 @@
 	color: white;
 	padding: 12px 0;
 	margin-bottom: 16px;
+	position: sticky;
+	top: 0;
+	z-index: 10;
 }
 
 .menu-container {
@@ -346,13 +391,15 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 16px;
-	padding: 0 16px;
+	padding: 8px 16px;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .logo {
 	font-weight: bold;
 	font-size: 1.125rem;
-	margin-right: auto;
+	padding: 0.5rem 0;
 }
 
 .logo-highlight {
@@ -363,14 +410,16 @@
 	color: white;
 	background: transparent;
 	border: none;
-	padding: 0;
+	padding: 8px 12px;
 	margin: 0;
 	cursor: pointer;
 	font: inherit;
+	border-radius: 4px;
 }
 
 .menu-item:hover {
 	color: #fcd34d;
+	background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Hide print view by default */
@@ -411,7 +460,7 @@
   }
   
   /* Hide non-print components */
-  .bg-white, .bg-stone-100, .grid-cols-7, #builder-ui, .p-4, .p-5, .p-6 {
+  .bg-white, .bg-stone-100, #builder-ui, .p-4, .p-5, .p-6 {
     display: none !important;
   }
   
@@ -614,7 +663,7 @@
 }
 </style>
 
-<section id="builder-ui" class="max-w-4xl mx-auto p-6 bg-stone-100 min-h-screen">
+<section id="builder-ui" class="max-w-4xl mx-auto p-6 bg-stone-100 min-h-screen {darkMode ? 'dark' : ''}">
 	<header class="mb-8 text-center">
 		<h1 class="text-4xl font-extrabold text-stone-800 tracking-tight">
 			<span class="text-amber-600">Gaslands</span> Garage
@@ -687,23 +736,23 @@
 		</div>
 
 		{#if vehicles.length === 0}
-			<div class="bg-white p-8 rounded-lg shadow-md text-center">
-				<p class="text-stone-500 mt-4 text-lg">No vehicles yet. Add some vehicles to your team!</p>
+			<div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
+				<p class="text-stone-500 dark:text-gray-400 mt-4 text-lg">No vehicles yet. Add some vehicles to your team!</p>
 			</div>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 				{#each vehicles as v (v.id)}
-					<div class="bg-stone-200 rounded-lg shadow-md overflow-hidden border-2" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'}">
+					<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'}">
 						<!-- Vehicle header -->
-						<div class="flex items-center justify-between bg-stone-300 p-3 border-b-2 border-gray-400">
+						<div class="flex items-center justify-between bg-stone-300 dark:bg-gray-700 p-3 border-b-2 border-gray-400 dark:border-gray-600">
 							<div class="flex-1 min-w-0">
 								<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
 									<div class="w-full sm:w-2/5">
-										<label for="vehicle-type-{v.id}" class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Type</label>
+										<label for="vehicle-type-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Type</label>
 										<select
 											id="vehicle-type-{v.id}"
 											bind:value={v.type}
-											class="w-full p-2 border border-stone-300 rounded bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+											class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 											on:change={() => {
 												const vt = vehicleTypes.find((t) => t.id === v.type)!;
 												v.name = vt.name;
@@ -715,11 +764,11 @@
 										</select>
 									</div>
 									<div class="flex-1 w-full">
-										<label for="vehicle-name-{v.id}" class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Name</label>
+										<label for="vehicle-name-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Name</label>
 										<input
 											id="vehicle-name-{v.id}"
 											bind:value={v.name}
-											class="w-full p-2 border border-stone-300 rounded bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+											class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 											placeholder="Vehicle name"
 										/>
 									</div>
@@ -738,30 +787,30 @@
 						<!-- Vehicle details -->
 						<div class="p-4">
 							<!-- Dashboard stats -->
-							<div class="grid grid-cols-4 gap-2 text-sm bg-stone-100 p-3 rounded mt-0 mb-4">
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
-									<span class="font-bold text-lg">
+							<div class="flex flex-wrap gap-2 text-sm bg-stone-100 dark:bg-gray-700 p-3 rounded mt-0 mb-4">
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Cost</span>
+									<span class="font-bold text-lg dark:text-white">
 										{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}
 									</span>
-									<span class="text-xs">cans</span>
+									<span class="text-xs dark:text-gray-300">cans</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Type</span>
-									<span class="font-bold text-base truncate block">
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
+									<span class="font-bold text-base truncate block dark:text-white">
 										{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
 									</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Hull</span>
-									<span class="font-bold text-lg">
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
+									<span class="font-bold text-lg dark:text-white">
 										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
 									</span>
-									<span class="text-xs">points</span>
+									<span class="text-xs dark:text-gray-300">points</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
-									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons</span>
+									<span class="font-bold text-lg dark:text-white" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
 										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
 									</span>
 								</div>
@@ -769,64 +818,98 @@
 							
 							<!-- Weapons section -->
 							<div class="mb-4">
-								<h3 class="font-bold text-stone-800 mb-2 flex items-center border-b border-stone-300 pb-1">
-									<span class="bg-stone-300 px-2 py-1 rounded-t mr-2">WEAPONS</span>
+								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">WEAPONS</span>
 								</h3>
 								
 								{#if v.weapons.length === 0}
-									<p class="text-stone-500 text-sm italic px-2">No weapons equipped.</p>
+									<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No weapons equipped.</p>
 								{:else}
-									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
+									<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
 										{#each v.weapons as weaponId, i}
 											{@const baseWeaponId = weaponId.split('_')[0]}
 											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
 											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
-											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
-												<div class="flex-1">
-													<span class="text-stone-700 font-medium">{weaponObj?.name || weaponId}</span>
-													<div class="flex items-center mt-1">
-														<span class="text-stone-500 text-xs mr-2">Facing:</span>
-														<select 
-															class="text-xs border border-stone-300 rounded p-1 bg-white"
-															value={facing}
-															on:change={e => {
-																const newFacing = e.target.value;
-																// Update the facing for this weapon
-																vehicles = vehicles.map(vehicle => {
-																	if (vehicle.id === v.id) {
-																		return {
-																			...vehicle,
-																			weaponFacings: {
-																				...(vehicle.weaponFacings || {}),
-																				[weaponId]: newFacing
-																			}
-																		};
-																	}
-																	return vehicle;
-																});
-															}}
-														>
-															{#if weaponObj?.facing && weaponObj?.facing !== 'any'}
-																<option value={weaponObj.facing}>{weaponObj.facing}</option>
-															{:else}
+											{@const isFixedFacing = weaponObj?.facing && weaponObj.facing !== 'any'}
+											<li class="bg-stone-50 dark:bg-gray-700 p-3">
+												<div class="flex items-start justify-between">
+													<!-- Weapon details -->
+													<div class="flex-1">
+														<div class="text-stone-700 dark:text-gray-200 font-medium">{weaponObj?.name || weaponId}</div>
+														{#if weaponObj?.specialRules}
+															<div class="text-stone-500 dark:text-gray-400 text-xs mt-1">{weaponObj.specialRules}</div>
+														{/if}
+													</div>
+													<!-- Remove button -->
+													<button
+														class="p-1 h-6 w-6 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors ml-2 flex-shrink-0"
+														on:click={() => removeWeapon(v.id, i)}
+														aria-label="Remove weapon"
+													>
+														<span>×</span>
+														<span class="sr-only">Remove weapon</span>
+													</button>
+												</div>
+												
+												<!-- Weapon facing controls -->
+												<div class="mt-2 flex items-center">
+													<span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
+													{#if isFixedFacing || weaponObj?.crewFired}
+														<!-- Disabled dropdown for fixed facing weapons or crew fired weapons -->
+														<div class="relative inline-flex">
+															<select 
+																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-300 font-medium cursor-not-allowed appearance-none"
+																value={weaponObj?.crewFired ? "any" : weaponObj?.facing}
+																disabled
+															>
+																<option value={weaponObj?.crewFired ? "any" : weaponObj?.facing}>
+																	{weaponObj?.crewFired ? "360° arc" : `${weaponObj?.facing} (fixed)`}
+																</option>
+															</select>
+															<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 dark:text-gray-400">
+																<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+																	<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path>
+																</svg>
+															</div>
+														</div>
+													{:else}
+														<!-- Enabled dropdown for variable facing weapons -->
+														<div class="relative inline-flex">
+															<select 
+																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 appearance-none"
+																value={facing}
+																on:change={e => {
+																	const newFacing = e.target.value;
+																	// Update the facing for this weapon
+																	vehicles = vehicles.map(vehicle => {
+																		if (vehicle.id === v.id) {
+																			return {
+																				...vehicle,
+																				weaponFacings: {
+																					...(vehicle.weaponFacings || {}),
+																					[weaponId]: newFacing
+																				}
+																			};
+																		}
+																		return vehicle;
+																	});
+																}}
+															>
 																<option value="front">front</option>
 																<option value="side">side</option>
 																<option value="rear">rear</option>
 																<option value="turret">turret</option>
 																<option value="hull">hull</option>
-																<option value="any">any</option>
-															{/if}
-														</select>
-													</div>
+																<option value="any">360° arc</option>
+															</select>
+															<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 dark:text-gray-400">
+																<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
+																	<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path>
+																</svg>
+															</div>
+														</div>
+													{/if}
 												</div>
-												<button
-													class="p-1 h-6 w-6 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors ml-2"
-													on:click={() => removeWeapon(v.id, i)}
-													aria-label="Remove weapon"
-												>
-													<span>×</span>
-													<span class="sr-only">Remove weapon</span>
-												</button>
 											</li>
 										{/each}
 									</ul>
@@ -836,12 +919,15 @@
 									<label for="add-weapon-{v.id}" class="sr-only">Add a weapon</label>
 									<select
 										id="add-weapon-{v.id}"
-										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+										class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-800 dark:text-gray-200 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 										on:change={e => {
 											const target = e.target as HTMLSelectElement;
 											const weaponId = target.value;
 											if (weaponId) {
-												addWeapon(v.id, weaponId);
+												// Get the weapon object to check for fixed facing
+												const weaponObj = weapons.find(w => w.id === weaponId);
+												// Pass the weapon's fixed facing or 'front' as default
+												addWeapon(v.id, weaponId, weaponObj?.facing || 'front');
 												target.value = ""; // Reset selection
 											}
 										}}
@@ -964,10 +1050,10 @@
 							</div>
 							
 							<!-- Vehicle stats -->
-							<div class="grid grid-cols-7 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
-									<span class="font-bold text-lg">
+							<div class="flex flex-wrap gap-2 text-sm bg-stone-100 dark:bg-gray-700 p-3 rounded mt-3">
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Cost</span>
+									<span class="font-bold text-lg dark:text-white">
 										{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}
 									</span>
 									<span class="text-xs">cans</span>
@@ -1252,6 +1338,23 @@
               </p>
             </div>
             
+            <div class="space-y-2">
+              <div class="flex items-center">
+                <input 
+                  type="checkbox" 
+                  id="dark-mode" 
+                  bind:checked={darkMode}
+                  class="w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500"
+                />
+                <label for="dark-mode" class="ml-2 text-stone-800 font-medium">
+                  Dark Mode
+                </label>
+              </div>
+              <p class="text-stone-600 text-sm ml-6">
+                Enable dark mode for better visibility in low-light conditions.
+              </p>
+            </div>
+            
             <div class="space-y-2 pt-4 border-t border-stone-200">
               <label for="team-name" class="block text-stone-800 font-medium">
                 Team Name
@@ -1354,12 +1457,12 @@
           {#each v.weapons as weaponId}
             {@const baseWeaponId = weaponId.split('_')[0]}
             {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-            {@const facing = v.weaponFacings?.[weaponId] || 'front'}
-            <div>{weaponObj?.name || weaponId} ({facing})</div>
+            {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
+            <div><strong>{weaponObj?.name || weaponId}</strong> <span style="font-style: italic;">({facing})</span></div>
           {/each}
           {#if v.upgrades.length > 0}
             <div style="margin-top: 5px;">
-              Upgrades: {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}
+              <strong>Upgrades:</strong> {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}
             </div>
           {/if}
         </div>
@@ -1442,4 +1545,3 @@
     </div>
   </div>
 </div>
-
