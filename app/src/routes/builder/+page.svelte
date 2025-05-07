@@ -512,6 +512,15 @@
           >
             Generate QR Code
           </button>
+
+          <button
+            class="flex items-center px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-medium transition-colors shadow-md print:hidden"
+            on:click={() => {
+              window.print();
+            }}
+          >
+            Print Team
+          </button>
         </div>
     </div>
 
@@ -563,7 +572,7 @@
     {/if}
 
     <!-- Import section -->
-    <div class="mt-6 bg-white p-5 rounded-lg shadow-md">
+    <div class="mt-6 bg-white p-5 rounded-lg shadow-md print:hidden">
       <h2 class="text-xl font-bold text-stone-800 mb-4 flex items-center">
         Import Build
       </h2>
@@ -600,3 +609,169 @@
       </div>
     </div>
 </section>
+
+<!-- Print styles -->
+<style>
+  @media print {
+    /* Hide elements that shouldn't be printed */
+    header button, 
+    button[aria-label="Remove vehicle"],
+    button[aria-label="Remove weapon"],
+    button[aria-label="Remove upgrade"],
+    button[aria-label="Remove perk"],
+    .relative select,
+    #import-draft,
+    .flex.gap-2 button,
+    .bg-red-50,
+    .bg-green-50 {
+      display: none !important;
+    }
+    
+    /* Page formatting */
+    section {
+      background-color: white !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    /* Reset background colors for printing */
+    .bg-stone-100, .bg-stone-200, .bg-stone-300, .bg-white {
+      background-color: white !important;
+      box-shadow: none !important;
+    }
+    
+    /* Team heading */
+    header h1 {
+      font-size: 24pt !important;
+      margin-bottom: 10px !important;
+    }
+    
+    header p {
+      font-size: 12pt !important;
+    }
+    
+    /* Ensure each vehicle gets proper space */
+    .grid.grid-cols-1, .grid.md\\:grid-cols-2 {
+      display: block !important;
+    }
+    
+    /* Vehicle cards formatting */
+    .bg-stone-200 {
+      border: 1px solid #ccc !important;
+      page-break-inside: avoid;
+      margin-bottom: 20px !important;
+    }
+    
+    /* Make text more readable on print */
+    .text-stone-600, .text-stone-500, .text-stone-700 {
+      color: black !important;
+    }
+    
+    /* Add page footer */
+    @page {
+      margin: 0.5cm;
+    }
+    
+    /* Hide the normal stats grids */
+    .grid.grid-cols-7, .grid.grid-cols-4, .grid.grid-cols-6 {
+      display: none !important;
+    }
+    
+    /* Clean sections */
+    .p-4, .p-5, .p-6 {
+      padding: 0.25cm !important;
+    }
+    
+    /* Print-specific team summary */
+    #team-summary-print {
+      display: block !important;
+      margin-top: 30px !important;
+      border-top: 1px solid #999 !important;
+      padding-top: 10px !important;
+      font-size: 12pt !important;
+    }
+    
+    /* Text formatting for print */
+    #team-summary-print h2 {
+      font-size: 18pt !important;
+      margin-bottom: 15px !important;
+    }
+    
+    #team-summary-print h3 {
+      font-size: 14pt !important;
+      margin-top: 15px !important;
+      margin-bottom: 5px !important;
+      border-bottom: 1px solid #ccc !important;
+    }
+    
+    #team-summary-print p {
+      margin: 5px 0 !important;
+    }
+    
+    #team-summary-print ul {
+      margin-left: 20px !important;
+      margin-bottom: 10px !important;
+    }
+    
+    #team-summary-print ul li {
+      margin-bottom: 3px !important;
+    }
+    
+    .vehicle-print-summary {
+      margin-bottom: 20px !important;
+      page-break-inside: avoid !important;
+    }
+    
+    .print-footer {
+      margin-top: 30px !important;
+      font-size: 10pt !important;
+      text-align: center !important;
+      color: #666 !important;
+    }
+  }
+  
+  #team-summary-print {
+    display: none;
+  }
+</style>
+
+<!-- Print-only team summary that appears at the bottom of the printed page -->
+<div id="team-summary-print">
+  <div class="sponsor-header-print">
+    <h2>Team Summary: {currentSponsor?.name || 'Team'} ({totalCans} cans)</h2>
+    <p class="sponsor-header-details">Sponsor Ability: Vehicles in this team can use the {currentSponsor?.name || 'sponsor'}'s perks ({currentSponsor?.perks.length || 0} available)</p>
+  </div>
+  {#each vehicles as v}
+    <div class="vehicle-print-summary">
+      <h3>{v.name} ({vehicleTypes.find(vt => vt.id === v.type)?.name})</h3>
+      <p><strong>Hull Points:</strong> {vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}</p>
+      <p><strong>Max Gear:</strong> {vehicleTypes.find(vt => vt.id === v.type)?.maxGear || '?'}</p>
+      <p><strong>Cost:</strong> {validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'} cans</p>
+      
+      {#if v.weapons.length > 0}
+        <p><strong>Weapons:</strong> {v.weapons.map(id => weapons.find(w => w.id === id)?.name || id).join(', ')}</p>
+      {/if}
+      {#if v.upgrades.length > 0}
+        <p><strong>Upgrades:</strong> {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}</p>
+        <ul>
+          {#each v.upgrades as upgradeId}
+            {#if upgrades.find(u => u.id === upgradeId)?.specialRules}
+              <li><strong>{upgrades.find(u => u.id === upgradeId)?.name}:</strong> {upgrades.find(u => u.id === upgradeId)?.specialRules}</li>
+            {/if}
+          {/each}
+        </ul>
+      {/if}
+      {#if v.perks.length > 0}
+        <p><strong>Perks:</strong></p>
+        <ul>
+          {#each v.perks as perkId}
+            {#if perks.find(p => p.id === perkId)}
+              <li><strong>{perks.find(p => p.id === perkId)?.name} (Level {perks.find(p => p.id === perkId)?.level}):</strong> {perks.find(p => p.id === perkId)?.text}</li>
+            {/if}
+          {/each}
+        </ul>
+      {/if}
+    </div>
+  {/each}
+  <p class="print-footer">Generated by Gaslands Garage on {new Date().toLocaleDateString()}</p>
+</div>
