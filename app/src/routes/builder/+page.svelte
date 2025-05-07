@@ -6,6 +6,9 @@
 	import { encodeDraft, decodeDraft } from '$lib/draft/io';
 	import { goto } from '$app/navigation';
 	import { draftToDataURL } from '$lib/draft/qr';
+	import Auth from '$lib/components/Auth.svelte';
+	import TeamsModal from '$lib/components/TeamsModal.svelte';
+	import { user } from '$lib/firebase';
 
 	/* ---------- server data ---------- */
 	export let data: {
@@ -128,6 +131,7 @@
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
+	let showTeamsModal = false;
 	let showMenu = false;
 
 	/* ---------- settings state ---------- */
@@ -368,7 +372,11 @@
 			<button type="button" class="menu-item" on:click={generateQRCode}>Generate QR Code</button>
 			<button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
 			<button type="button" class="menu-item" on:click={importBuild}>Import Build</button>
+			{#if $user}
+			<button type="button" class="menu-item" on:click={() => showTeamsModal = true}>My Teams</button>
+			{/if}
 			<button type="button" class="menu-item" on:click={openSettings}>Settings</button>
+			<Auth />
 		</div>
 	</div>
 </div>
@@ -1400,8 +1408,44 @@
         </div>
       </div>
     {/if}
+    
+    <!-- Teams Modal -->
+    <TeamsModal 
+      bind:showModal={showTeamsModal} 
+      currentDraft={currentDraft} 
+      importDraft={importDraftString}
+    />
 </section>
 
+
+<!-- Teams Modal -->
+{#if showTeamsModal}
+  <TeamsModal 
+    showModal={showTeamsModal}
+    currentDraft={currentDraft}
+    importDraft={(draft) => {
+      if (draft) {
+        sponsorId = draft.sponsor;
+        vehicles = draft.vehicles;
+        
+        // Import team name if available
+        if (draft.teamName) {
+          teamName = draft.teamName;
+        }
+        
+        // Import maxCans if available
+        if (draft.maxCans) {
+          maxCans = draft.maxCans;
+        }
+        
+        // Import darkMode if available
+        if (draft.darkMode !== undefined) {
+          darkMode = draft.darkMode;
+        }
+      }
+    }}
+  />
+{/if}
 
 <!-- Print-only view with vehicle cards -->
 <div id="gaslands-print-view">
