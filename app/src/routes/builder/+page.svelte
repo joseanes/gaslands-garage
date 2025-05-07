@@ -12,8 +12,9 @@
 		vehicleTypes: import('$lib/rules/types').Vehicle[];
 		weapons: import('$lib/rules/types').Weapon[];
 		upgrades: import('$lib/rules/types').Upgrade[];
+		perks: import('$lib/rules/types').Perk[];
 	};
-	const { sponsors, vehicleTypes, weapons, upgrades } = data;
+	const { sponsors, vehicleTypes, weapons, upgrades, perks } = data;
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
@@ -71,6 +72,22 @@
 		);
 	}
 
+	function addPerk(vehicleId: string, perkId: string) {
+		vehicles = vehicles.map(v =>
+			v.id === vehicleId ?
+			{ ...v, perks: [...v.perks, perkId] } :
+			v
+		);
+	}
+
+	function removePerk(vehicleId: string, perkIndex: number) {
+		vehicles = vehicles.map(v =>
+			v.id === vehicleId ?
+			{ ...v, perks: v.perks.filter((_, idx) => idx !== perkIndex) } :
+			v
+		);
+	}
+
 	let qrDataUrl: string | null = null;   // toggles modal
 
 	/* ---------- load from URL param (once) ---------- */
@@ -92,6 +109,10 @@
 	$: validateDraft(currentDraft).then((r) => (validation = r));
 	$: totalCans = validation.cans;
 	$: teamErrors = validation.errors;
+	
+	// Get available perks for the current sponsor
+	$: currentSponsor = sponsors.find(s => s.id === sponsorId);
+	$: availablePerks = perks.filter(p => currentSponsor?.perks.includes(p.id));
 
 	/* ---------- import box ---------- */
 	let importString = '';
@@ -323,8 +344,63 @@
 								</div>
 							</div>
 							
+							<!-- Perks section -->
+							<div class="mb-4 mt-6">
+								<h3 class="font-bold text-stone-800 mb-2 flex items-center border-b border-stone-300 pb-1">
+									<span class="bg-stone-300 px-2 py-1 rounded-t mr-2">PERKS</span>
+									<span class="text-xs text-stone-500 ml-auto">(Available for {currentSponsor?.name || 'selected sponsor'})</span>
+								</h3>
+								
+								{#if v.perks.length === 0}
+									<p class="text-stone-500 text-sm italic px-2">No perks selected.</p>
+								{:else}
+									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
+										{#each v.perks as perkId, i}
+											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
+												<div class="flex-1">
+													<span class="text-stone-700 font-medium block">{perks.find(p => p.id === perkId)?.name || perkId}</span>
+													<span class="text-stone-500 text-xs">{perks.find(p => p.id === perkId)?.text || ""}</span>
+												</div>
+												<button
+													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
+													on:click={() => removePerk(v.id, i)}
+													aria-label="Remove perk"
+												>
+													<span>×</span>
+													<span class="sr-only">Remove perk</span>
+												</button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+								
+								<div class="relative">
+									<label for="add-perk-{v.id}" class="sr-only">Add a perk</label>
+									<select
+										id="add-perk-{v.id}"
+										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+										on:change={e => {
+											const target = e.target as HTMLSelectElement;
+											const perkId = target.value;
+											if (perkId) {
+												addPerk(v.id, perkId);
+												target.value = ""; // Reset selection
+											}
+										}}
+										disabled={availablePerks.filter(p => !v.perks.includes(p.id)).length === 0}
+									>
+										<option value="" disabled selected>+ Add perk</option>
+										{#each availablePerks as p}
+											{#if !v.perks.includes(p.id)}
+												<option value={p.id}>{p.name} (Level {p.level})</option>
+											{/if}
+										{/each}
+									</select>
+								</div>
+							</div>
+							
 							<!-- Vehicle stats -->
-							<div class="grid grid-cols-6 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
+							<div class="grid grid-cols-7 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
 								<div class="bg-stone-300 rounded p-2 text-center">
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
 									<span class="font-bold text-lg">
@@ -361,6 +437,12 @@
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Upgrades</span>
 									<span class="font-bold text-lg" class:text-red-600={v.upgrades.length > (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}>
 										{v.upgrades.length} / {vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || '2'}
+									</span>
+								</div>
+								<div class="bg-stone-300 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Perks</span>
+									<span class="font-bold text-lg" class:text-red-600={v.perks.some(perkId => !currentSponsor?.perks.includes(perkId))}>
+										{v.perks.length} / {availablePerks.length}
 									</span>
 								</div>
 							</div>

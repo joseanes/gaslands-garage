@@ -49,11 +49,29 @@ export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
   }
 
 /* ------------------------------------------------------------
+   RULE D – perks must be from the team's sponsor
+   ------------------------------------------------------------ */
+   export function sponsorPerkCheck(team: Team, reports: VehicleReport[]) {
+    const sponsorPerks = team.sponsor.perks;
+    
+    team.vehicles.forEach((v, i) => {
+      for (const perk of v.perks) {
+        if (!sponsorPerks.includes(perk.id)) {
+          reports[i].errors.push(
+            `Invalid perk: ${perk.name} is not available for ${team.sponsor.name}`
+          );
+        }
+      }
+    });
+  }
+
+/* ------------------------------------------------------------
    aggregate runner – call every rule function here
    ------------------------------------------------------------ */
    export function runAllChecks(team: Team, reports: VehicleReport[]) {
     weaponSlotCheck(team, reports);
     uniqueWeaponCheck(team, reports);
     upgradeSlotCheck(team, reports);
+    sponsorPerkCheck(team, reports);
   }
   
