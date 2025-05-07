@@ -118,7 +118,7 @@
 	let importString = '';
 </script>
 
-<section class="max-w-4xl mx-auto p-6 bg-stone-100 min-h-screen">
+<section id="builder-ui" class="max-w-4xl mx-auto p-6 bg-stone-100 min-h-screen">
 	<header class="mb-8 text-center">
 		<h1 class="text-4xl font-extrabold text-stone-800 tracking-tight">
 			<span class="text-amber-600">Gaslands</span> Garage
@@ -612,6 +612,7 @@
 
 <!-- Print styles -->
 <style>
+  /* Regular print styles */
   @media print {
     /* Hide elements that shouldn't be printed */
     header button, 
@@ -628,150 +629,301 @@
     }
     
     /* Page formatting */
+    @page { 
+      size: 8.5in 11in portrait; 
+      margin: 0.5cm;
+    }
+    
     section {
       background-color: white !important;
       padding: 0 !important;
       margin: 0 !important;
     }
     
-    /* Reset background colors for printing */
-    .bg-stone-100, .bg-stone-200, .bg-stone-300, .bg-white {
-      background-color: white !important;
-      box-shadow: none !important;
-    }
-    
-    /* Team heading */
-    header h1 {
-      font-size: 24pt !important;
-      margin-bottom: 10px !important;
-    }
-    
-    header p {
-      font-size: 12pt !important;
-    }
-    
-    /* Ensure each vehicle gets proper space */
-    .grid.grid-cols-1, .grid.md\\:grid-cols-2 {
-      display: block !important;
-    }
-    
-    /* Vehicle cards formatting */
-    .bg-stone-200 {
-      border: 1px solid #ccc !important;
-      page-break-inside: avoid;
-      margin-bottom: 20px !important;
-    }
-    
-    /* Make text more readable on print */
-    .text-stone-600, .text-stone-500, .text-stone-700 {
-      color: black !important;
-    }
-    
-    /* Add page footer */
-    @page {
-      margin: 0.5cm;
-    }
-    
-    /* Hide the normal stats grids */
-    .grid.grid-cols-7, .grid.grid-cols-4, .grid.grid-cols-6 {
+    /* Hide non-print components */
+    .bg-white, .bg-stone-100, .grid-cols-7, #builder-ui, .p-4, .p-5, .p-6 {
       display: none !important;
     }
     
-    /* Clean sections */
-    .p-4, .p-5, .p-6 {
-      padding: 0.25cm !important;
+    /* General text formatting */
+    body { 
+      color: #000; 
+      font-family: Arial, sans-serif; 
     }
     
-    /* Print-specific team summary */
-    #team-summary-print {
+    /* Force background printing */
+    * { 
+      -webkit-print-color-adjust: exact !important; 
+      color-adjust: exact !important; 
+    }
+    
+    /* Show print view */
+    #gaslands-print-view {
       display: block !important;
-      margin-top: 30px !important;
-      border-top: 1px solid #999 !important;
-      padding-top: 10px !important;
-      font-size: 12pt !important;
     }
     
-    /* Text formatting for print */
-    #team-summary-print h2 {
-      font-size: 18pt !important;
-      margin-bottom: 15px !important;
+    /* Vehicle card styling */
+    .vehicle-card-print {
+      width: 316px;
+      height: 275px;
+      vertical-align: top;
+      padding: 20px 32px;
+      border: 2px solid #000;
+      page-break-inside: avoid;
+      margin-bottom: 20px;
+      display: inline-block;
+      position: relative;
+      box-sizing: border-box;
     }
     
-    #team-summary-print h3 {
-      font-size: 14pt !important;
-      margin-top: 15px !important;
-      margin-bottom: 5px !important;
-      border-bottom: 1px solid #ccc !important;
+    /* Text styling */
+    .uppercase { text-transform: uppercase; }
+    .bold { font-weight: bold; }
+    
+    /* Hull boxes */
+    .hull-box {
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border: 2px solid #000;
+      display: inline-block;
+      margin: 2px;
     }
     
-    #team-summary-print p {
-      margin: 5px 0 !important;
+    /* Vehicle card sections */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
     }
     
-    #team-summary-print ul {
-      margin-left: 20px !important;
-      margin-bottom: 10px !important;
+    .card-name {
+      font-size: 1.5em;
+      font-weight: bold;
+      text-transform: uppercase;
     }
     
-    #team-summary-print ul li {
-      margin-bottom: 3px !important;
+    .card-stats {
+      display: flex;
+      margin-top: 5px;
+      margin-bottom: 10px;
     }
     
-    .vehicle-print-summary {
-      margin-bottom: 20px !important;
-      page-break-inside: avoid !important;
+    .card-hull {
+      margin-top: 10px;
+    }
+    
+    .card-gear {
+      text-align: center;
+      margin-left: auto;
+      border: 2px solid #000;
+      padding: 5px 15px;
+      font-weight: bold;
+    }
+    
+    .card-weapons {
+      margin-top: 15px;
+      font-size: 0.8em;
+      height: 70px;
+    }
+    
+    .card-footer {
+      position: absolute;
+      bottom: 20px;
+      left: 32px;
+      right: 32px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    /* Team summary styling */
+    .sponsor-print-header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid black;
+      padding-bottom: 10px;
+    }
+    
+    .sponsor-print-header h1 {
+      font-size: 24pt;
+      margin-bottom: 5px;
+    }
+    
+    .print-card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      page-break-inside: auto;
+    }
+    
+    .print-section {
+      page-break-inside: avoid;
+      margin-bottom: 20px;
     }
     
     .print-footer {
-      margin-top: 30px !important;
-      font-size: 10pt !important;
-      text-align: center !important;
-      color: #666 !important;
+      text-align: center;
+      font-size: 10pt;
+      margin-top: 20px;
+      color: #666;
+    }
+    
+    .rotate90 {
+      display: inline-block;
+      transform: rotate(-90deg);
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    
+    .vehicle-type {
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    
+    .card-weapons {
+      overflow: hidden;
+    }
+    
+    /* Perk details section below cards */
+    #perk-details-print {
+      margin-top: 30px;
+      border-top: 2px solid #999;
+      padding-top: 15px;
+    }
+    
+    #perk-details-print h2 {
+      font-size: 14pt;
+      margin-bottom: 10px;
+    }
+    
+    .perk-list {
+      column-count: 2;
+      column-gap: 30px;
+    }
+    
+    .perk-item {
+      margin-bottom: 10px;
+      break-inside: avoid;
     }
   }
   
-  #team-summary-print {
+  /* Hide print components by default */
+  #gaslands-print-view {
     display: none;
   }
 </style>
 
-<!-- Print-only team summary that appears at the bottom of the printed page -->
-<div id="team-summary-print">
-  <div class="sponsor-header-print">
-    <h2>Team Summary: {currentSponsor?.name || 'Team'} ({totalCans} cans)</h2>
-    <p class="sponsor-header-details">Sponsor Ability: Vehicles in this team can use the {currentSponsor?.name || 'sponsor'}'s perks ({currentSponsor?.perks.length || 0} available)</p>
+<!-- Print-only view with vehicle cards -->
+<div id="gaslands-print-view">
+  <div class="sponsor-print-header">
+    <h1>Gaslands: {currentSponsor?.name || 'Team'}</h1>
+    <p>Total: {totalCans} cans | Sponsor Abilities: {currentSponsor?.perks.join(', ')}</p>
   </div>
-  {#each vehicles as v}
-    <div class="vehicle-print-summary">
-      <h3>{v.name} ({vehicleTypes.find(vt => vt.id === v.type)?.name})</h3>
-      <p><strong>Hull Points:</strong> {vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}</p>
-      <p><strong>Max Gear:</strong> {vehicleTypes.find(vt => vt.id === v.type)?.maxGear || '?'}</p>
-      <p><strong>Cost:</strong> {validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'} cans</p>
-      
-      {#if v.weapons.length > 0}
-        <p><strong>Weapons:</strong> {v.weapons.map(id => weapons.find(w => w.id === id)?.name || id).join(', ')}</p>
-      {/if}
-      {#if v.upgrades.length > 0}
-        <p><strong>Upgrades:</strong> {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}</p>
-        <ul>
-          {#each v.upgrades as upgradeId}
-            {#if upgrades.find(u => u.id === upgradeId)?.specialRules}
-              <li><strong>{upgrades.find(u => u.id === upgradeId)?.name}:</strong> {upgrades.find(u => u.id === upgradeId)?.specialRules}</li>
-            {/if}
-          {/each}
-        </ul>
-      {/if}
-      {#if v.perks.length > 0}
-        <p><strong>Perks:</strong></p>
-        <ul>
-          {#each v.perks as perkId}
-            {#if perks.find(p => p.id === perkId)}
-              <li><strong>{perks.find(p => p.id === perkId)?.name} (Level {perks.find(p => p.id === perkId)?.level}):</strong> {perks.find(p => p.id === perkId)?.text}</li>
-            {/if}
-          {/each}
-        </ul>
-      {/if}
+  
+  <div class="print-card-grid">
+    {#each vehicles as v}
+      <div class="vehicle-card-print">
+        <div class="card-header">
+          <div class="card-name">{v.name}</div>
+          <div class="bold">Gear</div>
+        </div>
+        
+        <div class="card-stats">
+          <div>
+            <div class="bold vehicle-type">{vehicleTypes.find(vt => vt.id === v.type)?.name}</div>
+            <div class="bold">Handling: {v.type === 'car' ? 3 : v.type === 'truck' ? 2 : 4}</div>
+            <div class="bold">Crew: {v.type === 'car' ? 2 : v.type === 'truck' ? 3 : 1}</div>
+          </div>
+          
+          <div class="card-gear">
+            <div>Max</div>
+            <div style="font-size: 1.5em;">{vehicleTypes.find(vt => vt.id === v.type)?.maxGear}</div>
+          </div>
+        </div>
+        
+        <div class="card-hull">
+          <div>
+            <span class="rotate90">Hull</span>
+            {#each Array(Math.min(6, vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)) as _, i}
+              <span class="hull-box"></span>
+            {/each}
+          </div>
+          {#if (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) > 6}
+            <div style="margin-left: 30px;">
+              {#each Array(Math.min(6, (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) - 6)) as _, i}
+                <span class="hull-box"></span>
+              {/each}
+            </div>
+          {/if}
+        </div>
+        
+        <div class="card-weapons">
+          {v.weapons.map(id => weapons.find(w => w.id === id)?.name || id).join(', ')}
+          {#if v.upgrades.length > 0}
+            <div style="margin-top: 5px;">
+              Upgrades: {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}
+            </div>
+          {/if}
+        </div>
+        
+        <div class="card-footer">
+          {#if v.perks.length > 0}
+            Perks: {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(', ')}
+          {/if}
+        </div>
+      </div>
+    {/each}
+  </div>
+  
+  <!-- Perk details section -->
+  <div id="perk-details-print">
+    <h2>Perks, Weapons & Upgrades Details</h2>
+    
+    <div class="print-section">
+      <h3>Weapons</h3>
+      <div class="perk-list">
+        {#each [...new Set(vehicles.flatMap(v => v.weapons))] as weaponId}
+          {#if weapons.find(w => w.id === weaponId)}
+            <div class="perk-item">
+              <strong>{weapons.find(w => w.id === weaponId)?.name}</strong> - 
+              {weapons.find(w => w.id === weaponId)?.cost} cans
+              {#if weapons.find(w => w.id === weaponId)?.unique}
+                (Unique)
+              {/if}
+            </div>
+          {/if}
+        {/each}
+      </div>
     </div>
-  {/each}
+    
+    <div class="print-section">
+      <h3>Upgrades</h3>
+      <div class="perk-list">
+        {#each [...new Set(vehicles.flatMap(v => v.upgrades))] as upgradeId}
+          {#if upgrades.find(u => u.id === upgradeId)}
+            <div class="perk-item">
+              <strong>{upgrades.find(u => u.id === upgradeId)?.name}</strong> - 
+              {upgrades.find(u => u.id === upgradeId)?.specialRules}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </div>
+    
+    <div class="print-section">
+      <h3>Perks</h3>
+      <div class="perk-list">
+        {#each [...new Set(vehicles.flatMap(v => v.perks))] as perkId}
+          {#if perks.find(p => p.id === perkId)}
+            <div class="perk-item">
+              <strong>{perks.find(p => p.id === perkId)?.name} (Level {perks.find(p => p.id === perkId)?.level})</strong> - 
+              {perks.find(p => p.id === perkId)?.text}
+            </div>
+          {/if}
+        {/each}
+      </div>
+    </div>
+  </div>
+  
   <p class="print-footer">Generated by Gaslands Garage on {new Date().toLocaleDateString()}</p>
 </div>
