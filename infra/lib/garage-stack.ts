@@ -14,18 +14,18 @@ import {
   CachePolicy,
   OriginRequestPolicy,
   SecurityPolicyProtocol,
-  SSLMethod,
-  Certificate
+  SSLMethod
 } from 'aws-cdk-lib/aws-cloudfront';
 import { S3Origin } from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
-import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 
 export interface GarageStackProps extends cdk.StackProps {
   domainName?: string;
+  certificateArn?: string;
 }
 
 export class GarageStack extends cdk.Stack {
@@ -75,13 +75,34 @@ export class GarageStack extends cdk.Stack {
     /* ----------------------------------------------------------------
        ACM Certificate for HTTPS
        ---------------------------------------------------------------- */
-    // Create certificate in us-east-1 (required for CloudFront)
-    const certificate = new acm.DnsValidatedCertificate(this, 'SiteCertificate', {
-      domainName: domainName,
-      hostedZone,
-      region: 'us-east-1', // CloudFront requires certificates in us-east-1
-      subjectAlternativeNames: [`www.${domainName}`] // Include www subdomain
-    });
+    // Either import the certificate or create a new one
+    let siteCertificate;
+    
+    if (props?.certificateArn) {
+      // Import existing certificate if ARN is provided
+      siteCertificate = Certificate.fromCertificateArn(
+        this, 
+        'SiteCertificate', 
+        props.certificateArn
+      );
+    } else {
+      // Otherwise, try to get it from the context (for cross-region reference)
+      const certificateArn = cdk.Fn.importValue('SiteCertificateArn');
+      if (certificateArn) {
+        siteCertificate = Certificate.fromCertificateArn(
+          this, 
+          'ImportedCertificate', 
+          certificateArn
+        );
+      } else {
+        // As a fallback, create a new certificate (this will only work in us-east-1)
+        siteCertificate = new Certificate(this, 'SiteCertificate', {
+          domainName: domainName,
+          subjectAlternativeNames: [`www.${domainName}`], // Include www subdomain
+          validation: CertificateValidation.fromDns(hostedZone)
+        });
+      }
+    }
 
     /* ----------------------------------------------------------------
        CloudFront distribution
@@ -93,7 +114,7 @@ export class GarageStack extends cdk.Stack {
         allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
       },
       domainNames: [domainName, `www.${domainName}`],
-      certificate: certificate,
+      certificate: siteCertificate,
       errorResponses: [
         {
           httpStatus: 403,

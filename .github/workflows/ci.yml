@@ -43,7 +43,8 @@ jobs:
         AWS_REGION:            ${{ secrets.AWS_REGION }}
       run: |
         pnpm run build
-        npx cdk deploy --require-approval never
+        npx cdk deploy CertificateStack --require-approval never
+        npx cdk deploy InfraStack --require-approval never
         
     # -------- Upload files to S3 --------
     - name: Get S3 bucket name
