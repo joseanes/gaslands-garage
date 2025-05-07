@@ -8,10 +8,13 @@ export interface Draft {
     id: VehicleID;
     type: string;
     weapons: string[];
+    weaponFacings?: Record<string, string>;  // Maps weaponId to facing
     upgrades?: string[];  // Optional for backward compatibility
     perks: string[];
     name: string;
   }[];
+  teamName?: string;   // Optional for backward compatibility
+  maxCans?: number;    // Optional for backward compatibility
 }
 
 export interface VehicleReport {

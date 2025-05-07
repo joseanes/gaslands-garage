@@ -5,7 +5,8 @@
     "cost": 4,
     "slots": 1,
     "specialRules": "Once per game, when this vehicle activates, it gains the 'Up to Full' effect without spending a hazard token.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "rollcage",
@@ -13,7 +14,8 @@
     "cost": 3,
     "slots": 1,
     "specialRules": "This vehicle may re-roll one skid die for each collision or wipeout it suffers.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "armor",
@@ -21,15 +23,17 @@
     "cost": 4,
     "slots": 1,
     "specialRules": "This vehicle gains +1 hull point (included in its max hull).",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
-    "id": "ram",
+    "id": "ram_plate",
     "name": "Ram",
     "cost": 2,
     "slots": 1,
     "specialRules": "This vehicle gains +1 attack die when it causes a collision.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "spiked_ram",
@@ -37,7 +41,8 @@
     "cost": 3,
     "slots": 2,
     "specialRules": "This vehicle gains +2 attack dice when it causes a collision.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "tank_tracks",
@@ -45,7 +50,8 @@
     "cost": 4,
     "slots": 2,
     "specialRules": "This vehicle ignores rough terrain penalties and may re-roll up to two skid dice each time it suffers a collision or wipeout.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": true
   },
   {
     "id": "truck_cab",
@@ -53,7 +59,8 @@
     "cost": 2,
     "slots": 1,
     "specialRules": "This vehicle can tow trailers and other vehicles.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "extra_crew",
@@ -61,7 +68,8 @@
     "cost": 2,
     "slots": 1,
     "specialRules": "This vehicle may re-roll one attack die or one defense die per phase.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "bullet_proof_tires",
@@ -69,7 +77,8 @@
     "cost": 2,
     "slots": 1,
     "specialRules": "This vehicle treats tire blowouts as superficial damage.",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
   },
   {
     "id": "reinforced_frame",
@@ -77,6 +86,97 @@
     "cost": 5,
     "slots": 2,
     "specialRules": "This vehicle gains +2 hull points (included in its max hull).",
-    "type": "upgrade"
+    "type": "upgrade",
+    "advanced": false
+  },
+  {
+    "id": "heavy_armor",
+    "name": "Heavy Armor",
+    "cost": 8,
+    "slots": 3,
+    "specialRules": "This vehicle gains +3 hull points (included in its max hull).",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "prison_car",
+    "name": "Prison Car",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "Flag carrier bonus. This vehicle can carry captured audience members.",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "roll_bar",
+    "name": "Roll Bar",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle treats vehicle flipped onto its roof as a spin.",
+    "type": "upgrade",
+    "advanced": false
+  },
+  {
+    "id": "limited_slip_diff",
+    "name": "Limited Slip Differential",
+    "cost": 1,
+    "slots": 1,
+    "specialRules": "This vehicle may re-roll one skid die once per activation.",
+    "type": "upgrade",
+    "advanced": false
+  },
+  {
+    "id": "experimental_nuclear_engine",
+    "name": "Experimental Nuclear Engine",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle treats Spin results as Slide results. If this vehicle is wrecked, all vehicles within medium range suffer 1 damage point.",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "proximity_mine",
+    "name": "Proximity Mine",
+    "cost": 3,
+    "slots": 1,
+    "specialRules": "Once per game, during this vehicle's activation, you may place a proximity mine drop template anywhere the vehicle moved over this activation.",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "trailer",
+    "name": "Trailer",
+    "cost": 4,
+    "slots": 1,
+    "specialRules": "This vehicle may tow a trailer that provides +2 weapon slots.",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "gyroscope",
+    "name": "Gyroscope",
+    "cost": 2,
+    "slots": 1,
+    "specialRules": "This vehicle may re-roll one skid die when it suffers a collision or wipeout.",
+    "type": "upgrade",
+    "advanced": false
+  },
+  {
+    "id": "ejector_seat",
+    "name": "Ejector Seat",
+    "cost": 1,
+    "slots": 1,
+    "specialRules": "When this vehicle is wrecked, if no audience members have been captured by the controlling player, place an audience member within short range.",
+    "type": "upgrade",
+    "advanced": true
+  },
+  {
+    "id": "grenades",
+    "name": "Grenades",
+    "cost": 1,
+    "slots": 1,
+    "specialRules": "This vehicle gains the grenades weapon (included already, rules in the rulebook).",
+    "type": "upgrade",
+    "advanced": false
   }
 ]

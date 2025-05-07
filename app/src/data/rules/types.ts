@@ -6,7 +6,9 @@ export const Vehicle = z.object({
   baseCost: z.number().int().nonnegative(),
   maxHull: z.number().int().positive(),
   weaponSlots: z.number().int().positive(),
-  upgradeSlots: z.number().int().positive().default(2)  // Most vehicles have 2 upgrade slots by default
+  upgradeSlots: z.number().int().positive().default(2),  // Most vehicles have 2 upgrade slots by default
+  advanced: z.boolean().optional().default(false),
+  color: z.string().optional()
 });
 
 export const Weapon = z.object({
@@ -15,7 +17,9 @@ export const Weapon = z.object({
   cost: z.number().int().nonnegative(),
   slots: z.number().int().positive(),
   type: z.enum(['weapon']),
-  unique: z.boolean().optional()
+  unique: z.boolean().optional(),
+  advanced: z.boolean().optional().default(false),
+  facing: z.enum(['front', 'side', 'rear', 'turret', 'hull', 'any']).optional()
 });
 
 export const Upgrade = z.object({
@@ -24,5 +28,6 @@ export const Upgrade = z.object({
   cost: z.number().int().nonnegative(),
   slots: z.number().int().positive(),
   specialRules: z.string(),
-  type: z.literal('upgrade')
+  type: z.literal('upgrade'),
+  advanced: z.boolean().optional().default(false)
 });

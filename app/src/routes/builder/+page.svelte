@@ -18,7 +18,15 @@
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
-	type Veh = { id: string; type: string; name: string; weapons: string[]; upgrades: string[]; perks: string[] };
+	type Veh = { 
+		id: string; 
+		type: string; 
+		name: string; 
+		weapons: string[]; 
+		weaponFacings?: Record<string, string>;
+		upgrades: string[]; 
+		perks: string[] 
+	};
 	let vehicles: Veh[] = [];
 
 	function addVehicle(type = filteredVehicleTypes[0]?.id) {
@@ -30,6 +38,7 @@
 				type: vt.id,
 				name: `New ${vt.name}`,
 				weapons: [],
+				weaponFacings: {},
 				upgrades: [],
 				perks: []
 			}
@@ -40,20 +49,46 @@
 		vehicles = vehicles.filter((v) => v.id !== id);
 	}
 
-	function addWeapon(vehicleId: string, weaponId: string) {
-		vehicles = vehicles.map(v =>
-			v.id === vehicleId ?
-			{ ...v, weapons: [...v.weapons, weaponId] } :
-			v
-		);
+	function addWeapon(vehicleId: string, weaponId: string, facing?: string) {
+		const weaponObj = weapons.find(w => w.id === weaponId);
+		// If the weapon has a fixed facing or a facing is provided, use it
+		const actualFacing = facing || weaponObj?.facing || 'front';
+		
+		vehicles = vehicles.map(v => {
+			if (v.id === vehicleId) {
+				// Generate a unique ID for this weapon instance
+				const weaponInstanceId = `${weaponId}_${nanoid(4)}`;
+				return { 
+					...v, 
+					weapons: [...v.weapons, weaponInstanceId],
+					weaponFacings: { 
+						...(v.weaponFacings || {}), 
+						[weaponInstanceId]: actualFacing 
+					}
+				};
+			}
+			return v;
+		});
 	}
 
 	function removeWeapon(vehicleId: string, weaponIndex: number) {
-		vehicles = vehicles.map(v =>
-			v.id === vehicleId ?
-			{ ...v, weapons: v.weapons.filter((_, idx) => idx !== weaponIndex) } :
-			v
-		);
+		vehicles = vehicles.map(v => {
+			if (v.id === vehicleId) {
+				// Get the weapon ID to remove
+				const weaponIdToRemove = v.weapons[weaponIndex];
+				
+				// Create a new facings object without the removed weapon
+				const newFacings = { ...(v.weaponFacings || {}) };
+				delete newFacings[weaponIdToRemove];
+				
+				return { 
+					...v, 
+					weapons: v.weapons.filter((_, idx) => idx !== weaponIndex),
+					weaponFacings: newFacings
+				};
+			}
+			return v;
+		});
 	}
 
 	function addUpgrade(vehicleId: string, upgradeId: string) {
@@ -97,6 +132,8 @@
 	/* ---------- settings state ---------- */
 	let enableSponsorships = true;
 	let includeAdvanced = true;
+	let maxCans = 50;
+	let teamName = "My Gaslands Team";
 
 	/* ---------- menu actions ---------- */
 	async function copyDraft() {
@@ -136,6 +173,17 @@
 		if (draft) {
 			sponsorId = draft.sponsor;
 			vehicles = draft.vehicles as Veh[];
+			
+			// Import team name if available
+			if (draft.teamName) {
+				teamName = draft.teamName;
+			}
+			
+			// Import maxCans if available
+			if (draft.maxCans) {
+				maxCans = draft.maxCans;
+			}
+			
 			importString = '';
 			showImportModal = false;
 		} else {
@@ -152,6 +200,16 @@
 			if (imported) {
 				sponsorId = imported.sponsor;
 				vehicles = imported.vehicles as Veh[];
+				
+				// Import team name if available
+				if (imported.teamName) {
+					teamName = imported.teamName;
+				}
+				
+				// Import maxCans if available
+				if (imported.maxCans) {
+					maxCans = imported.maxCans;
+				}
 			}
 		}
 	}
@@ -201,9 +259,34 @@
 	}
 
 	/* ---------- draft & validation ---------- */
-	$: currentDraft = { sponsor: sponsorId, vehicles } satisfies Draft;
+	$: currentDraft = { 
+		sponsor: sponsorId, 
+		vehicles,
+		teamName,
+		maxCans
+	} satisfies Draft;
 	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
-	$: validateDraft(currentDraft).then((r) => (validation = r));
+	$: validateDraft(currentDraft).then((r) => {
+		// Create a copy of the validation result
+		const validationCopy = { ...r };
+		
+		// Replace the max cans error with custom max cans if it exists
+		if (validationCopy.errors.length > 0) {
+			validationCopy.errors = validationCopy.errors.map(err => {
+				if (err.includes("cans limit") || err.includes("can limit")) {
+					return `Team exceeds ${maxCans} cans limit`;
+				}
+				return err;
+			});
+		}
+		
+		// Check against custom max cans
+		if (validationCopy.cans > maxCans && !validationCopy.errors.some(e => e.includes("cans limit"))) {
+			validationCopy.errors.push(`Team exceeds ${maxCans} cans limit`);
+		}
+		
+		validation = validationCopy;
+	});
 	$: totalCans = validation.cans;
 	$: teamErrors = validation.errors;
 	
@@ -562,7 +645,32 @@
 			</label>
 		</div>
 	{:else}
-		<!-- When sponsorships disabled, sponsorId will be cleared by reactivity -->
+		<!-- Show info message when sponsorships are disabled -->
+		<div class="bg-blue-50 p-5 rounded-lg shadow-md mb-6">
+			<div class="flex items-start">
+				<div class="flex-shrink-0">
+					<svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+					</svg>
+				</div>
+				<div class="ml-3">
+					<h3 class="text-lg font-medium text-blue-800">Sponsorships Disabled</h3>
+					<div class="mt-2 text-sm text-blue-700">
+						<p>You are building a team without a sponsor. Sponsorship perks are unavailable.</p>
+						<p class="mt-1">Enable sponsorships in Settings to access sponsor-specific perks and abilities.</p>
+					</div>
+					<div class="mt-3">
+						<button 
+							type="button" 
+							class="text-sm text-blue-600 hover:text-blue-800 font-medium underline"
+							on:click={openSettings}
+						>
+							Open Settings
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	{/if}
 
 	<!-- Vehicle list -->
@@ -670,10 +778,49 @@
 								{:else}
 									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
 										{#each v.weapons as weaponId, i}
+											{@const baseWeaponId = weaponId.split('_')[0]}
+											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
 											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
-												<span class="text-stone-700 font-medium">{weapons.find(w => w.id === weaponId)?.name || weaponId}</span>
+												<div class="flex-1">
+													<span class="text-stone-700 font-medium">{weaponObj?.name || weaponId}</span>
+													<div class="flex items-center mt-1">
+														<span class="text-stone-500 text-xs mr-2">Facing:</span>
+														<select 
+															class="text-xs border border-stone-300 rounded p-1 bg-white"
+															value={facing}
+															on:change={e => {
+																const newFacing = e.target.value;
+																// Update the facing for this weapon
+																vehicles = vehicles.map(vehicle => {
+																	if (vehicle.id === v.id) {
+																		return {
+																			...vehicle,
+																			weaponFacings: {
+																				...(vehicle.weaponFacings || {}),
+																				[weaponId]: newFacing
+																			}
+																		};
+																	}
+																	return vehicle;
+																});
+															}}
+														>
+															{#if weaponObj?.facing && weaponObj?.facing !== 'any'}
+																<option value={weaponObj.facing}>{weaponObj.facing}</option>
+															{:else}
+																<option value="front">front</option>
+																<option value="side">side</option>
+																<option value="rear">rear</option>
+																<option value="turret">turret</option>
+																<option value="hull">hull</option>
+																<option value="any">any</option>
+															{/if}
+														</select>
+													</div>
+												</div>
 												<button
-													class="p-1 h-6 w-6 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
+													class="p-1 h-6 w-6 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors ml-2"
 													on:click={() => removeWeapon(v.id, i)}
 													aria-label="Remove weapon"
 												>
@@ -870,38 +1017,56 @@
 		{/if}
 	</div>
 
-	<!-- Totals / legality -->
-	<div class="bg-white p-5 rounded-lg shadow-md mb-6">
-		<div class="flex items-center justify-between mb-4">
-			<h2 class="text-xl font-bold text-stone-800">Team Summary</h2>
-			<div class="text-lg font-bold">
-				<span class="text-stone-600">Total:</span>
-				<span class="text-amber-600 ml-1">{totalCans} cans</span>
+
+<!-- Totals / legality -->
+<div class="bg-white p-5 rounded-lg shadow-md mb-6">
+	<div class="flex items-center justify-between mb-4">
+		<div>
+			<h2 class="text-xl font-bold text-stone-800">{teamName}</h2>
+			<p class="text-sm text-stone-600">Team Summary</p>
+		</div>
+		<div class="text-lg font-bold">
+			<span class="text-stone-600">Total:</span>
+			<span class="text-amber-600 ml-1">{totalCans}/{maxCans} cans</span>
+		</div>
+	</div>
+
+	<!-- Sponsor info (when enabled) -->
+	{#if enableSponsorships && sponsorId}
+		<div class="mb-4 bg-stone-100 p-3 rounded">
+			<div class="flex flex-wrap items-center gap-2">
+				<span class="font-medium text-stone-800">Sponsor:</span>
+				<span class="font-bold text-amber-700">{currentSponsor?.name || 'None'}</span>
+				
+				{#if currentSponsor?.perks?.length}
+					<span class="mx-2 text-stone-400">|</span>
+					<span class="font-medium text-stone-800">Perks:</span>
+					<span class="text-stone-700">{perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}</span>
+				{/if}
 			</div>
 		</div>
+	{/if}
 
-		{#if teamErrors.length === 0}
-			<div class="flex items-center bg-green-50 text-green-800 p-4 rounded-lg">
-				<span class="mr-2 text-green-500">✓</span>
-				<span class="font-medium">Your team is legal and ready to race!</span>
+	{#if teamErrors.length === 0}
+		<div class="flex items-center bg-green-50 text-green-800 p-4 rounded-lg">
+			<span class="mr-2 text-green-500">✓</span>
+			<span class="font-medium">Your team is legal and ready to race!</span>
+		</div>
+	{:else}
+		<div class="bg-red-50 text-red-800 p-4 rounded-lg">
+			<div class="flex items-center mb-2">
+				<span class="mr-2 text-red-500">!</span>
+				<span class="font-medium">Your team has issues that need fixing:</span>
 			</div>
-		{:else}
-			<div class="bg-red-50 text-red-800 p-4 rounded-lg">
-				<div class="flex items-center mb-2">
-					<span class="mr-2 text-red-500">!</span>
-					<span class="font-medium">Your team has issues that need fixing:</span>
-				</div>
-				<ul class="list-disc ml-12 space-y-1">
-					{#each teamErrors as err}
-						<li>{err}</li>
-					{/each}
-				</ul>
-			</div>
-		{/if}
+			<ul class="list-disc ml-12 space-y-1">
+				{#each teamErrors as err}
+					<li>{err}</li>
+				{/each}
+			</ul>
+		</div>
+	{/if}
 
-    </div>
-
-    <!-- QR Modal -->
+</div>    <!-- QR Modal -->
     {#if qrDataUrl}
       <div
         class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
@@ -1087,7 +1252,40 @@
               </p>
             </div>
             
-            <div class="flex justify-end pt-4 border-t border-stone-200">
+            <div class="space-y-2 pt-4 border-t border-stone-200">
+              <label for="team-name" class="block text-stone-800 font-medium">
+                Team Name
+              </label>
+              <input 
+                type="text" 
+                id="team-name" 
+                bind:value={teamName}
+                class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                placeholder="My Gaslands Team"
+              />
+              <p class="text-stone-600 text-sm">
+                The name of your team that will appear on printed sheets.
+              </p>
+            </div>
+            
+            <div class="space-y-2 pt-4">
+              <label for="max-cans" class="block text-stone-800 font-medium">
+                Number of Cans
+              </label>
+              <input 
+                type="number" 
+                id="max-cans" 
+                bind:value={maxCans}
+                min="1"
+                max="1000"
+                class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+              />
+              <p class="text-stone-600 text-sm">
+                The maximum number of cans available for your team. Default is 50.
+              </p>
+            </div>
+            
+            <div class="flex justify-end pt-4 mt-4 border-t border-stone-200">
               <button
                 class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors"
                 on:click={() => (showSettingsModal = false)}
@@ -1105,8 +1303,14 @@
 <!-- Print-only view with vehicle cards -->
 <div id="gaslands-print-view">
   <div class="sponsor-print-header">
-    <h1>Gaslands: {currentSponsor?.name || 'Team'}</h1>
-    <p>Total: {totalCans} cans {#if enableSponsorships}| Sponsor Abilities: {currentSponsor?.perks.join(', ')}{/if}</p>
+    <h1>Gaslands: {teamName}</h1>
+    <p>
+      Total: {totalCans}/{maxCans} cans 
+      {#if enableSponsorships && currentSponsor?.perks.length}
+        | Sponsor: {currentSponsor?.name || ''} 
+        | Perks: {currentSponsor?.perks.map(id => perks.find(p => p.id === id)?.name || '').join(', ')}
+      {/if}
+    </p>
   </div>
   
   <div class="print-card-grid">
@@ -1147,7 +1351,12 @@
         </div>
         
         <div class="card-weapons">
-          {v.weapons.map(id => weapons.find(w => w.id === id)?.name || id).join(', ')}
+          {#each v.weapons as weaponId}
+            {@const baseWeaponId = weaponId.split('_')[0]}
+            {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+            {@const facing = v.weaponFacings?.[weaponId] || 'front'}
+            <div>{weaponObj?.name || weaponId} ({facing})</div>
+          {/each}
           {#if v.upgrades.length > 0}
             <div style="margin-top: 5px;">
               Upgrades: {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}
@@ -1172,11 +1381,13 @@
       <h3>Weapons</h3>
       <div class="perk-list">
         {#each [...new Set(vehicles.flatMap(v => v.weapons))] as weaponId}
-          {#if weapons.find(w => w.id === weaponId)}
+          {@const baseWeaponId = weaponId.split('_')[0]}
+          {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+          {#if weaponObj}
             <div class="perk-item">
-              <strong>{weapons.find(w => w.id === weaponId)?.name}</strong> - 
-              {weapons.find(w => w.id === weaponId)?.cost} cans
-              {#if weapons.find(w => w.id === weaponId)?.unique}
+              <strong>{weaponObj.name}</strong> - 
+              {weaponObj.cost} cans
+              {#if weaponObj.unique}
                 (Unique)
               {/if}
             </div>

@@ -15,9 +15,11 @@ import {
   perkCost
 } from './calc';
 
-const TEAM_CAP = 50;
+const DEFAULT_TEAM_CAP = 50;
 
 export async function validateDraft(draft: Draft): Promise<Validation> {
+  // Use custom maxCans if provided, otherwise use default
+  const TEAM_CAP = draft.maxCans || DEFAULT_TEAM_CAP;
   /* 1 — load all rule data */
   const [sponsors, vehicles, weapons, upgrades, perks] = await Promise.all([
     loadSponsors(),

@@ -44,4 +44,35 @@ jobs:
       run: |
         pnpm run build
         npx cdk deploy --require-approval never
+        
+    # -------- Upload files to S3 --------
+    - name: Get S3 bucket name
+      working-directory: infra
+      env:
+        AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION:            ${{ secrets.AWS_REGION }}
+      run: |
+        # Extract bucket name from CDK outputs
+        BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name InfraStack --query "Stacks[0].Outputs[?OutputKey=='BucketName'].OutputValue" --output text)
+        echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+        
+    - name: Upload SvelteKit build to S3
+      env:
+        AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION:            ${{ secrets.AWS_REGION }}
+      run: |
+        aws s3 sync app/build/ s3://$BUCKET_NAME/ --delete
+        
+    - name: Invalidate CloudFront cache
+      env:
+        AWS_ACCESS_KEY_ID:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION:            ${{ secrets.AWS_REGION }}
+      run: |
+        # Extract distribution ID from CloudFormation outputs
+        DIST_ID=$(aws cloudformation describe-stacks --stack-name InfraStack --query "Stacks[0].Outputs[?OutputKey=='CDNDistributionDomainName'].OutputValue" --output text | cut -d. -f1)
+        # Invalidate the entire distribution
+        aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
 
