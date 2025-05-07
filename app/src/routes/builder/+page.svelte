@@ -1282,7 +1282,7 @@
     <!-- Settings Modal -->
     {#if showSettingsModal}
       <div
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
@@ -1296,17 +1296,18 @@
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4 relative z-10"
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800">Settings</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 transition-colors"
+              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showSettingsModal = false)}
               aria-label="Close settings modal"
             >
-              <span>×</span>
+              <span class="text-2xl">×</span>
               <span class="sr-only">Close</span>
             </button>
           </div>
@@ -1318,13 +1319,13 @@
                   type="checkbox" 
                   id="enable-sponsorships" 
                   bind:checked={enableSponsorships}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500"
+                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="enable-sponsorships" class="ml-2 text-stone-800 font-medium">
+                <label for="enable-sponsorships" class="ml-2 text-stone-800 dark:text-white font-medium">
                   Enable Sponsorships
                 </label>
               </div>
-              <p class="text-stone-600 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
             </div>
@@ -1335,13 +1336,13 @@
                   type="checkbox" 
                   id="include-advanced" 
                   bind:checked={includeAdvanced}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500"
+                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="include-advanced" class="ml-2 text-stone-800 font-medium">
+                <label for="include-advanced" class="ml-2 text-stone-800 dark:text-white font-medium">
                   Include Advanced
                 </label>
               </div>
-              <p class="text-stone-600 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
                 Clear this option to reduce the list of vehicles, weapons, and upgrades to just the basic options.
               </p>
             </div>
@@ -1352,35 +1353,35 @@
                   type="checkbox" 
                   id="dark-mode" 
                   bind:checked={darkMode}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 border-stone-300 rounded focus:ring-amber-500"
+                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="dark-mode" class="ml-2 text-stone-800 font-medium">
+                <label for="dark-mode" class="ml-2 text-stone-800 dark:text-white font-medium">
                   Dark Mode
                 </label>
               </div>
-              <p class="text-stone-600 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
                 Enable dark mode for better visibility in low-light conditions.
               </p>
             </div>
             
-            <div class="space-y-2 pt-4 border-t border-stone-200">
-              <label for="team-name" class="block text-stone-800 font-medium">
+            <div class="space-y-2 pt-4 border-t border-stone-200 dark:border-amber-900">
+              <label for="team-name" class="block text-stone-800 dark:text-white font-medium">
                 Team Name
               </label>
               <input 
                 type="text" 
                 id="team-name" 
                 bind:value={teamName}
-                class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
                 placeholder="My Gaslands Team"
               />
-              <p class="text-stone-600 text-sm">
+              <p class="text-stone-600 dark:text-gray-300 text-sm">
                 The name of your team that will appear on printed sheets.
               </p>
             </div>
             
             <div class="space-y-2 pt-4">
-              <label for="max-cans" class="block text-stone-800 font-medium">
+              <label for="max-cans" class="block text-stone-800 dark:text-white font-medium">
                 Number of Cans
               </label>
               <input 
@@ -1389,16 +1390,16 @@
                 bind:value={maxCans}
                 min="1"
                 max="1000"
-                class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
               />
-              <p class="text-stone-600 text-sm">
+              <p class="text-stone-600 dark:text-gray-300 text-sm">
                 The maximum number of cans available for your team. Default is 50.
               </p>
             </div>
             
-            <div class="flex justify-end pt-4 mt-4 border-t border-stone-200">
+            <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
               <button
-                class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors"
+                class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
                 on:click={() => (showSettingsModal = false)}
               >
                 Close
