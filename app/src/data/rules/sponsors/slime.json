@@ -1,8 +1,8 @@
 {
-  "id": "slm",
-  "name": "Slime",
-  "starterCans": 30,
-  "perks": ["corrosive", "toxic", "volatile"],
+  "id": "sli",
+  "name": "SLIME",
+  "starterCans": 50,
+  "perks": ["evasive", "rugged", "stunt_drivers"],
   "color": "#84cc16",
-  "source": "Core Rulebook"
+  "source": "Gaslands Refueled"
 }

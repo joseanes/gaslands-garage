@@ -1,8 +1,8 @@
 {
   "id": "ver",
   "name": "Verney",
-  "starterCans": 30,
-  "perks": ["brutal", "destructive", "notorious"],
-  "color": "#7c3aed",
-  "source": "Core Rulebook"
+  "starterCans": 50,
+  "perks": ["fireproof", "lightweight", "tuned"],
+  "color": "#facc15",
+  "source": "Gaslands Refueled"
 }

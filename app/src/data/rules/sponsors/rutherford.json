@@ -1,8 +1,8 @@
 {
   "id": "rut",
   "name": "Rutherford",
-  "starterCans": 30,
-  "perks": ["heavy", "powerful", "reinforced"],
-  "color": "#b91c1c",
-  "source": "Core Rulebook"
+  "starterCans": 50,
+  "perks": ["experimental", "military_surplus", "sturdy"],
+  "color": "#16a34a",
+  "source": "Gaslands Refueled"
 }

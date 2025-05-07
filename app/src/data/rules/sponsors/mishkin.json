@@ -1,8 +1,8 @@
 {
-  "id": "msh",
+  "id": "mis",
   "name": "Mishkin",
-  "starterCans": 25,
-  "perks": ["precision", "engineering", "mechanical"],
-  "color": "#0ea5e9",
-  "source": "Core Rulebook"
+  "starterCans": 50,
+  "perks": ["crowd_pleaser", "finesse", "showboat"],
+  "color": "#ec4899",
+  "source": "Gaslands Refueled"
 }

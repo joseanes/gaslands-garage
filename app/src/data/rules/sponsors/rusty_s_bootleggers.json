@@ -1,0 +1,8 @@
+{
+  "id": "rus",
+  "name": "Rusty's Bootleggers",
+  "starterCans": 50,
+  "perks": ["booze_cruise", "moonshine", "smugglers"],
+  "color": "#b45309",
+  "source": "Gaslands Refueled"
+}

@@ -1,9 +1,8 @@
 {
   "id": "idr",
   "name": "Idris",
-  "starterCans": 30,
-  "perks": ["audacity", "porous", "synergy"],
+  "starterCans": 50,
+  "perks": ["daring", "slippery", "teamwork"],
   "color": "#f97316",
-  "source": "Core Rulebook"
+  "source": "Gaslands Refueled"
 }
-

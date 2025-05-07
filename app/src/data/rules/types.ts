@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const Vehicle = z.object({
   id: z.string(),
   name: z.string(),

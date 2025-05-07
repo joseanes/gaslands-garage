@@ -1,8 +1,8 @@
 {
-  "id": "san",
+  "id": "sca",
   "name": "Scarlett Annie",
-  "starterCans": 30,
-  "perks": ["unpredictable", "reckless", "eccentric"],
-  "color": "#be123c",
-  "source": "Time Extended: Expansion"
+  "starterCans": 50,
+  "perks": ["battle_ready", "combustible", "improvised_weapons"],
+  "color": "#c2410c",
+  "source": "Gaslands Refueled"
 }

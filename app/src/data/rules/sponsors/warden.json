@@ -1,8 +1,8 @@
 {
   "id": "war",
   "name": "Warden",
-  "starterCans": 30,
-  "perks": ["lawful", "authoritative", "privileged"],
-  "color": "#1e3a8a",
-  "source": "Core Rulebook"
+  "starterCans": 50,
+  "perks": ["bulky", "prison_rules", "weaponized"],
+  "color": "#9f1239",
+  "source": "Gaslands Refueled"
 }

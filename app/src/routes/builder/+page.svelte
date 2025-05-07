@@ -107,10 +107,11 @@
 
 	<!-- Sponsor selector -->
 	<div class="bg-white p-5 rounded-lg shadow-md mb-6">
-		<label class="block">
+		<label for="sponsor-select" class="block">
 			<span class="text-lg font-bold text-stone-800 block mb-2">Choose Your Sponsor</span>
 			<div class="relative">
 				<select
+					id="sponsor-select"
 					bind:value={sponsorId}
 					class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg bg-white appearance-none pr-10 text-stone-800 focus:outline-none focus:border-amber-500"
 				>
@@ -152,15 +153,15 @@
 							<div class="flex-1 min-w-0">
 								<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
 									<div class="w-full sm:w-2/5">
-										<label class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Type</label>
+										<label for="vehicle-type-{v.id}" class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Type</label>
 										<select
+											id="vehicle-type-{v.id}"
 											bind:value={v.type}
 											class="w-full p-2 border border-stone-300 rounded bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 											on:change={() => {
 												const vt = vehicleTypes.find((t) => t.id === v.type)!;
 												v.name = vt.name;
 											}}
-											aria-label="Vehicle type"
 										>
 											{#each vehicleTypes as vt}
 												<option value={vt.id}>{vt.name}</option>
@@ -168,12 +169,12 @@
 										</select>
 									</div>
 									<div class="flex-1 w-full">
-										<label class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Name</label>
+										<label for="vehicle-name-{v.id}" class="block text-xs text-stone-600 mb-1 font-semibold uppercase">Vehicle Name</label>
 										<input
+											id="vehicle-name-{v.id}"
 											bind:value={v.name}
 											class="w-full p-2 border border-stone-300 rounded bg-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 											placeholder="Vehicle name"
-											aria-label="Vehicle name"
 										/>
 									</div>
 								</div>
@@ -191,7 +192,7 @@
 						<!-- Vehicle details -->
 						<div class="p-4">
 							<!-- Dashboard stats -->
-							<div class="grid grid-cols-3 gap-2 text-sm bg-stone-100 p-3 rounded mt-0 mb-4">
+							<div class="grid grid-cols-4 gap-2 text-sm bg-stone-100 p-3 rounded mt-0 mb-4">
 								<div class="bg-stone-300 rounded p-2 text-center">
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
 									<span class="font-bold text-lg">
@@ -206,8 +207,15 @@
 									</span>
 								</div>
 								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Hull</span>
 									<span class="font-bold text-lg">
+										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
+									</span>
+									<span class="text-xs">points</span>
+								</div>
+								<div class="bg-stone-300 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
+									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
 										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
 									</span>
 								</div>
@@ -240,16 +248,19 @@
 								{/if}
 								
 								<div class="relative">
+									<label for="add-weapon-{v.id}" class="sr-only">Add a weapon</label>
 									<select
+										id="add-weapon-{v.id}"
 										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 										on:change={e => {
-											const weaponId = e.target.value;
+											const target = e.target as HTMLSelectElement;
+											const weaponId = target.value;
 											if (weaponId) {
 												addWeapon(v.id, weaponId);
-												e.target.value = ""; // Reset selection
+												target.value = ""; // Reset selection
 											}
 										}}
-										aria-label="Add a weapon"
+										disabled={v.weapons.length >= (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}
 									>
 										<option value="" disabled selected>+ Add weapon</option>
 										{#each weapons as w}
@@ -290,16 +301,19 @@
 								{/if}
 								
 								<div class="relative">
+									<label for="add-upgrade-{v.id}" class="sr-only">Add an upgrade</label>
 									<select
+										id="add-upgrade-{v.id}"
 										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
 										on:change={e => {
-											const upgradeId = e.target.value;
+											const target = e.target as HTMLSelectElement;
+											const upgradeId = target.value;
 											if (upgradeId) {
 												addUpgrade(v.id, upgradeId);
-												e.target.value = ""; // Reset selection
+												target.value = ""; // Reset selection
 											}
 										}}
-										aria-label="Add an upgrade"
+										disabled={v.upgrades.length >= (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}
 									>
 										<option value="" disabled selected>+ Add upgrade</option>
 										{#each upgrades as u}
@@ -310,7 +324,7 @@
 							</div>
 							
 							<!-- Vehicle stats -->
-							<div class="grid grid-cols-4 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
+							<div class="grid grid-cols-6 gap-2 text-sm bg-stone-100 p-3 rounded mt-3">
 								<div class="bg-stone-300 rounded p-2 text-center">
 									<span class="block text-xs text-stone-600 uppercase font-semibold">Cost</span>
 									<span class="font-bold text-lg">
@@ -325,14 +339,27 @@
 									</span>
 								</div>
 								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Hull</span>
 									<span class="font-bold text-lg">
+										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
+									</span>
+									<span class="text-xs">points</span>
+								</div>
+								<div class="bg-stone-300 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
+									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
 										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
 									</span>
 								</div>
 								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Upgrades</span>
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Max Gear</span>
 									<span class="font-bold text-lg">
+										{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || '?'}
+									</span>
+								</div>
+								<div class="bg-stone-300 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 uppercase font-semibold">Upgrades</span>
+									<span class="font-bold text-lg" class:text-red-600={v.upgrades.length > (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}>
 										{v.upgrades.length} / {vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || '2'}
 									</span>
 								</div>
@@ -464,12 +491,13 @@
           Paste a team build code below to import a shared build
         </p>
         <div class="flex gap-2">
+          <label for="import-draft" class="sr-only">Import team build code</label>
           <input
+            id="import-draft"
             type="text"
             bind:value={importString}
             class="flex-1 px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
             placeholder="Paste encoded draft here"
-            aria-label="Import team build code"
           />
           <button
             class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md flex items-center whitespace-nowrap"

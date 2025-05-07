@@ -1,8 +1,8 @@
 {
   "id": "thp",
   "name": "The Highway Patrol",
-  "starterCans": 30,
-  "perks": ["lawful", "authoritative", "regulated"],
-  "color": "#1d4ed8",
-  "source": "Time Extended: Expansion"
+  "starterCans": 50,
+  "perks": ["enforcer", "law_abiding", "pursuit"],
+  "color": "#0369a1",
+  "source": "Gaslands Refueled"
 }

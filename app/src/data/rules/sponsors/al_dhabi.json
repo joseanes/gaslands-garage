@@ -1,0 +1,8 @@
+{
+  "id": "ald",
+  "name": "Al Dhabi",
+  "starterCans": 50,
+  "perks": ["customized", "resourceful", "well_prepared"],
+  "color": "#ca8a04",
+  "source": "Gaslands Refueled"
+}

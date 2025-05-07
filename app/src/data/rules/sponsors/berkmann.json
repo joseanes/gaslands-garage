@@ -1,0 +1,8 @@
+{
+  "id": "ber",
+  "name": "Berkmann",
+  "starterCans": 50,
+  "perks": ["covert", "sophisticated", "surgical"],
+  "color": "#1e40af",
+  "source": "Gaslands Refueled"
+}

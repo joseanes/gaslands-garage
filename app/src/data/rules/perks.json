@@ -1,5 +1,65 @@
 [
-  { "id": "audacity", "name": "Audacity", "line": "Idris", "level": 1, "text": "You may roll 1 extra skid die…" }
+  { "id": "daring", "name": "Daring", "line": "Idris", "level": 1, "text": "Once per activation, this vehicle may ignore the 'heavy' handling modifier when Sideswiping." },
+  { "id": "slippery", "name": "Slippery", "line": "Idris", "level": 2, "text": "When this vehicle evades a Collision hazard, add 1 to the number of Hazard tokens to discard." },
+  { "id": "teamwork", "name": "Teamwork", "line": "Idris", "level": 3, "text": "This vehicle may give 1 Hazard token to a friendly vehicle at Short range." },
+
+  { "id": "crowd_pleaser", "name": "Crowd Pleaser", "line": "Mishkin", "level": 1, "text": "When this vehicle causes an enemy to Wreck, gain D6 bonus Audience Votes." },
+  { "id": "finesse", "name": "Finesse", "line": "Mishkin", "level": 2, "text": "Declare before attempting a Flip maneuver. If the Flip is successfully completed, gain D6 bonus Audience Votes." },
+  { "id": "showboat", "name": "Showboat", "line": "Mishkin", "level": 3, "text": "This vehicle gains +2 bonus Audience Votes after successfully completing a Jump." },
+
+  { "id": "aggressive", "name": "Aggressive", "line": "Miyazaki", "level": 1, "text": "This vehicle gains 1 Audience Vote when it causes a Collision." },
+  { "id": "efficient", "name": "Efficient", "line": "Miyazaki", "level": 2, "text": "This vehicle may reroll 1 Attack die when making a Smash attack." },
+  { "id": "technophiles", "name": "Technophiles", "line": "Miyazaki", "level": 3, "text": "This vehicle gains +1 Attack die with all Electrical weapons." },
+
+  { "id": "experimental", "name": "Experimental", "line": "Rutherford", "level": 1, "text": "Once per game, this vehicle may discard 2 Hazard tokens to immediately remove a Damage template." },
+  { "id": "military_surplus", "name": "Military Surplus", "line": "Rutherford", "level": 2, "text": "When using a Rocket weapon, this vehicle may reroll any Attack dice showing 1 or 2." },
+  { "id": "sturdy", "name": "Sturdy", "line": "Rutherford", "level": 3, "text": "This vehicle's maximum Hull Points are increased by 1." },
+
+  { "id": "evasive", "name": "Evasive", "line": "SLIME", "level": 1, "text": "This vehicle may declare an Evade against Bullets, Rockets and Grenades." },
+  { "id": "rugged", "name": "Rugged", "line": "SLIME", "level": 2, "text": "When this vehicle's Hull Points are reduced to 0, it does not suffer a Collision during its Wipeout." },
+  { "id": "stunt_drivers", "name": "Stunt Drivers", "line": "SLIME", "level": 3, "text": "This vehicle passes a Flip test on a 5+ rather than a 6." },
+
+  { "id": "fireproof", "name": "Fireproof", "line": "Verney", "level": 1, "text": "This vehicle may discard a Hazard token to immediately remove a Fire template." },
+  { "id": "lightweight", "name": "Lightweight", "line": "Verney", "level": 2, "text": "This vehicle may ignore the 'heavy' handling modifier when making a slide maneuver." },
+  { "id": "tuned", "name": "Tuned", "line": "Verney", "level": 3, "text": "This vehicle's maximum Gear is increased by 1." },
+
+  { "id": "bulky", "name": "Bulky", "line": "Warden", "level": 1, "text": "During a Collision, this vehicle rolls 1 additional Attack dice." },
+  { "id": "prison_rules", "name": "Prison Rules", "line": "Warden", "level": 2, "text": "This vehicle may reroll 1 Attack die when making a Smash attack." },
+  { "id": "weaponized", "name": "Weaponized", "line": "Warden", "level": 3, "text": "This vehicle may carry 1 more weapon than normal." },
+
+  { "id": "agile", "name": "Agile", "line": "Maxxine", "level": 1, "text": "When performing a Slide maneuver, this vehicle may either gain +1 to one of the Skid dice or reroll 1 Skid die." },
+  { "id": "chrome", "name": "Chrome", "line": "Maxxine", "level": 2, "text": "This vehicle may be fired upon by enemy vehicles at Medium range as if they were at Long range." },
+  { "id": "trick_driving", "name": "Trick Driving", "line": "Maxxine", "level": 3, "text": "When this vehicle declares a Swerve, it may ignore the 'heavy' handling modifier." },
+
+  { "id": "battle_ready", "name": "Battle Ready", "line": "Scarlett Annie", "level": 1, "text": "This vehicle may reroll 1 Attack die when attacking during the first activation of the game." },
+  { "id": "combustible", "name": "Combustible", "line": "Scarlett Annie", "level": 2, "text": "When this vehicle is Wrecked, it creates a Medium Explosion template rather than a Small Explosion template." },
+  { "id": "improvised_weapons", "name": "Improvised Weapons", "line": "Scarlett Annie", "level": 3, "text": "The range of all non-Drop weapons on this vehicle is increased by one range band." },
+
+  { "id": "enforcer", "name": "Enforcer", "line": "The Highway Patrol", "level": 1, "text": "During a Ram or T-Bone Collision caused by this vehicle, it may roll 1 additional Attack die." },
+  { "id": "law_abiding", "name": "Law Abiding", "line": "The Highway Patrol", "level": 2, "text": "This vehicle ignores negative modifiers when attempting to gain Audience Votes through shooting." },
+  { "id": "pursuit", "name": "Pursuit", "line": "The Highway Patrol", "level": 3, "text": "When this vehicle declares an Evade, it may use an evade token to reroll all Defense dice rather than just 1." },
+
+  { "id": "covert", "name": "Covert", "line": "Berkmann", "level": 1, "text": "This vehicle may not be targeted by enemy Attack dice outside of Medium range." },
+  { "id": "sophisticated", "name": "Sophisticated", "line": "Berkmann", "level": 2, "text": "Once per Step, this vehicle may discard a Hazard token to reduce the potential Skid dice of a maneuver by 1." },
+  { "id": "surgical", "name": "Surgical", "line": "Berkmann", "level": 3, "text": "Bullets weapons fired by this vehicle roll 1 additional Attack die." },
+
+  { "id": "jury_rigged", "name": "Jury Rigged", "line": "Bekezela", "level": 1, "text": "This vehicle counts as having 1 less weapon than it actually has for the purposes of working out the vehicle's total Cans cost." },
+  { "id": "road_warriors", "name": "Road Warriors", "line": "Bekezela", "level": 2, "text": "This vehicle may reroll any Defense dice showing 1 or 2." },
+  { "id": "scavengers", "name": "Scavengers", "line": "Bekezela", "level": 3, "text": "This vehicle gains 1 Audience Vote when it causes an enemy to Wreck." },
+
+  { "id": "luxury", "name": "Luxury", "line": "Cheng & Lo", "level": 1, "text": "While this vehicle has 3 or more Hull Points, all of its vehicles are treated as having +1 Attack die." },
+  { "id": "mechanical", "name": "Mechanical", "line": "Cheng & Lo", "level": 2, "text": "This vehicle ignores the effects of Gear and Crew damage templates." },
+  { "id": "modified", "name": "Modified", "line": "Cheng & Lo", "level": 3, "text": "When this vehicle uses a Hazard token to push the redline, it advances 2 Gears." },
+
+  { "id": "booze_cruise", "name": "Booze Cruise", "line": "Rusty's Bootleggers", "level": 1, "text": "The first time this vehicle would Wipeout in a game, it does not; instead, place a Wrench and Gear template." },
+  { "id": "moonshine", "name": "Moonshine", "line": "Rusty's Bootleggers", "level": 2, "text": "When this vehicle causes a Collision, it may reroll 1 Attack die." },
+  { "id": "smugglers", "name": "Smugglers", "line": "Rusty's Bootleggers", "level": 3, "text": "This vehicle may reroll any Attack dice showing 1 or 2 when shooting." },
+
+  { "id": "customized", "name": "Customized", "line": "Al Dhabi", "level": 1, "text": "This vehicle may make a Shift maneuver after declaring a Collision." },
+  { "id": "resourceful", "name": "Resourceful", "line": "Al Dhabi", "level": 2, "text": "The first time this vehicle is shot at, it may make an Evade attempt even if it has already done so this Step." },
+  { "id": "well_prepared", "name": "Well Prepared", "line": "Al Dhabi", "level": 3, "text": "Before any shifts or skids, the player may roll an additional D6 and discard a die of their choice." },
+
+  { "id": "distracted", "name": "Distracted", "line": "Anarchy", "level": 1, "text": "The first time this vehicle fails to put any Damage on an enemy, it gains an immediate free Attack against a different target." },
+  { "id": "lucky", "name": "Lucky", "line": "Anarchy", "level": 2, "text": "This vehicle's attacks hit on Attack dice of 4+." },
+  { "id": "unpredictable", "name": "Unpredictable", "line": "Anarchy", "level": 3, "text": "Once per game, you may place this vehicle touching another vehicle to cause a Collision hazard." }
 ]
-
-

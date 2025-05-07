@@ -1,8 +1,8 @@
 {
-  "id": "myz",
+  "id": "miy",
   "name": "Miyazaki",
-  "starterCans": 30,
-  "perks": ["militarized", "precise", "disciplined"],
-  "color": "#0284c7",
-  "source": "Core Rulebook"
+  "starterCans": 50,
+  "perks": ["aggressive", "efficient", "technophiles"],
+  "color": "#3b82f6",
+  "source": "Gaslands Refueled"
 }

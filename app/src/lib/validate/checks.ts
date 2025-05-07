@@ -35,10 +35,25 @@ export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
   }
   
 /* ------------------------------------------------------------
+   RULE C – upgrade-slot limit
+   ------------------------------------------------------------ */
+   export function upgradeSlotCheck(team: Team, reports: VehicleReport[]) {
+    team.vehicles.forEach((v, i) => {
+      const max = v.class.upgradeSlots;
+      if (v.upgrades.length > max) {
+        reports[i].errors.push(
+          `Too many upgrades: ${v.upgrades.length}/${max} slots`
+        );
+      }
+    });
+  }
+
+/* ------------------------------------------------------------
    aggregate runner – call every rule function here
    ------------------------------------------------------------ */
    export function runAllChecks(team: Team, reports: VehicleReport[]) {
     weaponSlotCheck(team, reports);
-    uniqueWeaponCheck(team, reports);       // ← add this line
+    uniqueWeaponCheck(team, reports);
+    upgradeSlotCheck(team, reports);
   }
   

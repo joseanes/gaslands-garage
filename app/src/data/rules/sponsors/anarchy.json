@@ -1,0 +1,8 @@
+{
+  "id": "ana",
+  "name": "Anarchy",
+  "starterCans": 50,
+  "perks": ["distracted", "lucky", "unpredictable"],
+  "color": "#7c3aed",
+  "source": "Gaslands Refueled"
+}

@@ -1,8 +1,8 @@
 {
   "id": "max",
   "name": "Maxxine",
-  "starterCans": 25,
-  "perks": ["fast", "furious", "chrome"],
-  "color": "#db2777",
-  "source": "Time Extended: Expansion"
+  "starterCans": 50,
+  "perks": ["agile", "chrome", "trick_driving"],
+  "color": "#9333ea",
+  "source": "Gaslands Refueled"
 }
