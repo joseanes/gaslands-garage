@@ -1,0 +1,8 @@
+{
+  "id": "slm",
+  "name": "Slime",
+  "starterCans": 30,
+  "perks": ["corrosive", "toxic", "volatile"],
+  "color": "#84cc16",
+  "source": "Core Rulebook"
+}

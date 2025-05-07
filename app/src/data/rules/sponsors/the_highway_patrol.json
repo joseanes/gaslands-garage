@@ -1,0 +1,8 @@
+{
+  "id": "thp",
+  "name": "The Highway Patrol",
+  "starterCans": 30,
+  "perks": ["lawful", "authoritative", "regulated"],
+  "color": "#1d4ed8",
+  "source": "Time Extended: Expansion"
+}

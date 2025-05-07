@@ -1,0 +1,8 @@
+{
+  "id": "war",
+  "name": "Warden",
+  "starterCans": 30,
+  "perks": ["lawful", "authoritative", "privileged"],
+  "color": "#1e3a8a",
+  "source": "Core Rulebook"
+}

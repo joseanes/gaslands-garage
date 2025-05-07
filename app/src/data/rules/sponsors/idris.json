@@ -3,6 +3,7 @@
   "name": "Idris",
   "starterCans": 30,
   "perks": ["audacity", "porous", "synergy"],
-  "color": "#f97316"
+  "color": "#f97316",
+  "source": "Core Rulebook"
 }
 

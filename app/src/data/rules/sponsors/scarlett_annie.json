@@ -1,0 +1,8 @@
+{
+  "id": "san",
+  "name": "Scarlett Annie",
+  "starterCans": 30,
+  "perks": ["unpredictable", "reckless", "eccentric"],
+  "color": "#be123c",
+  "source": "Time Extended: Expansion"
+}

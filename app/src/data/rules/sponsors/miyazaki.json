@@ -1,0 +1,8 @@
+{
+  "id": "myz",
+  "name": "Miyazaki",
+  "starterCans": 30,
+  "perks": ["militarized", "precise", "disciplined"],
+  "color": "#0284c7",
+  "source": "Core Rulebook"
+}

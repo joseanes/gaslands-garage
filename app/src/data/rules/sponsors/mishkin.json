@@ -1,0 +1,8 @@
+{
+  "id": "msh",
+  "name": "Mishkin",
+  "starterCans": 25,
+  "perks": ["precision", "engineering", "mechanical"],
+  "color": "#0ea5e9",
+  "source": "Core Rulebook"
+}

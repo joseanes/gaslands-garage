@@ -6,7 +6,8 @@ export const Sponsor = z.object({
   name: z.string(),
   starterCans: z.number().int().nonnegative(),
   perks: z.string().array(),
-  color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i)
+  color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i),
+  source: z.string().optional()
 });
 
 export type Sponsor = z.infer<typeof Sponsor>;
