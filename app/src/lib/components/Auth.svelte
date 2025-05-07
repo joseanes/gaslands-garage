@@ -64,7 +64,7 @@
     </button>
     
     {#if showDropdown}
-      <div class="dropdown absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 shadow-lg rounded-lg z-20 p-2 w-48" transition:fade={{ duration: 150 }}>
+      <div class="dropdown absolute right-0 top-full mt-2 bg-white shadow-lg rounded-lg z-20 p-2 w-48 dark:bg-gray-800" transition:fade={{ duration: 150 }}>
         <div class="px-4 py-2 text-sm text-gray-700 dark:text-gray-200">
           Signed in as <strong>{$user.displayName || $user.email}</strong>
         </div>

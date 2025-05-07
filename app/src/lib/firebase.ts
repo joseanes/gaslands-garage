@@ -3,34 +3,45 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type User } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY", // Replace with your Firebase API key
-  authDomain: "gaslands-garage.firebaseapp.com", // Replace with your Firebase domain
-  projectId: "gaslands-garage",
-  storageBucket: "gaslands-garage.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyAW7eGDsJwWtaj3I1lrcuzvFx8vkX5EaKI",
+  authDomain: "gaslandsgarage-74ce6.firebaseapp.com",
+  projectId: "gaslandsgarage-74ce6",
+  storageBucket: "gaslandsgarage-74ce6.appspot.com",
+  messagingSenderId: "636098164916",
+  appId: "1:636098164916:web:b3586c38da2ebaf9c13fe1",
+  measurementId: "G-EKPMXMY097"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Only initialize Firebase in the browser environment
+let app;
+let auth;
+let db;
+let user = writable<User | null>(null);
 
-// Create a user store
-export const user = writable<User | null>(null);
+if (browser) {
+  try {
+    // Initialize Firebase
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
 
-// Subscribe to auth state changes
-auth.onAuthStateChanged((newUser) => {
-  user.set(newUser);
-});
+    // Subscribe to auth state changes
+    auth.onAuthStateChanged((newUser) => {
+      user.set(newUser);
+    });
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+  }
+}
 
 // Sign in with Google
 export const signInWithGoogle = async () => {
+  if (!auth) return { success: false, error: "Auth not initialized" };
+  
   const provider = new GoogleAuthProvider();
   try {
     await signInWithPopup(auth, provider);
@@ -43,6 +54,8 @@ export const signInWithGoogle = async () => {
 
 // Sign out
 export const signOutUser = async () => {
+  if (!auth) return { success: false, error: "Auth not initialized" };
+  
   try {
     await signOut(auth);
     return { success: true };
@@ -51,3 +64,5 @@ export const signOutUser = async () => {
     return { success: false, error };
   }
 };
+
+export { auth, db, user };

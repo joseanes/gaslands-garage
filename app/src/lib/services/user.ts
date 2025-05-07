@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "$lib/firebase";
 import type { Draft } from "$lib/validate/model";
 
@@ -52,10 +52,14 @@ export async function saveTeam(userId: string, teamName: string, draft: Draft) {
 export async function getUserTeams(userId: string) {
   try {
     const teamsCollectionRef = collection(db, USERS_COLLECTION, userId, TEAMS_COLLECTION);
-    const teamsSnapshot = await getDoc(teamsCollectionRef);
+    const teamsSnapshot = await getDocs(teamsCollectionRef);
     
-    if (teamsSnapshot.exists()) {
-      return { success: true, teams: teamsSnapshot.data() };
+    if (!teamsSnapshot.empty) {
+      const teams = teamsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      return { success: true, teams };
     } else {
       return { success: true, teams: [] };
     }
@@ -69,7 +73,7 @@ export async function getUserTeams(userId: string) {
 export async function deleteTeam(userId: string, teamId: string) {
   try {
     const teamDocRef = doc(db, USERS_COLLECTION, userId, TEAMS_COLLECTION, teamId);
-    await updateDoc(teamDocRef, { deleted: true, deletedAt: new Date() });
+    await deleteDoc(teamDocRef);
     return { success: true };
   } catch (error) {
     console.error("Error deleting team:", error);

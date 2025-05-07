@@ -1413,39 +1413,29 @@
     <TeamsModal 
       bind:showModal={showTeamsModal} 
       currentDraft={currentDraft} 
-      importDraft={importDraftString}
+      importDraft={(draft) => {
+        if (draft) {
+          sponsorId = draft.sponsor;
+          vehicles = draft.vehicles;
+          
+          // Import team name if available
+          if (draft.teamName) {
+            teamName = draft.teamName;
+          }
+          
+          // Import maxCans if available
+          if (draft.maxCans) {
+            maxCans = draft.maxCans;
+          }
+          
+          // Import darkMode if available
+          if (draft.darkMode !== undefined) {
+            darkMode = draft.darkMode;
+          }
+        }
+      }}
     />
 </section>
-
-
-<!-- Teams Modal -->
-{#if showTeamsModal}
-  <TeamsModal 
-    showModal={showTeamsModal}
-    currentDraft={currentDraft}
-    importDraft={(draft) => {
-      if (draft) {
-        sponsorId = draft.sponsor;
-        vehicles = draft.vehicles;
-        
-        // Import team name if available
-        if (draft.teamName) {
-          teamName = draft.teamName;
-        }
-        
-        // Import maxCans if available
-        if (draft.maxCans) {
-          maxCans = draft.maxCans;
-        }
-        
-        // Import darkMode if available
-        if (draft.darkMode !== undefined) {
-          darkMode = draft.darkMode;
-        }
-      }
-    }}
-  />
-{/if}
 
 <!-- Print-only view with vehicle cards -->
 <div id="gaslands-print-view">

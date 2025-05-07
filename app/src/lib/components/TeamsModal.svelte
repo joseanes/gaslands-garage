@@ -1,6 +1,6 @@
 <script lang="ts">
   import { user } from '$lib/firebase';
-  import { getUserTeams, saveTeam } from '$lib/services/user';
+  import { getUserTeams, saveTeam, deleteTeam } from '$lib/services/user';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   
@@ -9,6 +9,8 @@
   export let importDraft;
   
   let isLoading = false;
+  let isSaving = false;
+  let deletingTeamId = null;
   let userTeams = [];
   let newTeamName = '';
   
@@ -35,15 +37,16 @@
   async function saveCurrentTeam() {
     if (!$user || !newTeamName.trim()) return;
     
-    isLoading = true;
+    isSaving = true;
     const result = await saveTeam($user.uid, newTeamName, currentDraft);
-    isLoading = false;
+    isSaving = false;
     
     if (result.success) {
       newTeamName = '';
       await loadUserTeams(); // Reload teams
     } else {
       console.error("Failed to save team");
+      alert('Failed to save team. Please try again.');
     }
   }
   
@@ -51,6 +54,22 @@
   function loadTeam(team) {
     importDraft(team.draft);
     closeModal();
+  }
+  
+  // Delete team
+  async function removeTeam(teamId) {
+    if (!confirm('Are you sure you want to delete this team?')) return;
+    
+    deletingTeamId = teamId;
+    const result = await deleteTeam($user.uid, teamId);
+    deletingTeamId = null;
+    
+    if (result.success) {
+      await loadUserTeams(); // Reload teams
+    } else {
+      console.error("Failed to delete team");
+      alert('Failed to delete team. Please try again.');
+    }
   }
   
   function closeModal() {
@@ -109,11 +128,16 @@
               class="flex-1 px-3 py-2 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
             />
             <button
-              class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg disabled:opacity-50"
+              class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg disabled:opacity-50 flex items-center"
               on:click={saveCurrentTeam}
-              disabled={isLoading || !newTeamName.trim()}
+              disabled={isSaving || !newTeamName.trim()}
             >
-              {isLoading ? 'Saving...' : 'Save'}
+              {#if isSaving}
+                <div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
+                Saving...
+              {:else}
+                Save
+              {/if}
             </button>
           </div>
         </div>
@@ -124,7 +148,10 @@
           
           {#if isLoading}
             <div class="py-4 text-center text-stone-600 dark:text-stone-300">
-              Loading teams...
+              <div class="flex justify-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-amber-600"></div>
+              </div>
+              <p class="mt-2">Loading teams...</p>
             </div>
           {:else if userTeams.length === 0}
             <div class="py-4 text-center text-stone-600 dark:text-stone-300">
@@ -140,12 +167,26 @@
                       {new Date(team.updatedAt.toDate()).toLocaleDateString()}
                     </div>
                   </div>
-                  <button
-                    class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded"
-                    on:click={() => loadTeam(team)}
-                  >
-                    Load
-                  </button>
+                  <div class="flex space-x-2">
+                    <button
+                      class="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded"
+                      on:click={() => loadTeam(team)}
+                    >
+                      Load
+                    </button>
+                    <button
+                      class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded flex items-center"
+                      on:click={() => removeTeam(team.id)}
+                      disabled={deletingTeamId === team.id}
+                    >
+                      {#if deletingTeamId === team.id}
+                        <div class="animate-spin mr-1 h-3 w-3 border-b-2 border-white rounded-full"></div>
+                        Deleting...
+                      {:else}
+                        Delete
+                      {/if}
+                    </button>
+                  </div>
                 </div>
               {/each}
             </div>
