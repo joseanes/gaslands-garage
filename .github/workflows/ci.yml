@@ -63,6 +63,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION:            ${{ secrets.AWS_REGION }}
       run: |
+        echo "Uploading files to S3 bucket: $BUCKET_NAME"
+        ls -la app/build/
         aws s3 sync app/build/ s3://$BUCKET_NAME/ --delete
         
     - name: Invalidate CloudFront cache
@@ -71,8 +73,19 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION:            ${{ secrets.AWS_REGION }}
       run: |
-        # Extract distribution ID from CloudFormation outputs
-        DIST_ID=$(aws cloudformation describe-stacks --stack-name InfraStack --query "Stacks[0].Outputs[?OutputKey=='CDNDistributionDomainName'].OutputValue" --output text | cut -d. -f1)
-        # Invalidate the entire distribution
-        aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+        # Get the full CloudFront distribution domain
+        CF_DOMAIN=$(aws cloudformation describe-stacks --stack-name InfraStack --query "Stacks[0].Outputs[?OutputKey=='CDNDistributionDomainName'].OutputValue" --output text)
+        echo "CloudFront Domain: $CF_DOMAIN"
+        
+        # List all CloudFront distributions and find the matching one
+        DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?DomainName=='$CF_DOMAIN'].Id" --output text)
+        echo "Distribution ID: $DIST_ID"
+        
+        # Only invalidate if we found a distribution ID
+        if [ -n "$DIST_ID" ]; then
+          # Invalidate the entire distribution
+          aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+        else
+          echo "Could not find CloudFront distribution ID. Skipping invalidation."
+        fi
 
