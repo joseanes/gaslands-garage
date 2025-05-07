@@ -12,10 +12,11 @@
 
 	/* ---------- server data ---------- */
 	export let data: {
-		sponsors: typeof import('$lib/rules/types').Sponsor[];
-		vehicleTypes: typeof import('$lib/rules/types').Vehicle[];
+		sponsors: import('$lib/rules/types').Sponsor[];
+		vehicleTypes: import('$lib/rules/types').Vehicle[];
+		weapons: import('$lib/rules/types').Weapon[];
 	};
-	const { sponsors, vehicleTypes } = data;
+	const { sponsors, vehicleTypes, weapons } = data;
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0].id;
@@ -105,27 +106,66 @@
 		{/if}
 
 		{#each vehicles as v (v.id)}
-			<div class="flex items-center gap-2 border p-2 rounded">
-				<select
-					bind:value={v.type}
-					class="flex-1 p-1 border rounded"
-					on:change={() => {
-						const vt = vehicleTypes.find((t) => t.id === v.type)!;
-						v.name = vt.name;
-					}}
-				>
-					{#each vehicleTypes as vt}
-						<option value={vt.id}>{vt.name}</option>
-					{/each}
-				</select>
-				<input bind:value={v.name} class="flex-1 p-1 border rounded" />
-				<button
-					class="text-red-600"
-					on:click={() => removeVehicle(v.id)}
-					title="Remove vehicle"
-				>
-					✖
-				</button>
+			<div class="flex flex-col gap-2 border p-2 rounded">
+				<div class="flex items-center gap-2">
+					<select
+						bind:value={v.type}
+						class="flex-1 p-1 border rounded"
+						on:change={() => {
+							const vt = vehicleTypes.find((t) => t.id === v.type)!;
+							v.name = vt.name;
+						}}
+					>
+						{#each vehicleTypes as vt}
+							<option value={vt.id}>{vt.name}</option>
+						{/each}
+					</select>
+					<input bind:value={v.name} class="flex-1 p-1 border rounded" />
+					<button
+						class="text-red-600"
+						on:click={() => removeVehicle(v.id)}
+						title="Remove vehicle"
+					>
+						✖
+					</button>
+				</div>
+				
+				<!-- Weapons section -->
+				<div class="mt-2">
+					<h3 class="text-sm font-semibold">Weapons</h3>
+					<ul class="list-disc ml-6">
+						{#each v.weapons as weaponId, i}
+							<li class="flex items-center gap-2">
+								<span>{weapons.find(w => w.id === weaponId)?.name || weaponId}</span>
+								<button class="text-red-600 text-sm" on:click={() => {
+									// Remove weapon i from vehicle v
+									v.weapons = v.weapons.filter((_, idx) => idx !== i);
+									vehicles = [...vehicles]; // Trigger reactivity
+								}} title="Remove weapon">
+									✖
+								</button>
+							</li>
+						{/each}
+					</ul>
+					
+					<select
+						class="mt-1 px-2 py-1 border rounded text-sm"
+						on:change={e => {
+							const weaponId = e.target.value;
+							if (weaponId) {
+								// Add weapon to vehicle v
+								v.weapons = [...v.weapons, weaponId];
+								vehicles = [...vehicles]; // Trigger reactivity
+								e.target.value = ""; // Reset selection
+							}
+						}}
+					>
+						<option value="" disabled selected>Select a weapon</option>
+						{#each weapons as w}
+							<option value={w.id}>{w.name}</option>
+						{/each}
+					</select>
+				</div>
 			</div>
 		{/each}
 	</div>

@@ -16,7 +16,8 @@ export const Vehicle = z.object({
   name: z.string(),
   maxGear: z.number().int().positive(),
   baseCost: z.number().int().nonnegative(),
-  maxHull: z.number().int().positive()
+  maxHull: z.number().int().positive(),
+  weaponSlots: z.number().int().positive()
 });
 export type Vehicle = z.infer<typeof Vehicle>;
 
@@ -25,7 +26,8 @@ export const Weapon = z.object({
   name: z.string(),
   cost: z.number().int().nonnegative(),
   slots: z.number().int().positive(),
-  type: z.enum(['weapon', 'upgrade'])
+  type: z.enum(['weapon', 'upgrade']),
+  unique: z.boolean().optional()
 });
 
 export type Weapon = z.infer<typeof Weapon>;

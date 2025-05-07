@@ -25,3 +25,13 @@ export interface Validation {
   vehicleReports: VehicleReport[];
 }
 
+export interface Team {
+  sponsor: import('$lib/rules/types').Sponsor;
+  vehicles: {
+    instance: Draft['vehicles'][0];
+    class: import('$lib/rules/types').Vehicle;
+    weapons: import('$lib/rules/types').Weapon[];
+    perks: import('$lib/rules/types').Perk[];
+  }[];
+}
+
