@@ -214,6 +214,32 @@
 	function openSettings() {
 		showSettingsModal = true;
 	}
+	
+	// Expose these functions to the global window object for use by the layout
+	onMount(() => {
+		if (typeof window !== 'undefined') {
+			window.copyDraftFn = copyDraft;
+			window.shareLinkFn = shareLink;
+			window.generateQRCodeFn = generateQRCode;
+			window.importBuildFn = importBuild;
+			window.printTeamFn = printTeam;
+			window.openSettingsFn = openSettings;
+			window.openTeamsModalFn = () => { showTeamsModal = true; };
+		}
+		
+		return () => {
+			// Clean up when component is destroyed
+			if (typeof window !== 'undefined') {
+				window.copyDraftFn = undefined;
+				window.shareLinkFn = undefined;
+				window.generateQRCodeFn = undefined;
+				window.importBuildFn = undefined;
+				window.printTeamFn = undefined;
+				window.openSettingsFn = undefined;
+				window.openTeamsModalFn = undefined;
+			}
+		};
+	});
 
 	function importDraftString() {
 		const draft = decodeDraft(importString.trim());
@@ -407,109 +433,13 @@
 	<title>Gaslands Garage - Team Builder</title>
 </svelte:head>
 
-<nav class="menu-bar print:hidden">
-	<div class="menu-container">
-		<span class="logo">
-			<span class="logo-highlight">Gaslands</span> Garage
-		</span>
-		
-		<div class="flex flex-wrap items-center" style="gap: 16px;">
-			<div class="relative">
-				<button 
-					type="button" 
-					class="menu-item flex items-center share-menu-trigger" 
-					on:click={() => showShareMenu = !showShareMenu}
-					aria-haspopup="true"
-					aria-expanded={showShareMenu}
-				>
-					Share Team
-					<svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-					</svg>
-				</button>
-				
-				{#if showShareMenu}
-				<div 
-					class="absolute left-0 mt-3 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important;"
-					transition:fade={{ duration: 150 }}
-				>
-					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { copyDraft(); showShareMenu = false; }}>
-						Copy to Clipboard
-					</button>
-					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { shareLink(); showShareMenu = false; }}>
-						Share Link
-					</button>
-					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { generateQRCode(); showShareMenu = false; }}>
-						Generate QR Code
-					</button>
-					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { importBuild(); showShareMenu = false; }}>
-						Import Build
-					</button>
-				</div>
-				{/if}
-			</div>
-			
-			<button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
-			{#if $user}
-			<button type="button" class="menu-item" on:click={() => showTeamsModal = true}>My Teams</button>
-			{/if}
-			<button type="button" class="menu-item" on:click={openSettings}>Settings</button>
-			<Auth />
-		</div>
-	</div>
-</nav>
+<!-- Menu removed - now in layout.svelte -->
 
 <style>
-/* Menu styles */
-.menu-bar {
-	background-color: #000000;
-	color: white;
-	padding: 12px 0;
-	margin-bottom: 16px;
-	position: sticky;
-	top: 0;
-	z-index: 10;
-}
-
-.menu-container {
-	max-width: 896px;
-	margin: 0 auto;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 16px;
-	padding: 8px 16px;
-	justify-content: space-between;
-	align-items: center;
-}
-
-.logo {
-	font-weight: bold;
-	font-size: 1.125rem;
-	padding: 0.5rem 0;
-}
-
-.logo-highlight {
-	color: #f59e0b;
-}
+/* Menu styles removed - now in layout.svelte */
 
 .no-card-padding {
 	padding: 0 !important;
-}
-
-.menu-item {
-	color: white;
-	background: transparent;
-	border: none;
-	padding: 8px 12px;
-	margin: 0;
-	cursor: pointer;
-	font: inherit;
-	border-radius: 4px;
-}
-
-.menu-item:hover {
-	color: #fcd34d;
-	background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Hide print view by default */
@@ -764,24 +694,34 @@
 	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
 	{#if enableSponsorships}
 		<div class="bg-white p-5 rounded-lg shadow-md mb-6">
-			<label for="sponsor-select" class="block">
-				<span class="text-lg font-bold text-stone-800 block mb-2">Choose Your Sponsor</span>
-				<div class="relative">
-					<select
-						id="sponsor-select"
-						bind:value={sponsorId}
-						class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg bg-white appearance-none pr-10 text-stone-800 focus:outline-none focus:border-amber-500"
-					>
-						{#each sponsors as s}
-							<option value={s.id}>{s.name}</option>
-						{/each}
-					</select>
-					<!-- Dropdown arrow removed -->
+			<div class="flex flex-wrap md:flex-nowrap items-start gap-4">
+				<div class="w-full md:w-1/3">
+					<label for="sponsor-select" class="block">
+						<span class="text-lg font-bold text-stone-800 block mb-2">Choose Your Sponsor</span>
+						<div class="relative">
+							<select
+								id="sponsor-select"
+								bind:value={sponsorId}
+								class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg bg-white appearance-none pr-10 text-stone-800 focus:outline-none focus:border-amber-500"
+							>
+								{#each sponsors as s}
+									<option value={s.id}>{s.name}</option>
+								{/each}
+							</select>
+						</div>
+					</label>
 				</div>
-				<p class="mt-2 text-sm text-stone-600">
-					{sponsors.find(s => s.id === sponsorId)?.source || "Unknown source"}
-				</p>
-			</label>
+				<div class="w-full md:w-2/3 md:pt-8">
+					<p class="text-sm text-stone-600">
+						{sponsors.find(s => s.id === sponsorId)?.source || "Unknown source"}
+					</p>
+					{#if currentSponsor?.perks?.length}
+						<p class="mt-2 text-sm text-stone-700">
+							<span class="font-medium">Available Perks:</span> {perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}
+						</p>
+					{/if}
+				</div>
+			</div>
 		</div>
 	{:else}
 		<!-- Show info message when sponsorships are disabled -->
@@ -836,8 +776,8 @@
 						<!-- Vehicle header -->
 						<div class="flex items-center justify-between bg-stone-300 dark:bg-gray-700 p-5 border-b-2 border-gray-400 dark:border-gray-600">
 							<div class="flex-1 min-w-0">
-								<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-									<div class="w-full sm:w-2/5">
+								<div class="flex flex-row gap-2 items-start">
+									<div class="w-2/5">
 										<label for="vehicle-type-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Type</label>
 										<select
 											id="vehicle-type-{v.id}"
@@ -853,7 +793,7 @@
 											{/each}
 										</select>
 									</div>
-									<div class="flex-1 w-full">
+									<div class="flex-1">
 										<label for="vehicle-name-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Name</label>
 										<input
 											id="vehicle-name-{v.id}"
@@ -1523,6 +1463,8 @@
         }
       }}
     />
+
+
 </section>
 
 <!-- Print-only view with vehicle cards -->

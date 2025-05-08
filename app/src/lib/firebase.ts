@@ -21,10 +21,30 @@ const firebaseConfig = {
   measurementId: "G-EKPMXMY097"
 };
 
+// Track initialization status
+let isInitialized = false;
+let isInitializing = false;
+let initPromise = null;
+
 // Initialize Firebase only in the browser using dynamic imports
 const initializeFirebase = async () => {
+  // If already initialized, return immediately
+  if (isInitialized) {
+    return { success: true };
+  }
+  
+  // If initialization is in progress, wait for it to complete
+  if (isInitializing && initPromise) {
+    return initPromise;
+  }
+  
+  // Start initialization
+  isInitializing = true;
+  
   if (browser) {
     try {
+      console.log("Starting Firebase initialization...");
+      
       // Dynamically import Firebase modules
       const firebaseApp = await import('firebase/app');
       const firebaseAuth = await import('firebase/auth');
@@ -41,18 +61,24 @@ const initializeFirebase = async () => {
         user.set(newUser);
       });
       
+      console.log("Firebase initialized successfully");
+      isInitialized = true;
+      isInitializing = false;
       return { success: true };
     } catch (error) {
       console.error("Firebase initialization error:", error);
+      isInitializing = false;
       return { success: false, error };
     }
   }
+  
+  isInitializing = false;
   return { success: false, error: "Not in browser environment" };
 };
 
-// Initialize Firebase when in browser
+// Initialize Firebase when in browser and store the promise
 if (browser) {
-  initializeFirebase();
+  initPromise = initializeFirebase();
 }
 
 // Sign in with Google

@@ -38,15 +38,29 @@
     if (!$user || !newTeamName.trim()) return;
     
     isSaving = true;
-    const result = await saveTeam(currentDraft, newTeamName);
-    isSaving = false;
-    
-    if (result.success) {
-      newTeamName = '';
-      await loadUserTeams(); // Reload teams
-    } else {
-      console.error("Failed to save team");
-      alert('Failed to save team. Please try again.');
+    try {
+      // Log info that might help identify issues
+      console.log("Saving team with name:", newTeamName);
+      console.log("Current draft type:", typeof currentDraft);
+      console.log("Current draft has vehicles:", 
+        currentDraft && Array.isArray(currentDraft.vehicles) ? 
+        currentDraft.vehicles.length : "N/A");
+      
+      const result = await saveTeam(currentDraft, newTeamName);
+      
+      if (result.success) {
+        newTeamName = '';
+        await loadUserTeams(); // Reload teams
+        alert("Team saved successfully!");
+      } else {
+        console.error("Failed to save team:", result.error);
+        alert(`Failed to save team: ${result.error}`);
+      }
+    } catch (error) {
+      console.error("Exception in saveCurrentTeam:", error);
+      alert(`Error saving team: ${error instanceof Error ? error.message : "Unknown error"}`);
+    } finally {
+      isSaving = false;
     }
   }
   
