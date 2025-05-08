@@ -617,6 +617,141 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	pointer-events: none;
 }
 
+/* Vehicle type icon styles */
+.vehicle-type-icon {
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: inline-block;
+}
+
+.vehicle-type-car { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M5 13a2 2 0 0 1-2-2c0-1.1.9-2 2-2c1.1 0 2 .9 2 2c0 1.1-.9 2-2 2zm14 0a2 2 0 0 1-2-2c0-1.1.9-2 2-2c1.1 0 2 .9 2 2c0 1.1-.9 2-2 2zM19 11h-1l-1.71-7.67A2.5 2.5 0 0 0 13.92 1H10.08C8.77 1 7.66 1.94 7.29 3.33L5.6 11H5c-1.66 0-3 1.34-3 3v3h1.5v-1.5h17V17H22v-3c0-1.66-1.34-3-3-3zm-7-7.5h2.62l1.5 7.5H12V3.5zM8.38 3.5H11v7.5H6.9l1.48-7.5z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-buggy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-performance_car { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M16 6l3 4h2c1.11 0 2 .89 2 2v3h-2c0 1.66-1.34 3-3 3s-3-1.34-3-3H9c0 1.66-1.34 3-3 3s-3-1.34-3-3H1v-3c0-1.11.89-2 2-2l3-4h10m-5.5 1.5H9V10H7.25V7.5H6v6h1.25V11.5H9v2.5h1.5v-6m7 0h-3v6H16v-2h1c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1m0 3H16v-1.5h1.5V10.5M6 13.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5m12 0c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-pickup { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M6 5H4v16c0 1.1.9 2 2 2h10v-2H6V5zm16 2h-8l-2-2H8v14h14V7zm-3 8H9v-2h10v2z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-van { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18 4v7h-6V4h6m1-2h-8c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h8c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-10 9H5c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1zM9 17H5v-3h4v3zm8-4v2h2v2h-5v-4h3z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-monster_truck { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 10c-1.1 0-2 .9-2 2h-1V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-4c0-1.1-.9-2-2-2h-3zm-9 7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm7-6h3.5c.28 0 .5.22.5.5V13h-4v-2zm-5 0v2h-4V9.48c1.68.5 2.8 1.94 2.95 3.52H15zm3 6c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-heavy_truck { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18 18.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm1.5-9l1.96 2.5H17V9.5h2.5zM6 18.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zM20 8l-3-4H3c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h1c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1h-3z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-bus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-war_rig { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z'/%3E%3C/svg%3E"); }
+
+.vehicle-type-tank { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E"); }
+
+/* Weight class indicators */
+.weight-class-indicator {
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.weight-1 {
+  background-color: #a7f3d0;
+  color: #065f46;
+}
+
+.weight-2 {
+  background-color: #fde68a;
+  color: #92400e;
+}
+
+.weight-3 {
+  background-color: #fca5a5;
+  color: #991b1b;
+}
+
+.weight-4 {
+  background-color: #c7d2fe;
+  color: #312e81;
+}
+
+/* Interactive dashboard styles */
+.hull-checkbox, .crew-checkbox {
+  display: inline-block;
+  position: relative;
+  margin: 2px;
+}
+
+.hull-checkbox-input, .crew-checkbox-input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.hull-checkbox-label {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border: 2px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.crew-checkbox-label {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border: 2px solid #333;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.hull-checkbox-input:checked + .hull-checkbox-label {
+  background-color: #ef4444;
+  border-color: #991b1b;
+}
+
+.crew-checkbox-input:checked + .crew-checkbox-label {
+  background-color: #f59e0b;
+  border-color: #b45309;
+}
+
+.gear-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  outline: none;
+}
+
+.gear-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #b45309;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.gear-range::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 2px solid #b45309;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
 /* Hide print view by default */
 #gaslands-print-view {
   display: none;
@@ -679,16 +814,19 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   
   /* Vehicle card styling */
   .vehicle-card-print {
-    width: 316px;
-    height: 275px;
+    width: 320px;
+    height: 340px;
     vertical-align: top;
-    padding: 20px 32px;
-    border: 2px solid #000;
+    padding: 16px;
+    border: 3px solid #000;
     page-break-inside: avoid;
     margin-bottom: 20px;
     display: inline-block;
     position: relative;
     box-sizing: border-box;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
   }
   
   /* Text styling */
@@ -697,58 +835,186 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   
   /* Hull boxes */
   .hull-box {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     background-color: #fff;
     border: 2px solid #000;
     display: inline-block;
     margin: 2px;
+    border-radius: 2px;
   }
   
   /* Vehicle card sections */
   .card-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #222;
+    padding-bottom: 8px;
+  }
+  
+  .card-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
   
   .card-name {
-    font-size: 1.5em;
+    font-size: 1.3em;
     font-weight: bold;
     text-transform: uppercase;
   }
   
-  .card-stats {
+  .vehicle-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  
+  .card-cost {
     display: flex;
-    margin-top: 5px;
-    margin-bottom: 10px;
-  }
-  
-  .card-hull {
-    margin-top: 10px;
-  }
-  
-  .card-gear {
-    text-align: center;
-    margin-left: auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     border: 2px solid #000;
-    padding: 5px 15px;
+    padding: 2px 12px;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 0.8em;
     font-weight: bold;
   }
   
-  .card-weapons {
-    margin-top: 15px;
-    font-size: 0.8em;
-    height: 70px;
+  .cost-value {
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1;
+  }
+  
+  /* Stats section */
+  .stats-grid {
+    margin-bottom: 16px;
+  }
+  
+  .stat-block {
+    margin-bottom: 8px;
+  }
+  
+  .stats-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+  }
+  
+  .stat-label {
+    font-weight: bold;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    color: #444;
+  }
+  
+  .stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    padding: 3px 8px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  .hull-tracker {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    padding: 3px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Loadout sections */
+  .loadout {
+    font-size: 0.85em;
+  }
+  
+  .loadout-section {
+    margin-bottom: 10px;
+  }
+  
+  .section-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+    padding: 2px 0;
+    border-bottom: 1px solid #aaa;
+  }
+  
+  .loadout-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .loadout-table tr:nth-child(odd) {
+    background-color: rgba(0,0,0,0.05);
+  }
+  
+  .item-name {
+    font-weight: bold;
+    padding: 2px 4px;
+  }
+  
+  .item-facing {
+    text-align: center;
+    font-style: italic;
+    padding: 2px 4px;
+    width: 60px;
+  }
+  
+  .item-attack {
+    text-align: right;
+    font-weight: bold;
+    padding: 2px 4px;
+    width: 40px;
+  }
+  
+  .upgrade-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .upgrade-list li {
+    padding: 3px 4px;
+  }
+  
+  .upgrade-list li:nth-child(odd) {
+    background-color: rgba(0,0,0,0.05);
   }
   
   .card-footer {
     position: absolute;
-    bottom: 20px;
-    left: 32px;
-    right: 32px;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
     font-weight: bold;
+    border-top: 1px solid #aaa;
+    padding-top: 8px;
+    font-size: 0.9em;
+  }
+  
+  .perk-label {
     text-transform: uppercase;
+    font-weight: bold;
   }
   
   /* Team summary styling */
@@ -1033,38 +1299,92 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									<span class="text-xs dark:text-gray-300">cans</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-								<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
-								<span class="font-bold text-base truncate block dark:text-white">
-									{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-								</span>
-								{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
-									<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
-								{/if}
-							</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
-									<span class="font-bold text-lg dark:text-white">
-										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
-									</span>
-									<span class="text-xs dark:text-gray-300">points</span>
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
+									<div class="flex items-center justify-center gap-1">
+										<div class="vehicle-type-icon vehicle-type-{v.type}" title="{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}"></div>
+										<span class="font-bold text-base truncate block dark:text-white">
+											{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
+										</span>
+									</div>
+									{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
+										<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
+									{/if}
 								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Crew</span>
-									<span class="font-bold text-lg dark:text-white">
-										{vehicleTypes.find(vt => vt.id === v.type)?.crew || '1'}
-									</span>
-								</div>
+								
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
-									<span class="font-bold text-lg dark:text-white">
-										{vehicleTypes.find(vt => vt.id === v.type)?.weight || '1'}
-									</span>
+									<div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === v.type)?.weight || 1}">
+										{vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
+										vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
+										vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
+									</div>
 								</div>
+								
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Build Slots</span>
 									<span class="font-bold text-lg dark:text-white" class:text-red-600={calculateUsedBuildSlots(v) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
 										{calculateUsedBuildSlots(v)} / {vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2}
 									</span>
+								</div>
+							</div>
+							
+							<!-- Interactive dashboard elements -->
+							<div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6">
+								<div class="dashboard-header">
+									<h4 class="text-base font-bold text-stone-700 dark:text-white mb-3">Game Dashboard</h4>
+								</div>
+								
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<div class="hull-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
+										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hull Points</div>
+										<div class="flex flex-wrap gap-1">
+											{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) as _, i}
+												<div class="hull-checkbox">
+													<input type="checkbox" id="hull-{v.id}-{i}" class="hull-checkbox-input" />
+													<label for="hull-{v.id}-{i}" class="hull-checkbox-label"></label>
+												</div>
+											{/each}
+										</div>
+									</div>
+									
+									<div class="gear-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
+										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Current Gear</div>
+										<div class="gear-slider">
+											<input 
+												type="range" 
+												min="1" 
+												max="{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6}" 
+												value="1" 
+												class="gear-range w-full h-7 appearance-none bg-stone-200 dark:bg-gray-600 rounded-full" 
+											/>
+											<div class="gear-markers flex justify-between px-2 mt-1">
+												{#each Array((vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6)) as _, i}
+													<span class="gear-number text-xs font-bold">{i+1}</span>
+												{/each}
+											</div>
+										</div>
+									</div>
+									
+									<div class="crew-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
+										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
+										<div class="flex flex-wrap gap-1">
+											{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.crew || 1) as _, i}
+												<div class="crew-checkbox">
+													<input type="checkbox" id="crew-{v.id}-{i}" class="crew-checkbox-input" />
+													<label for="crew-{v.id}-{i}" class="crew-checkbox-label"></label>
+												</div>
+											{/each}
+										</div>
+									</div>
+									
+									<div class="hazard-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
+										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
+										<div class="hazard-counter flex items-center justify-center gap-3">
+											<button class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">-</button>
+											<span class="counter-value text-2xl font-bold">0</span>
+											<button class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">+</button>
+										</div>
+									</div>
 								</div>
 							</div>
 							
@@ -1780,63 +2100,101 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   
   <div class="print-card-grid">
     {#each vehicles as v}
-      <div class="vehicle-card-print">
+      <div class="vehicle-card-print" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'};">
+        <!-- Vehicle Card Header with Type & Cost -->
         <div class="card-header">
-          <div class="card-name">{v.name}</div>
-          <div class="bold">Gear</div>
-        </div>
-        
-        <div class="card-stats">
-          <div>
-            <div class="bold vehicle-type">
-				{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-				{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced} (Advanced){/if}
-			</div>
-            <div class="bold">Handling: {v.type === 'car' ? 3 : v.type === 'truck' ? 2 : 4}</div>
-            <div class="bold">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
+          <div class="card-title">
+            <div class="card-name">{v.name}</div>
+            <div class="vehicle-type-badge" style="background-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'};">
+              {vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
+              {#if vehicleTypes.find(vt => vt.id === v.type)?.advanced} (Advanced){/if}
+            </div>
           </div>
-          
-          <div class="card-gear">
-            <div>Max</div>
-            <div style="font-size: 1.5em;">{vehicleTypes.find(vt => vt.id === v.type)?.maxGear}</div>
+          <div class="card-cost">
+            <div>Cost</div>
+            <div class="cost-value">{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}</div>
+            <div>cans</div>
           </div>
         </div>
         
-        <div class="card-hull">
-          <div>
-            <span class="rotate90">Hull</span>
-            {#each Array(Math.min(6, vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)) as _, i}
-              <span class="hull-box"></span>
-            {/each}
-          </div>
-          {#if (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) > 6}
-            <div style="margin-left: 30px;">
-              {#each Array(Math.min(6, (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) - 6)) as _, i}
+        <!-- Stats Grid: A more structured layout -->
+        <div class="stats-grid">
+          <div class="stat-block">
+            <div class="stat-label">Hull</div>
+            <div class="hull-tracker">
+              {#each Array(Math.min(10, vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)) as _, i}
                 <span class="hull-box"></span>
               {/each}
             </div>
-          {/if}
+          </div>
+          
+          <div class="stats-row">
+            <div class="stat-block">
+              <div class="stat-label">Handling</div>
+              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.handling || 4}</div>
+            </div>
+            
+            <div class="stat-block">
+              <div class="stat-label">Gear</div>
+              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6}</div>
+            </div>
+            
+            <div class="stat-block">
+              <div class="stat-label">Crew</div>
+              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
+            </div>
+            
+            <div class="stat-block">
+              <div class="stat-label">Weight</div>
+              <div class="stat-value">
+                {vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
+                vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
+                vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="card-weapons">
-          {#each v.weapons as weaponId}
-    {@const baseWeaponId = weaponId.split('_')[0]}
-    {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-    {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
-			<div><strong>{weaponObj?.name || weaponId}</strong> <span style="font-style: italic;">({facing})</span></div>
-          {/each}
+        <!-- Weapons & Upgrades in a clearer format -->
+        <div class="loadout">
+          {#if v.weapons.length > 0}
+            <div class="loadout-section">
+              <div class="section-header">Weapons</div>
+              <table class="loadout-table">
+                <tbody>
+                  {#each v.weapons as weaponId}
+                    {@const baseWeaponId = weaponId.split('_')[0]}
+                    {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+                    {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
+                    <tr>
+                      <td class="item-name">{weaponObj?.name || weaponId}</td>
+                      <td class="item-facing">{facing}</td>
+                      <td class="item-attack">{weaponObj?.attackDice || '-'}{weaponObj?.attackDice ? 'D' : ''}</td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {/if}
+          
           {#if v.upgrades.length > 0}
-            <div style="margin-top: 5px;">
-              <strong>Upgrades:</strong> {v.upgrades.map(id => upgrades.find(u => u.id === id)?.name || id).join(', ')}
+            <div class="loadout-section">
+              <div class="section-header">Upgrades</div>
+              <ul class="upgrade-list">
+                {#each v.upgrades as upgradeId}
+                  <li>{upgrades.find(u => u.id === upgradeId)?.name || upgradeId}</li>
+                {/each}
+              </ul>
             </div>
           {/if}
         </div>
         
-        <div class="card-footer">
-          {#if v.perks.length > 0}
-            Perks: {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(', ')}
-          {/if}
-        </div>
+        <!-- Perks at bottom -->
+        {#if v.perks.length > 0}
+          <div class="card-footer">
+            <span class="perk-label">Perks:</span> {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(', ')}
+          </div>
+        {/if}
       </div>
     {/each}
   </div>

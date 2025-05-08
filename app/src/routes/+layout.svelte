@@ -147,42 +147,102 @@
         </span>
         
         <div class="flex flex-wrap items-center" style="gap: 16px;">
-          <div class="relative">
-            <button 
-              type="button" 
-              class="menu-item flex items-center share-menu-trigger" 
-              on:click={() => showShareMenu = !showShareMenu}
-              aria-haspopup="true"
-              aria-expanded={showShareMenu}
-            >
-              Share Team
-              <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
-            
-            {#if showShareMenu}
-            <div 
-              class="absolute left-0 mt-3 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important;"
-              transition:fade={{ duration: 150 }}
-            >
-              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { copyDraft(); showShareMenu = false; }}>
-                Copy to Clipboard
-              </button>
-              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { shareLink(); showShareMenu = false; }}>
-                Share Link
-              </button>
-              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { generateQRCode(); showShareMenu = false; }}>
-                Generate QR Code
-              </button>
-              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { importBuild(); showShareMenu = false; }}>
-                Import Build
-              </button>
-            </div>
-            {/if}
-          </div>
+          <button 
+            type="button" 
+            class="menu-item flex items-center share-menu-trigger" 
+            on:click={() => showShareMenu = !showShareMenu}
+            aria-haspopup="true"
+            aria-expanded={showShareMenu}
+          >
+            Share Team
+            <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+          </button>
           
-          <button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
+          {#if showShareMenu}
+          <div 
+            class="fixed md:absolute inset-0 md:inset-auto md:left-0 md:mt-3 w-full md:w-96 bg-black/90 md:bg-black border-0 md:border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-6 md:py-4 share-menu-dropdown" 
+            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);"
+            transition:fade={{ duration: 150 }}
+          >
+            <div class="max-w-md mx-auto px-6 md:px-4">
+              <h3 class="text-white text-xl font-bold mb-4 flex items-center justify-between">
+                Share Your Team
+                <button 
+                  class="text-gray-400 hover:text-white md:hidden" 
+                  on:click={() => showShareMenu = false}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </h3>
+              
+              <div class="space-y-3">
+                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { copyDraft(); showShareMenu = false; }}>
+                    <div class="share-icon text-xl bg-amber-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span>📋</span>
+                    </div>
+                    <div class="share-details">
+                      <h4 class="text-white font-medium">Copy Team Code</h4>
+                      <p class="text-gray-400 text-sm">Copy an encoded version to your clipboard</p>
+                    </div>
+                  </button>
+                </div>
+                
+                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { shareLink(); showShareMenu = false; }}>
+                    <div class="share-icon text-xl bg-blue-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span>🔗</span>
+                    </div>
+                    <div class="share-details">
+                      <h4 class="text-white font-medium">Share Link</h4>
+                      <p class="text-gray-400 text-sm">Update URL with shareable link</p>
+                    </div>
+                  </button>
+                </div>
+                
+                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { generateQRCode(); showShareMenu = false; }}>
+                    <div class="share-icon text-xl bg-green-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span>📱</span>
+                    </div>
+                    <div class="share-details">
+                      <h4 class="text-white font-medium">Generate QR Code</h4>
+                      <p class="text-gray-400 text-sm">Create a QR code for easy sharing</p>
+                    </div>
+                  </button>
+                </div>
+                
+                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { importBuild(); showShareMenu = false; }}>
+                    <div class="share-icon text-xl bg-purple-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span>📥</span>
+                    </div>
+                    <div class="share-details">
+                      <h4 class="text-white font-medium">Import Build</h4>
+                      <p class="text-gray-400 text-sm">Load a team from a code</p>
+                    </div>
+                  </button>
+                </div>
+                
+                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { printTeam(); showShareMenu = false; }}>
+                    <div class="share-icon text-xl bg-red-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                      <span>🖨️</span>
+                    </div>
+                    <div class="share-details">
+                      <h4 class="text-white font-medium">Print Team</h4>
+                      <p class="text-gray-400 text-sm">Print vehicle dashboards for gameplay</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/if}
           {#if $user}
           <button type="button" class="menu-item" on:click={openTeamsModal}>My Teams</button>
           {/if}
