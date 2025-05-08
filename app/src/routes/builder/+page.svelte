@@ -269,12 +269,44 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	}
 
 	async function printTeam() {
-		// Always generate a fresh QR code before printing
-		qrDataUrl = await draftToDataURL(currentDraft);
+		// Generate a fresh QR code for printing without showing the modal
+		const tempQrCode = await draftToDataURL(currentDraft);
 		
-		// Give the browser a moment to render the QR code into the DOM
+		// First check for the hidden print-only QR code element
+		const hiddenQrImage = document.querySelector('#print-qr-code');
+		if (hiddenQrImage) {
+			// Make the hidden image visible for printing
+			hiddenQrImage.src = tempQrCode;
+			hiddenQrImage.style.display = 'block';
+			
+			// Hide the placeholder if it exists
+			const placeholder = document.querySelector('.qr-code-placeholder');
+			if (placeholder) placeholder.style.display = 'none';
+		} else {
+			// Fallback: temporarily set the QR code in the modal
+			// Store the current state so we can restore it
+			const previousQrState = qrDataUrl;
+			qrDataUrl = tempQrCode;
+			
+			// Restore after printing
+			setTimeout(() => {
+				qrDataUrl = previousQrState;
+			}, 1000);
+		}
+		
+		// Give the browser a moment to render the QR code
 		setTimeout(() => {
 			window.print();
+			
+			// After printing, hide the QR code again if we used the hidden element
+			if (hiddenQrImage) {
+				setTimeout(() => {
+					hiddenQrImage.style.display = 'none';
+					// Show placeholder again
+					const placeholder = document.querySelector('.qr-code-placeholder');
+					if (placeholder) placeholder.style.display = 'block';
+				}, 500);
+			}
 		}, 300);
 	}
 
@@ -502,6 +534,37 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 <svelte:head>
 	<title>Gaslands Garage - Team Builder</title>
+	<script>
+		// Ensure modals have proper background in dark mode
+		document.addEventListener('DOMContentLoaded', function() {
+			function fixModalBackgrounds() {
+				const isDarkMode = document.documentElement.classList.contains('dark-mode');
+				const modals = document.querySelectorAll('.bg-white.dark\\:bg-gray-800, .settings-modal-content');
+				modals.forEach(modal => {
+					if (isDarkMode) {
+						modal.style.backgroundColor = '#1f2937';
+					} else {
+						modal.style.backgroundColor = 'white';
+					}
+				});
+			}
+			
+			// Run immediately and when dark mode changes
+			fixModalBackgrounds();
+			
+			// Create a mutation observer to watch for dark mode class changes
+			const observer = new MutationObserver(mutations => {
+				mutations.forEach(mutation => {
+					if (mutation.attributeName === 'class') {
+						fixModalBackgrounds();
+					}
+				});
+			});
+			
+			// Start observing
+			observer.observe(document.documentElement, { attributes: true });
+		});
+	</script>
 </svelte:head>
 
 <!-- Menu removed - now in layout.svelte -->
@@ -803,7 +866,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				<input 
 					type="text" 
 					bind:value={teamName}
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
 				/>
 			</div>  
@@ -814,7 +877,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={maxCans}
 					min="1"
 					max="1000"
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
 					aria-label="Max Cans"
 				/>
 			</div>
@@ -1463,9 +1526,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div 
-          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 border-2 border-amber-500 z-10 fixed left-1/2 top-1/2 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 overflow-y-auto transform -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 border-2 border-amber-500 z-10 fixed left-1/2 top-1/2 w-auto max-w-md overflow-y-auto transform -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
           role="document"
-          style="background-color: white !important; opacity: 1 !important; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
@@ -1481,7 +1544,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border-2 border-stone-200 dark:border-gray-600">
             <img src={qrDataUrl} alt="team QR code" class="mx-auto w-64 h-64" />
           </div>
-          <p class="mt-6 text-center text-stone-600 dark:text-gray-300 text-sm">
+          <p class="mt-6 text-center text-stone-600 dark:text-amber-300 text-sm font-medium">
             Scan this QR code to share your team build
           </p>
           <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
@@ -1522,9 +1585,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div
-          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white !important; opacity: 1 !important;"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
@@ -1539,7 +1602,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           </div>
           
           <div class="space-y-6">
-            <p class="text-stone-600 dark:text-gray-300">
+            <p class="text-stone-600 dark:text-gray-200">
               Paste a team build code below to import a shared build
             </p>
             <div class="space-y-3">
@@ -1587,9 +1650,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div
-          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-12 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-12 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white !important; opacity: 1 !important;"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
@@ -1616,7 +1679,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
                   Enable Sponsorships
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
             </div>
@@ -1633,7 +1696,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
                   Include Advanced
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
                 Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
               </p>
             </div>
@@ -1650,7 +1713,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
                   Dark Mode
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
                 Enable dark mode for better visibility in low-light conditions.
               </p>
             </div>
@@ -1838,6 +1901,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
       {#if qrDataUrl}
         <img src={qrDataUrl} alt="QR Code" class="qr-code-image" />
       {:else}
+        <!-- Hidden image element that will be updated when printing without showing the modal -->
+        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" style="display: none;" />
         <div class="qr-code-placeholder">QR Code</div>
       {/if}
       <div class="qr-code-caption">Scan to load team</div>

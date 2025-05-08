@@ -218,7 +218,7 @@
     >
       <!-- Background overlay -->
       <button
-        class="absolute inset-0 w-full h-full border-0 bg-transparent cursor-pointer"
+        class="absolute inset-0 w-full h-full border-0 dark:bg-gray-800  cursor-pointer"
         on:click={() => showAboutModal = false}
         on:keydown={e => e.key === 'Escape' && (showAboutModal = false)}
         aria-label="Close modal background"
@@ -226,9 +226,9 @@
       
       <!-- Modal content -->
       <div
-        class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+        class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
         role="document"
-        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white !important; opacity: 1 !important;"
+        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
       >
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands Garage</h3>
@@ -242,7 +242,7 @@
           </button>
         </div>
         
-        <div class="space-y-6 text-stone-700 dark:text-gray-300">
+        <div class="space-y-6 text-stone-700 dark:text-gray-200">
           <p>
             Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
           </p>
