@@ -803,7 +803,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				<input 
 					type="text" 
 					bind:value={teamName}
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
 				/>
 			</div>  
@@ -814,7 +814,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={maxCans}
 					min="1"
 					max="1000"
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
 					aria-label="Max Cans"
 				/>
 			</div>
@@ -1094,7 +1094,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 														<!-- Disabled dropdown for fixed facing weapons, crew fired weapons, or dropped weapons -->
 														<div class="relative inline-flex">
 															<select 
-																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-300 font-medium cursor-not-allowed appearance-none"
+																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-400 font-medium cursor-not-allowed appearance-none"
 																value={weaponObj?.crewFired ? "any" : (weaponObj?.dropped ? (weaponObj?.facing || "rear") : weaponObj?.facing)}
 																disabled
 															>
@@ -1112,7 +1112,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 														<!-- Enabled dropdown for variable facing weapons -->
 														<div class="relative inline-flex">
 															<select 
-																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 appearance-none"
+																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-700 dark:text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 appearance-none"
 																value={facing}
 																on:change={e => {
 																	const newFacing = e.target.value;
@@ -1165,14 +1165,15 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												target.value = ""; // Reset selection
 											}
 										}}
-										disabled={calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
+										disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add weapon</option>
 										{#each filteredWeapons as w}
-											<option value={w.id} disabled={calculateUsedBuildSlots(v) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+											<option value={w.id} disabled={(w.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
 												{w.name}
 												{w.crewFired ? " (Crew Fired)" : ""}
 												{w.dropped ? " (Dropped)" : ""}
+												{(w.buildSlots || 1) === 0 ? " (Free)" : ""}
 											</option>
 										{/each}
 									</select>
@@ -1228,12 +1229,13 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												target.value = ""; // Reset selection
 											}
 										}}
-										disabled={calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
+										disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add upgrade</option>
 										{#each filteredUpgrades as u}
-											<option value={u.id} disabled={calculateUsedBuildSlots(v) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+											<option value={u.id} disabled={(u.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
 												{u.name}
+												{(u.buildSlots || 1) === 0 ? " (Free)" : ""}
 											</option>
 										{/each}
 									</select>
