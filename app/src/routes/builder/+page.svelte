@@ -44,6 +44,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			const baseWeaponId = weaponInstanceId.split('_')[0];
 			const weaponObj = weapons.find(w => w.id === baseWeaponId);
 			if (weaponObj) {
+				// Special case: Some weapons don't use build slots in Gaslands Refueled
+				if (['handgun', 'molotov', 'grenades', 'ram', 'oil_slick', 'smokescreen'].includes(baseWeaponId)) {
+					// These weapons don't consume build slots
+					continue;
+				}
 				totalSlots += weaponObj.buildSlots || 1;
 			}
 		}
@@ -52,6 +57,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		for (const upgradeId of vehicle.upgrades) {
 			const upgradeObj = upgrades.find(u => u.id === upgradeId);
 			if (upgradeObj) {
+				// Special case: Some upgrades don't use build slots in Gaslands Refueled
+				if (['grenades'].includes(upgradeId)) {
+					// These upgrades don't consume build slots
+					continue;
+				}
 				totalSlots += upgradeObj.buildSlots || 1;
 			}
 		}
@@ -77,6 +87,17 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 	function removeVehicle(id: string) {
 		vehicles = vehicles.filter((v) => v.id !== id);
+		collapsedVehicles.delete(id);
+		collapsedVehicles = collapsedVehicles; // Trigger reactivity
+	}
+	
+	function toggleVehicleCollapse(id: string) {
+		if (collapsedVehicles.has(id)) {
+			collapsedVehicles.delete(id);
+		} else {
+			collapsedVehicles.add(id);
+		}
+		collapsedVehicles = collapsedVehicles; // Trigger reactivity
 	}
 
 	function addWeapon(vehicleId: string, weaponId: string, facing?: string) {
@@ -234,6 +255,12 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	let includeAdvanced = true;
 	let maxCans = 50;
 	let teamName = "My Gaslands Team";
+	
+	// Mode toggle for Edit/Play mode
+	let playMode = false;
+	
+	// For vehicle card collapse state
+	let collapsedVehicles = new Set();
 	let darkMode = false;
 
 	// Save settings to Firebase when they change
@@ -1228,10 +1255,30 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	<!-- Vehicle list -->
 	<div class="mb-8">
 		<div class="flex items-center justify-between mb-4">
-			<h2 class="text-2xl font-bold text-stone-800">Vehicles</h2>
+			<div class="flex items-center gap-4">
+				<h2 class="text-2xl font-bold text-stone-800 dark:text-gray-100">Vehicles</h2>
+				<!-- Edit/Play Mode Toggle -->&nbsp;&nbsp;&nbsp;&nbsp;
+				<div class="bg-stone-300 dark:bg-gray-700 p-1 rounded-full flex">
+					<button
+						class="px-3 py-1 rounded-full text-sm font-medium transition-colors {!playMode ? 'bg-amber-600 text-white' : 'text-stone-700 dark:text-gray-300 hover:bg-stone-400 dark:hover:bg-gray-600'}"
+						on:click={() => playMode = false}
+					>
+						Edit Team
+					</button>
+					<button
+						class="px-3 py-1 rounded-full text-sm font-medium transition-colors {playMode ? 'bg-green-600 text-white' : 'text-stone-700 dark:text-gray-300 hover:bg-stone-400 dark:hover:bg-gray-600'}"
+						on:click={() => playMode = true}
+					>
+						Play Mode
+					</button>
+				</div>
+			</div>
 			<button
 				class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors shadow-md flex items-center"
 				on:click={() => addVehicle()}
+				disabled={playMode}
+				class:opacity-50={playMode}
+				class:cursor-not-allowed={playMode}
 			>
 				<span class="mr-2">+</span>
 				Add Vehicle
@@ -1277,62 +1324,48 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									</div>
 								</div>
 							</div>
-							<button
-								class="ml-4 p-2 h-8 w-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors self-start mt-6"
-								on:click={() => removeVehicle(v.id)}
-								aria-label="Remove vehicle"
-							>
-								<span>×</span>
-								<span class="sr-only">Remove vehicle</span>
-							</button>
+							<div class="flex items-center gap-2 self-start mt-6">
+								<button
+									class="p-2 h-8 w-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
+									on:click={() => toggleVehicleCollapse(v.id)}
+									aria-label={collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}
+								>
+									<span>{collapsedVehicles.has(v.id) ? "+" : "-"}</span>
+									<span class="sr-only">{collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}</span>
+								</button>
+								<button
+									class="p-2 h-8 w-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
+									on:click={() => removeVehicle(v.id)}
+									aria-label="Remove vehicle"
+								>
+									<span>×</span>
+									<span class="sr-only">Remove vehicle</span>
+								</button>
+							</div>
 						</div>
 						
-						<!-- Vehicle details -->
-						<div class="p-8">
-							<!-- Dashboard stats -->
-							<div class="flex flex-wrap gap-2 text-sm bg-stone-100 dark:bg-gray-700 p-3 rounded mt-0 mb-4">
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Cost</span>
-									<span class="font-bold text-lg dark:text-white">
-										{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}
-									</span>
-									<span class="text-xs dark:text-gray-300">cans</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
-									<div class="flex items-center justify-center gap-1">
-										<div class="vehicle-type-icon vehicle-type-{v.type}" title="{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}"></div>
-										<span class="font-bold text-base truncate block dark:text-white">
-											{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-										</span>
-									</div>
-									{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
-										<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
-									{/if}
-								</div>
-								
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
-									<div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === v.type)?.weight || 1}">
-										{vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
-										vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
-										vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
+						<!-- Collapsed view - Only shown when collapsed -->
+						{#if collapsedVehicles.has(v.id)}
+							<div class="p-4 flex items-center justify-between bg-stone-100 dark:bg-gray-800">
+								<div class="flex items-center gap-4">
+									<div class="vehicle-type-icon vehicle-type-{v.type}" title="{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}"></div>
+									<div class="font-medium">
+										{v.weapons.length} weapons | {v.upgrades.length} upgrades | Cost: {validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'} cans
 									</div>
 								</div>
-								
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Build Slots</span>
-									<span class="font-bold text-lg dark:text-white" class:text-red-600={calculateUsedBuildSlots(v) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
-										{calculateUsedBuildSlots(v)} / {vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2}
-									</span>
+								<div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === v.type)?.weight || 1}">
+									{vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
+									vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
+									vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
 								</div>
 							</div>
+						{/if}
+						
+						<!-- Vehicle details - Hidden when collapsed -->
+						<div class="p-8" class:hidden={collapsedVehicles.has(v.id)}>
 							
-							<!-- Interactive dashboard elements -->
-							<div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6">
-								<div class="dashboard-header">
-									<h4 class="text-base font-bold text-stone-700 dark:text-white mb-3">Game Dashboard</h4>
-								</div>
+							<!-- Interactive dashboard elements - Always visible in Play Mode -->
+							<div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6" class:hidden={!playMode}>
 								
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div class="hull-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
@@ -1365,31 +1398,77 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										</div>
 									</div>
 									
-									<div class="crew-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
-										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
-										<div class="flex flex-wrap gap-1">
-											{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.crew || 1) as _, i}
-												<div class="crew-checkbox">
-													<input type="checkbox" id="crew-{v.id}-{i}" class="crew-checkbox-input" />
-													<label for="crew-{v.id}-{i}" class="crew-checkbox-label"></label>
-												</div>
-											{/each}
+									<div class="crew-hazard-row flex gap-4 col-span-1 md:col-span-2">
+										<div class="crew-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
+											<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
+											<div class="flex flex-wrap gap-1">
+												{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.crew || 1) as _, i}
+													<div class="crew-checkbox">
+														<input type="checkbox" id="crew-{v.id}-{i}" class="crew-checkbox-input" />
+														<label for="crew-{v.id}-{i}" class="crew-checkbox-label"></label>
+													</div>
+												{/each}
+											</div>
 										</div>
-									</div>
-									
-									<div class="hazard-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
-										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
-										<div class="hazard-counter flex items-center justify-center gap-3">
-											<button class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">-</button>
-											<span class="counter-value text-2xl font-bold">0</span>
-											<button class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">+</button>
+										
+										<div class="hazard-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
+											<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
+											<div class="hazard-counter flex items-center justify-center gap-3">
+												<button class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">-</button>
+												<span class="counter-value text-2xl font-bold">0</span>
+												<button class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">+</button>
+											</div>
 										</div>
 									</div>
 								</div>
 							</div>
 							
-							<!-- Weapons section -->
-							<div class="mb-4">
+							<!-- Play Mode Loadout summary -->
+							{#if playMode}
+								<div class="loadout-summary mt-4 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-3">
+									<div class="mb-2">
+										{#each v.weapons as weaponId, i}
+											{@const baseWeaponId = weaponId.split('_')[0]}
+											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
+											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
+												<span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || weaponId}</span>
+												<span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
+												{#if weaponObj?.specialRules}
+													<div class="text-xs text-stone-500 dark:text-gray-400">{weaponObj.specialRules}</div>
+												{/if}
+											</div>
+										{/each}
+										
+										{#each v.upgrades as upgradeId}
+											{@const upgrade = upgrades.find(u => u.id === upgradeId)}
+											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
+												<span class="font-bold text-stone-700 dark:text-gray-300">{upgrade?.name || upgradeId}</span>
+												{#if upgrade?.specialRules}
+													<div class="text-xs text-stone-500 dark:text-gray-400">{upgrade.specialRules}</div>
+												{/if}
+											</div>
+										{/each}
+										
+										{#each v.perks as perkId}
+											{@const perk = perks.find(p => p.id === perkId)}
+											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
+												<span class="font-bold text-stone-700 dark:text-gray-300">{perk?.name || perkId}</span>
+												{#if perk?.text}
+													<div class="text-xs text-stone-500 dark:text-gray-400">{perk.text}</div>
+												{/if}
+											</div>
+										{/each}
+										
+										{#if v.weapons.length === 0 && v.upgrades.length === 0 && v.perks.length === 0}
+											<div class="text-sm text-stone-500 dark:text-gray-400 italic">No weapons, upgrades, or perks</div>
+										{/if}
+									</div>
+								</div>
+							{/if}
+							
+							<!-- Weapons section - Hidden in Play Mode -->
+							<div class="mb-4" class:hidden={playMode}>
 								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
 									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">WEAPONS</span>
 								</h3>
@@ -1403,35 +1482,35 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
 											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
 											{@const isFixedFacing = weaponObj?.facing && weaponObj.facing !== 'any'}
-											<li class="bg-stone-50 dark:bg-gray-700 p-3">
-												<div class="flex items-start justify-between">
+											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
+												<div class="flex items-center justify-between">
 													<!-- Weapon details -->
 													<div class="flex-1">
-														<div class="text-stone-700 dark:text-gray-200 font-medium">
+														<b><div class="text-stone-700 dark:text-gray-200 font-bold">
 															{weaponObj?.name || weaponId}
 															{#if weaponObj?.advanced}
 																<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
 															{/if}
-														</div>
+														</div></b>
 														<div class="text-stone-600 dark:text-gray-400 text-xs mt-1 flex flex-wrap gap-3">
 															{#if weaponObj?.cost}
 																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.cost} cans
+																	{weaponObj.cost} cans&nbsp;
 																</span>
 															{/if}
 															{#if weaponObj?.slots}
 																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.slots} {weaponObj.slots === 1 ? 'slot' : 'slots'}
+																	{weaponObj.slots} {weaponObj.slots === 1 ? 'slot' : 'slots'}&nbsp;
 																</span>
 															{/if}
 															{#if weaponObj?.range}
 																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.range} range
+																	Range: {weaponObj.range} range
 																</span>
 															{/if}
 															{#if weaponObj?.attackDice != null}
 																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.attackDice}D attack
+																	{weaponObj.attackDice}D attack dice
 																</span>
 															{/if}
 															{#if weaponObj?.crewFired}
@@ -1456,8 +1535,23 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 															{/if}
 														</div>
 														{#if weaponObj?.specialRules}
-															<div class="text-stone-500 dark:text-gray-400 text-xs mt-2 w-full">{weaponObj.specialRules}</div>
+															<div class="text-stone-500 dark:text-gray-400 text-xs mt-2 w-full">Rules: {weaponObj.specialRules}</div>
 														{/if}
+														{#if weaponObj?.crewFired}
+														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+															&nbsp;Crew fired&nbsp;
+														</span>
+													{/if}
+													{#if weaponObj?.dropped}
+														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+															&nbsp;Dropped&nbsp;
+														</span>
+													{/if}
+													{#if weaponObj?.unique}
+														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+															&nbsp;Unique&nbsp;
+														</span>
+													{/if}
 													</div>
 													<!-- Remove button -->
 													<button
@@ -1564,10 +1658,10 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 								</div>
 							</div>
 							
-							<!-- Upgrades section -->
-							<div class="mb-4 mt-6">
-								<h3 class="font-bold text-stone-800 mb-2 flex items-center border-b border-stone-300 pb-1">
-									<span class="bg-stone-300 px-2 py-1 rounded-t mr-2">UPGRADES</span>
+							<!-- Upgrades section - Hidden in Play Mode -->
+							<div class="mb-4 mt-6" class:hidden={playMode}>
+								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">UPGRADES</span>
 								</h3>
 								
 								{#if v.upgrades.length === 0}
@@ -1578,12 +1672,12 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									{@const upgrade = upgrades.find(u => u.id === upgradeId)}
 											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
 												<div class="flex-1">
-													<span class="text-stone-700 dark:text-gray-200 font-medium block">
+													<b><span class="text-stone-700 dark:text-gray-200 font-bold block">
 														{upgrade?.name || upgradeId}
 														{#if upgrade?.advanced}
 															<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
 														{/if}
-													</span>
+													</span></b>
 													<span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
 												</div>
 												<button
@@ -1625,11 +1719,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 								</div>
 							</div>
 							
-							<!-- Perks section -->
-							<div class="mb-4 mt-6">
-								<h3 class="font-bold text-stone-800 mb-2 flex items-center border-b border-stone-300 pb-1">
-									<span class="bg-stone-300 px-2 py-1 rounded-t mr-2">PERKS</span>
-									<span class="text-xs text-stone-500 ml-auto">(Available for {currentSponsor?.name || 'selected sponsor'})</span>
+							<!-- Perks section - Hidden in Play Mode -->
+							<div class="mb-4 mt-6" class:hidden={playMode}>
+								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">PERKS</span>
+
 								</h3>
 								
 								{#if v.perks.length === 0}
@@ -1640,7 +1734,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 											{@const perk = perks.find(p => p.id === perkId)}
 											<li class="flex items-center justify-between bg-stone-50 dark:bg-gray-700 px-3 py-2">
 												<div class="flex-1">
-													<span class="text-stone-700 dark:text-gray-200 font-medium block">{perk?.name || perkId}</span>
+													<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{perk?.name || perkId}</span></b>
 													<span class="text-stone-500 dark:text-gray-400 text-xs">{perk?.text || ""}</span>
 												</div>
 												<button
@@ -1802,12 +1896,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0), 0)}
 			</div>
 		</div>
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Weight</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.weight || 1), 0)}
-			</div>
-		</div>
+
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
 			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Gear (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">

@@ -1,5 +1,7 @@
 [
   { "id": "car", "name": "Car", "baseCost": 12, "maxHull": 4, "weaponSlots": 2, "upgradeSlots": 2, "buildSlots": 2, "crew": 2, "color": "#f59e0b", "maxGear": 6, "weight": 1, "advanced": false, "source": "Gaslands Refueled" },
+  { "id": "bike", "name": "Bike", "baseCost": 5, "maxHull": 4, "weaponSlots": 1, "upgradeSlots": 1, "buildSlots": 1, "crew": 1, "color": "#fb7185", "maxGear": 6, "weight": 1, "advanced": true, "source": "Gaslands Refueled" },
+  { "id": "bike_with_sidecar", "name": "Bike with Sidecar", "baseCost": 8, "maxHull": 4, "weaponSlots": 2, "upgradeSlots": 1, "buildSlots": 1, "crew": 2, "color": "#f472b6", "maxGear": 6, "weight": 1, "advanced": true, "source": "Gaslands Refueled" },
   { "id": "buggy", "name": "Buggy", "baseCost": 10, "maxHull": 3, "weaponSlots": 1, "upgradeSlots": 1, "buildSlots": 2, "crew": 1, "color": "#0ea5e9", "maxGear": 6, "weight": 1, "advanced": false, "source": "Gaslands Refueled" },
   { "id": "performance_car", "name": "Performance Car", "baseCost": 15, "maxHull": 4, "weaponSlots": 2, "upgradeSlots": 2, "buildSlots": 2, "crew": 2, "color": "#dc2626", "maxGear": 7, "weight": 1, "advanced": false, "source": "Gaslands Refueled" },
   { "id": "pickup", "name": "Pickup", "baseCost": 15, "maxHull": 5, "weaponSlots": 3, "upgradeSlots": 2, "buildSlots": 3, "crew": 3, "color": "#10b981", "maxGear": 5, "weight": 2, "advanced": false, "source": "Gaslands Refueled" },
