@@ -9,6 +9,8 @@
 	import Auth from '$lib/components/Auth.svelte';
 	import TeamsModal from '$lib/components/TeamsModal.svelte';
 	import { user } from '$lib/firebase';
+	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 
 	/* ---------- server data ---------- */
 	export let data: {
@@ -131,8 +133,45 @@
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
+	
+	// Update modal background color based on dark mode
+	$: if (showSettingsModal) {
+		setTimeout(() => {
+			const modal = document.querySelector('.settings-modal-content');
+			if (modal) {
+				if (darkMode) {
+					modal.style.backgroundColor = '#1f2937';
+				} else {
+					modal.style.backgroundColor = 'white';
+				}
+			}
+		}, 0);
+	}
 	let showTeamsModal = false;
 	let showMenu = false;
+	let showShareMenu = false;
+	
+	// Add click outside handler for the share menu
+	onMount(() => {
+		const handleClickOutside = (event) => {
+			const shareMenuButton = document.querySelector('.share-menu-trigger');
+			const shareMenu = document.querySelector('.share-menu-dropdown');
+			
+			if (showShareMenu && 
+				shareMenuButton && 
+				shareMenu && 
+				!shareMenuButton.contains(event.target) && 
+				!shareMenu.contains(event.target)) {
+				showShareMenu = false;
+			}
+		};
+		
+		document.addEventListener('click', handleClickOutside);
+		
+		return () => {
+			document.removeEventListener('click', handleClickOutside);
+		};
+	});
 
 	/* ---------- settings state ---------- */
 	let enableSponsorships = true;
@@ -161,7 +200,11 @@
 	async function printTeam() {
 		// Always generate a fresh QR code before printing
 		qrDataUrl = await draftToDataURL(currentDraft);
-		window.print();
+		
+		// Give the browser a moment to render the QR code into the DOM
+		setTimeout(() => {
+			window.print();
+		}, 300);
 	}
 
 	function importBuild() {
@@ -360,18 +403,53 @@
 	let importString = '';
 </script>
 
-<div class="menu-bar print:hidden">
+<svelte:head>
+	<title>Gaslands Garage - Team Builder</title>
+</svelte:head>
+
+<nav class="menu-bar print:hidden">
 	<div class="menu-container">
 		<span class="logo">
 			<span class="logo-highlight">Gaslands</span> Garage
 		</span>
 		
 		<div class="flex flex-wrap items-center" style="gap: 16px;">
-			<button type="button" class="menu-item" on:click={copyDraft}>Copy Draft</button>
-			<button type="button" class="menu-item" on:click={shareLink}>Share Link</button>
-			<button type="button" class="menu-item" on:click={generateQRCode}>Generate QR Code</button>
+			<div class="relative">
+				<button 
+					type="button" 
+					class="menu-item flex items-center share-menu-trigger" 
+					on:click={() => showShareMenu = !showShareMenu}
+					aria-haspopup="true"
+					aria-expanded={showShareMenu}
+				>
+					Share Team
+					<svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+					</svg>
+				</button>
+				
+				{#if showShareMenu}
+				<div 
+					class="absolute left-0 mt-3 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown" style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important;"
+					transition:fade={{ duration: 150 }}
+				>
+					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { copyDraft(); showShareMenu = false; }}>
+						Copy to Clipboard
+					</button>
+					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { shareLink(); showShareMenu = false; }}>
+						Share Link
+					</button>
+					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { generateQRCode(); showShareMenu = false; }}>
+						Generate QR Code
+					</button>
+					<button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { importBuild(); showShareMenu = false; }}>
+						Import Build
+					</button>
+				</div>
+				{/if}
+			</div>
+			
 			<button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
-			<button type="button" class="menu-item" on:click={importBuild}>Import Build</button>
 			{#if $user}
 			<button type="button" class="menu-item" on:click={() => showTeamsModal = true}>My Teams</button>
 			{/if}
@@ -379,7 +457,7 @@
 			<Auth />
 		</div>
 	</div>
-</div>
+</nav>
 
 <style>
 /* Menu styles */
@@ -412,6 +490,10 @@
 
 .logo-highlight {
 	color: #f59e0b;
+}
+
+.no-card-padding {
+	padding: 0 !important;
 }
 
 .menu-item {
@@ -671,12 +753,12 @@
 }
 </style>
 
-<section id="builder-ui" class="max-w-4xl mx-auto p-6 bg-stone-100 min-h-screen {darkMode ? 'dark' : ''}">
-	<header class="mb-8 text-center">
-		<h1 class="text-4xl font-extrabold text-stone-800 tracking-tight">
-			<span class="text-amber-600">Gaslands</span> Garage
+<section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
+	<header class="mb-6 md:mb-8">
+		<h1 class="text-2xl md:text-3xl font-extrabold text-stone-800 tracking-tight">
+			Build Your Team
 		</h1>
-		<p class="text-stone-600 mt-2">Build your team of deadly vehicles and dominate the wasteland</p>
+		<p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p>
 	</header>
 
 	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
@@ -748,11 +830,11 @@
 				<p class="text-stone-500 dark:text-gray-400 mt-4 text-lg">No vehicles yet. Add some vehicles to your team!</p>
 			</div>
 		{:else}
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
 				{#each vehicles as v (v.id)}
-					<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'}">
+					<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 no-card-padding" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'}">
 						<!-- Vehicle header -->
-						<div class="flex items-center justify-between bg-stone-300 dark:bg-gray-700 p-3 border-b-2 border-gray-400 dark:border-gray-600">
+						<div class="flex items-center justify-between bg-stone-300 dark:bg-gray-700 p-5 border-b-2 border-gray-400 dark:border-gray-600">
 							<div class="flex-1 min-w-0">
 								<div class="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
 									<div class="w-full sm:w-2/5">
@@ -793,7 +875,7 @@
 						</div>
 						
 						<!-- Vehicle details -->
-						<div class="p-4">
+						<div class="p-8">
 							<!-- Dashboard stats -->
 							<div class="flex flex-wrap gap-2 text-sm bg-stone-100 dark:bg-gray-700 p-3 rounded mt-0 mb-4">
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
@@ -1163,7 +1245,7 @@
 </div>    <!-- QR Modal -->
     {#if qrDataUrl}
       <div
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="QR Code"
@@ -1176,37 +1258,41 @@
           on:keydown={e => e.key === 'Escape' && (qrDataUrl = null)}
           aria-label="Close modal background"
         ></button>
-        <div
-          class="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4 relative z-10"
+        <div 
+          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 border-2 border-amber-500 z-10 fixed left-1/2 top-1/2 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 overflow-y-auto transform -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
           role="document"
+          style="background-color: white !important; opacity: 1 !important; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800">Team QR Code</h3>
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 transition-colors"
+              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (qrDataUrl = null)}
               aria-label="Close QR code modal"
             >
-              <span>×</span>
+              <span class="text-2xl">×</span>
               <span class="sr-only">Close</span>
             </button>
           </div>
-          <div class="bg-white p-4 rounded-lg border border-stone-200">
+          <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border-2 border-stone-200 dark:border-gray-600">
             <img src={qrDataUrl} alt="team QR code" class="mx-auto w-64 h-64" />
           </div>
-          <p class="mt-4 text-center text-stone-600 text-sm">
+          <p class="mt-6 text-center text-stone-600 dark:text-gray-300 text-sm">
             Scan this QR code to share your team build
           </p>
-          <div class="flex gap-4 mt-4">
+          <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
             <button
-              class="flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors"
+              class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors shadow-md"
               on:click={() => (qrDataUrl = null)}
             >
               Close
             </button>
             <button
-              class="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-              on:click={() => window.print()}
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-md"
+              on:click={() => {
+                // Give the QR code another moment to ensure it's fully rendered
+                setTimeout(() => window.print(), 100);
+              }}
             >
               Print
             </button>
@@ -1218,7 +1304,7 @@
     <!-- Import Modal -->
     {#if showImportModal}
       <div
-        class="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Import Build"
@@ -1232,23 +1318,24 @@
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white rounded-lg shadow-xl p-6 max-w-md mx-4 relative z-10"
+          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white !important; opacity: 1 !important;"
         >
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800">Import Team Build</h3>
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 transition-colors"
+              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showImportModal = false)}
               aria-label="Close import modal"
             >
-              <span>×</span>
+              <span class="text-2xl">×</span>
               <span class="sr-only">Close</span>
             </button>
           </div>
           
-          <div class="space-y-4">
-            <p class="text-stone-600">
+          <div class="space-y-6">
+            <p class="text-stone-600 dark:text-gray-300">
               Paste a team build code below to import a shared build
             </p>
             <div class="space-y-3">
@@ -1256,19 +1343,19 @@
               <textarea
                 id="import-draft"
                 bind:value={importString}
-                class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[100px]"
+                class="w-full px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[120px] bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
                 placeholder="Paste encoded draft here"
               ></textarea>
             </div>
-            <div class="flex gap-3 justify-end">
+            <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
               <button
-                class="px-4 py-2 rounded-lg bg-stone-300 hover:bg-stone-400 text-stone-700 font-medium transition-colors"
+                class="px-6 py-2 rounded-lg bg-stone-300 hover:bg-stone-400 text-stone-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white font-medium transition-colors shadow-md"
                 on:click={() => (showImportModal = false)}
               >
                 Cancel
               </button>
               <button
-                class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors"
+                class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
                 on:click={importDraftString}
               >
                 Import
@@ -1296,9 +1383,9 @@
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-lg shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+          class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-12 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
@@ -1312,7 +1399,7 @@
             </button>
           </div>
           
-          <div class="space-y-6">
+          <div class="space-y-10">
             <div class="space-y-2">
               <div class="flex items-center">
                 <input 

@@ -1,9 +1,14 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, type User } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+
+// Using dynamic imports to avoid SSR issues
+let firebase;
+let app;
+let auth;
+let db;
+let GoogleProvider;
+let user = writable(null);
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,35 +21,54 @@ const firebaseConfig = {
   measurementId: "G-EKPMXMY097"
 };
 
-// Only initialize Firebase in the browser environment
-let app;
-let auth;
-let db;
-let user = writable<User | null>(null);
-
-if (browser) {
-  try {
-    // Initialize Firebase
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-
-    // Subscribe to auth state changes
-    auth.onAuthStateChanged((newUser) => {
-      user.set(newUser);
-    });
-  } catch (error) {
-    console.error("Firebase initialization error:", error);
+// Initialize Firebase only in the browser using dynamic imports
+const initializeFirebase = async () => {
+  if (browser) {
+    try {
+      // Dynamically import Firebase modules
+      const firebaseApp = await import('firebase/app');
+      const firebaseAuth = await import('firebase/auth');
+      const firebaseFirestore = await import('firebase/firestore');
+      
+      // Initialize Firebase
+      app = firebaseApp.initializeApp(firebaseConfig);
+      auth = firebaseAuth.getAuth(app);
+      db = firebaseFirestore.getFirestore(app);
+      GoogleProvider = firebaseAuth.GoogleAuthProvider;
+      
+      // Subscribe to auth state changes
+      auth.onAuthStateChanged((newUser) => {
+        user.set(newUser);
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+      return { success: false, error };
+    }
   }
+  return { success: false, error: "Not in browser environment" };
+};
+
+// Initialize Firebase when in browser
+if (browser) {
+  initializeFirebase();
 }
 
 // Sign in with Google
 export const signInWithGoogle = async () => {
-  if (!auth) return { success: false, error: "Auth not initialized" };
+  // Make sure Firebase is initialized
+  if (!auth) {
+    const initResult = await initializeFirebase();
+    if (!initResult.success) {
+      return { success: false, error: "Auth not initialized" };
+    }
+  }
   
-  const provider = new GoogleAuthProvider();
   try {
-    await signInWithPopup(auth, provider);
+    const firebaseAuth = await import('firebase/auth');
+    const provider = new firebaseAuth.GoogleAuthProvider();
+    await firebaseAuth.signInWithPopup(auth, provider);
     return { success: true };
   } catch (error) {
     console.error("Error signing in with Google", error);
@@ -54,10 +78,17 @@ export const signInWithGoogle = async () => {
 
 // Sign out
 export const signOutUser = async () => {
-  if (!auth) return { success: false, error: "Auth not initialized" };
+  // Make sure Firebase is initialized
+  if (!auth) {
+    const initResult = await initializeFirebase();
+    if (!initResult.success) {
+      return { success: false, error: "Auth not initialized" };
+    }
+  }
   
   try {
-    await signOut(auth);
+    const firebaseAuth = await import('firebase/auth');
+    await firebaseAuth.signOut(auth);
     return { success: true };
   } catch (error) {
     console.error("Error signing out", error);
