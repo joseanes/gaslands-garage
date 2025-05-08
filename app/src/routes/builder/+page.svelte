@@ -36,6 +36,29 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	};
 	let vehicles: Veh[] = [];
 
+	function calculateUsedBuildSlots(vehicle) {
+		let totalSlots = 0;
+		
+		// Calculate slots used by weapons
+		for (const weaponInstanceId of vehicle.weapons) {
+			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const weaponObj = weapons.find(w => w.id === baseWeaponId);
+			if (weaponObj) {
+				totalSlots += weaponObj.buildSlots || 1;
+			}
+		}
+		
+		// Calculate slots used by upgrades
+		for (const upgradeId of vehicle.upgrades) {
+			const upgradeObj = upgrades.find(u => u.id === upgradeId);
+			if (upgradeObj) {
+				totalSlots += upgradeObj.buildSlots || 1;
+			}
+		}
+		
+		return totalSlots;
+	}
+
 	function addVehicle(type = filteredVehicleTypes[0]?.id) {
 		const vt = vehicleTypes.find((v) => v.id === type)!;
 		vehicles = [
@@ -963,15 +986,21 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									<span class="text-xs dark:text-gray-300">points</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Crew</span>
+									<span class="font-bold text-lg dark:text-white">
+										{vehicleTypes.find(vt => vt.id === v.type)?.crew || '1'}
+									</span>
+								</div>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
 									<span class="font-bold text-lg dark:text-white">
 										{vehicleTypes.find(vt => vt.id === v.type)?.weight || '1'}
 									</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons</span>
-									<span class="font-bold text-lg dark:text-white" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
-										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Build Slots</span>
+									<span class="font-bold text-lg dark:text-white" class:text-red-600={calculateUsedBuildSlots(v) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+										{calculateUsedBuildSlots(v)} / {vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2}
 									</span>
 								</div>
 							</div>
@@ -1136,11 +1165,15 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												target.value = ""; // Reset selection
 											}
 										}}
-										disabled={v.weapons.length >= (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}
+										disabled={calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add weapon</option>
 										{#each filteredWeapons as w}
-											<option value={w.id}>{w.name}</option>
+											<option value={w.id} disabled={calculateUsedBuildSlots(v) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+												{w.name}
+												{w.crewFired ? " (Crew Fired)" : ""}
+												{w.dropped ? " (Dropped)" : ""}
+											</option>
 										{/each}
 									</select>
 									<!-- Dropdown arrow removed -->
@@ -1195,11 +1228,13 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												target.value = ""; // Reset selection
 											}
 										}}
-										disabled={v.upgrades.length >= (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}
+										disabled={calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add upgrade</option>
 										{#each filteredUpgrades as u}
-											<option value={u.id}>{u.name}</option>
+											<option value={u.id} disabled={calculateUsedBuildSlots(v) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+												{u.name}
+											</option>
 										{/each}
 									</select>
 								</div>
@@ -1254,7 +1289,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										<option value="" disabled selected>+ Add perk</option>
 										{#each availablePerks as p}
 											{#if !v.perks.includes(p.id)}
-												<option value={p.id} title={p.text}>{p.name} (Level {p.level})</option>
+												<option value={p.id} title={p.text}>{p.name}</option>
 											{/if}
 										{/each}
 									</select>
@@ -1299,15 +1334,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons</span>
-									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
-										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
-									</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Upgrades</span>
-									<span class="font-bold text-lg" class:text-red-600={v.upgrades.length > (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}>
-										{v.upgrades.length} / {vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || '2'}
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Build Slots</span>
+									<span class="font-bold text-lg" class:text-red-600={calculateUsedBuildSlots(v) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
+										{calculateUsedBuildSlots(v)} / {vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2}
 									</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
@@ -1383,7 +1412,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	<h3 class="text-lg font-bold text-stone-800 dark:text-white mb-3">Gaslands Math:</h3>
 	<div class="grid grid-cols-2 md:grid-cols-5 gap-4">
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Hull</div>
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
 				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0), 0)}
 			</div>
@@ -1395,13 +1424,13 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			</div>
 		</div>
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Max Gear</div>
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Gear (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
 				{vehicles.length > 0 ? Math.max(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0)) : 0}
 			</div>
 		</div>
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Weapons</div>
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
 				{vehicles.reduce((total, v) => total + v.weapons.length, 0)}
 			</div>
@@ -1699,7 +1728,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced} (Advanced){/if}
 			</div>
             <div class="bold">Handling: {v.type === 'car' ? 3 : v.type === 'truck' ? 2 : 4}</div>
-            <div class="bold">Crew: {v.type === 'car' ? 2 : v.type === 'truck' ? 3 : 1}</div>
+            <div class="bold">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
           </div>
           
           <div class="card-gear">
