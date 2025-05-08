@@ -58,8 +58,23 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 	function addWeapon(vehicleId: string, weaponId: string, facing?: string) {
 		const weaponObj = weapons.find(w => w.id === weaponId);
-		// If the weapon has a fixed facing or a facing is provided, use it
-		const actualFacing = facing || weaponObj?.facing || 'front';
+		
+		// Apply weapon facing rules:
+		// 1. Crew Fired weapons are always 360° (any)
+		// 2. Dropped weapons are rear or side only (default to rear)
+		// 3. Fixed facing weapons use their specified facing
+		// 4. Otherwise use provided facing or default to front
+		let actualFacing = 'front';
+		
+		if (weaponObj?.crewFired) {
+			actualFacing = 'any'; // Crew fired weapons are always 360°
+		} else if (weaponObj?.dropped) {
+			actualFacing = 'rear'; // Dropped weapons default to rear
+		} else if (weaponObj?.facing && weaponObj.facing !== 'any') {
+			actualFacing = weaponObj.facing; // Use fixed facing
+		} else if (facing) {
+			actualFacing = facing; // Use provided facing
+		}
 		
 		vehicles = vehicles.map(v => {
 			if (v.id === vehicleId) {
@@ -759,13 +774,13 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 <section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
 	<header class="mb-6 md:mb-8">
-		<div class="text-2xl md:text-3xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
+		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
 			<div class="flex items-center gap-2">
 				<b>Team:</b>&nbsp;&nbsp;&nbsp; 
 				<input 
 					type="text" 
 					bind:value={teamName}
-					class="bg-transparent border-b-2 border-amber-500 px-2 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 min-w-[150px] w-auto" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
 				/>
 			</div>  
@@ -776,7 +791,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={maxCans}
 					min="1"
 					max="1000"
-					class="bg-transparent border-b-2 border-amber-500 px-2 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 w-[60px] text-center" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
 					aria-label="Max Cans"
 				/>
 			</div>
@@ -986,7 +1001,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 																<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
 															{/if}
 														</div>
-														<div class="text-stone-600 dark:text-gray-400 text-xs mt-1 flex flex-wrap gap-2">
+														<div class="text-stone-600 dark:text-gray-400 text-xs mt-1 flex flex-wrap gap-3">
 															{#if weaponObj?.cost}
 																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
 																	{weaponObj.cost} cans
@@ -1029,7 +1044,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 															{/if}
 														</div>
 														{#if weaponObj?.specialRules}
-															<div class="text-stone-500 dark:text-gray-400 text-xs mt-1">{weaponObj.specialRules}</div>
+															<div class="text-stone-500 dark:text-gray-400 text-xs mt-2 w-full">{weaponObj.specialRules}</div>
 														{/if}
 													</div>
 													<!-- Remove button -->
@@ -1046,16 +1061,16 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												<!-- Weapon facing controls -->
 												<div class="mt-2 flex items-center">
 													<span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
-													{#if isFixedFacing || weaponObj?.crewFired}
-														<!-- Disabled dropdown for fixed facing weapons or crew fired weapons -->
+													{#if isFixedFacing || weaponObj?.crewFired || weaponObj?.dropped}
+														<!-- Disabled dropdown for fixed facing weapons, crew fired weapons, or dropped weapons -->
 														<div class="relative inline-flex">
 															<select 
 																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-300 font-medium cursor-not-allowed appearance-none"
-																value={weaponObj?.crewFired ? "any" : weaponObj?.facing}
+																value={weaponObj?.crewFired ? "any" : (weaponObj?.dropped ? (weaponObj?.facing || "rear") : weaponObj?.facing)}
 																disabled
 															>
-																<option value={weaponObj?.crewFired ? "any" : weaponObj?.facing}>
-																	{weaponObj?.crewFired ? "360° arc" : `${weaponObj?.facing} (fixed)`}
+																<option value={weaponObj?.crewFired ? "any" : (weaponObj?.dropped ? (weaponObj?.facing || "rear") : weaponObj?.facing)}>
+																	{weaponObj?.crewFired ? "360° arc" : (weaponObj?.dropped ? `${weaponObj?.facing || "rear"} (dropped)` : `${weaponObj?.facing} (fixed)`)}
 																</option>
 															</select>
 															<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 dark:text-gray-400">
@@ -1116,10 +1131,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 											const target = e.target as HTMLSelectElement;
 											const weaponId = target.value;
 											if (weaponId) {
-												// Get the weapon object to check for fixed facing
-												const weaponObj = weapons.find(w => w.id === weaponId);
-												// Pass the weapon's fixed facing or 'front' as default
-												addWeapon(v.id, weaponId, weaponObj?.facing || 'front');
+												// The addWeapon function will now enforce facing rules automatically
+												addWeapon(v.id, weaponId);
 												target.value = ""; // Reset selection
 											}
 										}}
