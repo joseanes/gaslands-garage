@@ -20,7 +20,9 @@ export const Vehicle = z.object({
   maxHull: z.number().int().positive(),
   weaponSlots: z.number().int().positive(),
   upgradeSlots: z.number().int().positive().default(2),
-  color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i).optional()
+  color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i).optional(),
+  weight: z.number().int().positive().default(1),
+  advanced: z.boolean().optional().default(false)
 });
 export type Vehicle = z.infer<typeof Vehicle>;
 
@@ -30,7 +32,15 @@ export const Weapon = z.object({
   cost: z.number().int().nonnegative(),
   slots: z.number().int().positive(),
   type: z.enum(['weapon']),
-  unique: z.boolean().optional()
+  facing: z.string().optional(),
+  crewFired: z.boolean().optional(),
+  unique: z.boolean().optional(),
+  advanced: z.boolean().optional().default(false),
+  range: z.string().optional(),
+  attackDice: z.number().int().nonnegative().optional(),
+  specialRules: z.string().optional(),
+  dropped: z.boolean().optional(),
+  source: z.string().optional()
 });
 
 export type Weapon = z.infer<typeof Weapon>;
@@ -41,7 +51,8 @@ export const Upgrade = z.object({
   cost: z.number().int().nonnegative(),
   slots: z.number().int().positive(),
   specialRules: z.string(),
-  type: z.literal('upgrade')
+  type: z.literal('upgrade'),
+  advanced: z.boolean().optional().default(false)
 });
 
 export type Upgrade = z.infer<typeof Upgrade>;

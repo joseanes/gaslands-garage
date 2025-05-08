@@ -9,6 +9,7 @@
 	import Auth from '$lib/components/Auth.svelte';
 	import TeamsModal from '$lib/components/TeamsModal.svelte';
 	import { user } from '$lib/firebase';
+import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
@@ -168,7 +169,24 @@
 		
 		document.addEventListener('click', handleClickOutside);
 		
+		// Load user settings from Firebase if user is logged in
+		const unsubscribe = user.subscribe(async currentUser => {
+			if (currentUser) {
+				try {
+					const result = await getUserSettings();
+					if (result.success && result.settings) {
+						enableSponsorships = result.settings.enableSponsorships;
+						includeAdvanced = result.settings.includeAdvanced;
+						darkMode = result.settings.darkMode;
+					}
+				} catch (error) {
+					console.error("Error loading settings:", error);
+				}
+			}
+		});
+		
 		return () => {
+			unsubscribe();
 			document.removeEventListener('click', handleClickOutside);
 		};
 	});
@@ -179,6 +197,21 @@
 	let maxCans = 50;
 	let teamName = "My Gaslands Team";
 	let darkMode = false;
+
+	// Save settings to Firebase when they change
+	async function saveSettingsToFirebase() {
+		if ($user) {
+			try {
+				await saveUserSettings({
+					enableSponsorships,
+					includeAdvanced,
+					darkMode
+				});
+			} catch (error) {
+				console.error("Error saving settings:", error);
+			}
+		}
+	}
 
 	/* ---------- menu actions ---------- */
 	async function copyDraft() {
@@ -442,6 +475,47 @@
 	padding: 0 !important;
 }
 
+/* Tooltip styles */
+.tooltip {
+	position: relative;
+	display: inline-block;
+	cursor: help;
+	border-bottom: 1px dotted #666;
+}
+
+.tooltip:hover::after {
+	content: attr(title);
+	position: absolute;
+	bottom: 125%;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: rgba(0, 0, 0, 0.8);
+	color: white;
+	padding: 6px 10px;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	white-space: nowrap;
+	z-index: 50;
+	text-align: center;
+	pointer-events: none;
+	min-width: 200px;
+	max-width: 300px;
+	white-space: normal;
+}
+
+.tooltip:hover::before {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+	z-index: 50;
+	pointer-events: none;
+}
+
 /* Hide print view by default */
 #gaslands-print-view {
   display: none;
@@ -685,20 +759,41 @@
 
 <section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
 	<header class="mb-6 md:mb-8">
-		<h1 class="text-2xl md:text-3xl font-extrabold text-stone-800 tracking-tight">
-			Build Your Team
-		</h1>
-		<p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p>
+		<div class="text-2xl md:text-3xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
+			<div class="flex items-center gap-2">
+				<b>Team:</b>&nbsp;&nbsp;&nbsp; 
+				<input 
+					type="text" 
+					bind:value={teamName}
+					class="bg-transparent border-b-2 border-amber-500 px-2 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 min-w-[150px] w-auto" 
+					aria-label="Team Name"
+				/>
+			</div>  
+			<div class="flex items-center gap-2 ml-auto">
+				<b>Total Cans:</b>&nbsp;&nbsp;&nbsp;
+				<input 
+					type="number" 
+					bind:value={maxCans}
+					min="1"
+					max="1000"
+					class="bg-transparent border-b-2 border-amber-500 px-2 py-1 font-extrabold text-amber-700 dark:text-amber-400 focus:outline-none focus:border-amber-600 w-[60px] text-center" 
+					aria-label="Max Cans"
+				/>
+			</div>
+		</div>
+		<!-- <p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p> -->
 	</header>
-
+<hr>
 	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
 	{#if enableSponsorships}
 		<div class="bg-white p-5 rounded-lg shadow-md mb-6">
 			<div class="flex flex-wrap md:flex-nowrap items-start gap-4">
 				<div class="w-full md:w-1/3">
-					<label for="sponsor-select" class="block">
-						<span class="text-lg font-bold text-stone-800 block mb-2">Choose Your Sponsor</span>
-						<div class="relative">
+					<div class="flex items-center gap-4">
+						<label for="sponsor-select" class="text-lg font-bold text-stone-800 whitespace-nowrap">
+							Choose Your Sponsor: &nbsp;&nbsp;
+						</label>
+						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
 								bind:value={sponsorId}
@@ -709,16 +804,27 @@
 								{/each}
 							</select>
 						</div>
-					</label>
+
+					</div>
 				</div>
 				<div class="w-full md:w-2/3 md:pt-8">
-					<p class="text-sm text-stone-600">
+					Sponsor Source:&nbsp;&nbsp;
 						{sponsors.find(s => s.id === sponsorId)?.source || "Unknown source"}
-					</p>
+					
 					{#if currentSponsor?.perks?.length}
-						<p class="mt-2 text-sm text-stone-700">
-							<span class="font-medium">Available Perks:</span> {perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}
-						</p>
+						<div class="mt-2 text-sm text-stone-700 dark:text-gray-300">
+							<span class="font-medium">Available Perks:</span> 
+							<span class="inline ml-2">
+								{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
+								&nbsp;<span 
+										class="tooltip inline mr-1"
+										title="{perk.name} (Level {perk.level}): {perk.text}"
+									>
+										{perk.name}{i < perks.filter(p => currentSponsor?.perks.includes(p.id)).length - 1 ? ', ' : ''}
+									</span>
+								{/each}
+							</span>
+						</div>
 					{/if}
 				</div>
 			</div>
@@ -735,8 +841,8 @@
 				<div class="ml-3">
 					<h3 class="text-lg font-medium text-blue-800">Sponsorships Disabled</h3>
 					<div class="mt-2 text-sm text-blue-700">
-						<p>You are building a team without a sponsor. Sponsorship perks are unavailable.</p>
-						<p class="mt-1">Enable sponsorships in Settings to access sponsor-specific perks and abilities.</p>
+						<p>You are building a team without a sponsor. Sponsorship perks are unavailable.
+						Enable sponsorships in Settings to access sponsor-specific perks and abilities.</p>
 					</div>
 					<div class="mt-3">
 						<button 
@@ -751,11 +857,11 @@
 			</div>
 		</div>
 	{/if}
-
+<hr>
 	<!-- Vehicle list -->
 	<div class="mb-8">
 		<div class="flex items-center justify-between mb-4">
-			<h2 class="text-2xl font-bold text-stone-800">Your Vehicles</h2>
+			<h2 class="text-2xl font-bold text-stone-800">Vehicles</h2>
 			<button
 				class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors shadow-md flex items-center"
 				on:click={() => addVehicle()}
@@ -826,17 +932,26 @@
 									<span class="text-xs dark:text-gray-300">cans</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
-									<span class="font-bold text-base truncate block dark:text-white">
-										{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-									</span>
-								</div>
+								<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
+								<span class="font-bold text-base truncate block dark:text-white">
+									{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
+								</span>
+								{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
+									<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
+								{/if}
+							</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
 									<span class="font-bold text-lg dark:text-white">
 										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
 									</span>
 									<span class="text-xs dark:text-gray-300">points</span>
+								</div>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
+									<span class="font-bold text-lg dark:text-white">
+										{vehicleTypes.find(vt => vt.id === v.type)?.weight || '1'}
+									</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons</span>
@@ -865,7 +980,54 @@
 												<div class="flex items-start justify-between">
 													<!-- Weapon details -->
 													<div class="flex-1">
-														<div class="text-stone-700 dark:text-gray-200 font-medium">{weaponObj?.name || weaponId}</div>
+														<div class="text-stone-700 dark:text-gray-200 font-medium">
+															{weaponObj?.name || weaponId}
+															{#if weaponObj?.advanced}
+																<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
+															{/if}
+														</div>
+														<div class="text-stone-600 dark:text-gray-400 text-xs mt-1 flex flex-wrap gap-2">
+															{#if weaponObj?.cost}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	{weaponObj.cost} cans
+																</span>
+															{/if}
+															{#if weaponObj?.slots}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	{weaponObj.slots} {weaponObj.slots === 1 ? 'slot' : 'slots'}
+																</span>
+															{/if}
+															{#if weaponObj?.range}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	{weaponObj.range} range
+																</span>
+															{/if}
+															{#if weaponObj?.attackDice != null}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	{weaponObj.attackDice}D attack
+																</span>
+															{/if}
+															{#if weaponObj?.crewFired}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	Crew fired
+																</span>
+															{/if}
+															{#if weaponObj?.dropped}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	Dropped
+																</span>
+															{/if}
+															{#if weaponObj?.unique}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	Unique
+																</span>
+															{/if}
+															{#if weaponObj?.source && weaponObj.source !== "Gaslands Refueled"}
+																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
+																	{weaponObj.source}
+																</span>
+															{/if}
+														</div>
 														{#if weaponObj?.specialRules}
 															<div class="text-stone-500 dark:text-gray-400 text-xs mt-1">{weaponObj.specialRules}</div>
 														{/if}
@@ -983,10 +1145,16 @@
 								{:else}
 									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
 										{#each v.upgrades as upgradeId, i}
+									{@const upgrade = upgrades.find(u => u.id === upgradeId)}
 											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
 												<div class="flex-1">
-													<span class="text-stone-700 font-medium block">{upgrades.find(u => u.id === upgradeId)?.name || upgradeId}</span>
-													<span class="text-stone-500 text-xs">{upgrades.find(u => u.id === upgradeId)?.specialRules || ""}</span>
+													<span class="text-stone-700 dark:text-gray-200 font-medium block">
+														{upgrade?.name || upgradeId}
+														{#if upgrade?.advanced}
+															<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
+														{/if}
+													</span>
+													<span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
 												</div>
 												<button
 													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
@@ -1032,14 +1200,15 @@
 								</h3>
 								
 								{#if v.perks.length === 0}
-									<p class="text-stone-500 text-sm italic px-2">No perks selected.</p>
+									<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No perks selected.</p>
 								{:else}
-									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
+									<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
 										{#each v.perks as perkId, i}
-											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
+											{@const perk = perks.find(p => p.id === perkId)}
+											<li class="flex items-center justify-between bg-stone-50 dark:bg-gray-700 px-3 py-2">
 												<div class="flex-1">
-													<span class="text-stone-700 font-medium block">{perks.find(p => p.id === perkId)?.name || perkId}</span>
-													<span class="text-stone-500 text-xs">{perks.find(p => p.id === perkId)?.text || ""}</span>
+													<span class="text-stone-700 dark:text-gray-200 font-medium block">{perk?.name || perkId}</span>
+													<span class="text-stone-500 dark:text-gray-400 text-xs">{perk?.text || ""}</span>
 												</div>
 												<button
 													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
@@ -1072,7 +1241,7 @@
 										<option value="" disabled selected>+ Add perk</option>
 										{#each availablePerks as p}
 											{#if !v.perks.includes(p.id)}
-												<option value={p.id}>{p.name} (Level {p.level})</option>
+												<option value={p.id} title={p.text}>{p.name} (Level {p.level})</option>
 											{/if}
 										{/each}
 									</select>
@@ -1088,39 +1257,48 @@
 									</span>
 									<span class="text-xs">cans</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Type</span>
-									<span class="font-bold text-base truncate block">
-										{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-									</span>
-								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Hull</span>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+								<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
+								<span class="font-bold text-base truncate block dark:text-white">
+									{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
+								</span>
+								{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
+									<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
+								{/if}
+							</div>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
 									<span class="font-bold text-lg">
 										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
 									</span>
 									<span class="text-xs">points</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Weapons</span>
-									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
-										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
+									<span class="font-bold text-lg">
+										{vehicleTypes.find(vt => vt.id === v.type)?.weight || '1'}
 									</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Max Gear</span>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Max Gear</span>
 									<span class="font-bold text-lg">
 										{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || '?'}
 									</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Upgrades</span>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons</span>
+									<span class="font-bold text-lg" class:text-red-600={v.weapons.length > (vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || 0)}>
+										{v.weapons.length} / {vehicleTypes.find(vt => vt.id === v.type)?.weaponSlots || '?'}
+									</span>
+								</div>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Upgrades</span>
 									<span class="font-bold text-lg" class:text-red-600={v.upgrades.length > (vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || 0)}>
 										{v.upgrades.length} / {vehicleTypes.find(vt => vt.id === v.type)?.upgradeSlots || '2'}
 									</span>
 								</div>
-								<div class="bg-stone-300 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 uppercase font-semibold">Perks</span>
+								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
+									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Perks</span>
 									<span class="font-bold text-lg" class:text-red-600={v.perks.some(perkId => !currentSponsor?.perks.includes(perkId))}>
 										{v.perks.length} / {availablePerks.length}
 									</span>
@@ -1133,7 +1311,7 @@
 		{/if}
 	</div>
 
-
+	<hr>
 <!-- Totals / legality -->
 <div class="bg-white p-5 rounded-lg shadow-md mb-6">
 	<div class="flex items-center justify-between mb-4">
@@ -1157,7 +1335,13 @@
 				{#if currentSponsor?.perks?.length}
 					<span class="mx-2 text-stone-400">|</span>
 					<span class="font-medium text-stone-800">Perks:</span>
-					<span class="text-stone-700">{perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}</span>
+					<span class="text-stone-700 inline ml-2">
+						{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
+							<span class="tooltip inline" title="{perk.name} (Level {perk.level}): {perk.text}">
+								{perk.name}{i < perks.filter(p => currentSponsor?.perks.includes(p.id)).length - 1 ? ', ' : ''}
+							</span>
+						{/each}
+					</span>
 				{/if}
 			</div>
 		</div>
@@ -1181,7 +1365,43 @@
 			</ul>
 		</div>
 	{/if}
-
+<!-- Gaslands Math -->
+<div class="mt-6 bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
+	<h3 class="text-lg font-bold text-stone-800 dark:text-white mb-3">Gaslands Math:</h3>
+	<div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Hull</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0), 0)}
+			</div>
+		</div>
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Weight</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.weight || 1), 0)}
+			</div>
+		</div>
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Max Gear</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{vehicles.length > 0 ? Math.max(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0)) : 0}
+			</div>
+		</div>
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Weapons</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{vehicles.reduce((total, v) => total + v.weapons.length, 0)}
+			</div>
+		</div>
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Vehicles</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{vehicles.length}
+			</div>
+		</div>
+	</div>
+</div>
+ 
 </div>    <!-- QR Modal -->
     {#if qrDataUrl}
       <div
@@ -1370,7 +1590,7 @@
                 </label>
               </div>
               <p class="text-stone-600 dark:text-gray-300 text-sm ml-6">
-                Clear this option to reduce the list of vehicles, weapons, and upgrades to just the basic options.
+                Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
               </p>
             </div>
             
@@ -1391,45 +1611,16 @@
               </p>
             </div>
             
-            <div class="space-y-2 pt-4 border-t border-stone-200 dark:border-amber-900">
-              <label for="team-name" class="block text-stone-800 dark:text-white font-medium">
-                Team Name
-              </label>
-              <input 
-                type="text" 
-                id="team-name" 
-                bind:value={teamName}
-                class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
-                placeholder="My Gaslands Team"
-              />
-              <p class="text-stone-600 dark:text-gray-300 text-sm">
-                The name of your team that will appear on printed sheets.
-              </p>
-            </div>
-            
-            <div class="space-y-2 pt-4">
-              <label for="max-cans" class="block text-stone-800 dark:text-white font-medium">
-                Number of Cans
-              </label>
-              <input 
-                type="number" 
-                id="max-cans" 
-                bind:value={maxCans}
-                min="1"
-                max="1000"
-                class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
-              />
-              <p class="text-stone-600 dark:text-gray-300 text-sm">
-                The maximum number of cans available for your team. Default is 50.
-              </p>
-            </div>
             
             <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
               <button
                 class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
-                on:click={() => (showSettingsModal = false)}
+                on:click={() => {
+                  if ($user) saveSettingsToFirebase();
+                  showSettingsModal = false;
+                }}
               >
-                Close
+                Save & Close
               </button>
             </div>
           </div>
@@ -1475,7 +1666,7 @@
       Total: {totalCans}/{maxCans} cans 
       {#if enableSponsorships && currentSponsor?.perks.length}
         | Sponsor: {currentSponsor?.name || ''} 
-        | Perks: {currentSponsor?.perks.map(id => perks.find(p => p.id === id)?.name || '').join(', ')}
+        | Perks: {perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}
       {/if}
     </p>
   </div>
@@ -1490,7 +1681,10 @@
         
         <div class="card-stats">
           <div>
-            <div class="bold vehicle-type">{vehicleTypes.find(vt => vt.id === v.type)?.name}</div>
+            <div class="bold vehicle-type">
+				{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
+				{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced} (Advanced){/if}
+			</div>
             <div class="bold">Handling: {v.type === 'car' ? 3 : v.type === 'truck' ? 2 : 4}</div>
             <div class="bold">Crew: {v.type === 'car' ? 2 : v.type === 'truck' ? 3 : 1}</div>
           </div>
@@ -1519,10 +1713,10 @@
         
         <div class="card-weapons">
           {#each v.weapons as weaponId}
-            {@const baseWeaponId = weaponId.split('_')[0]}
-            {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-            {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
-            <div><strong>{weaponObj?.name || weaponId}</strong> <span style="font-style: italic;">({facing})</span></div>
+    {@const baseWeaponId = weaponId.split('_')[0]}
+    {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+    {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
+			<div><strong>{weaponObj?.name || weaponId}</strong> <span style="font-style: italic;">({facing})</span></div>
           {/each}
           {#if v.upgrades.length > 0}
             <div style="margin-top: 5px;">
