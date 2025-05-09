@@ -162,85 +162,25 @@
           
           {#if showShareMenu}
           <div 
-            class="fixed md:absolute inset-0 md:inset-auto md:left-0 md:mt-3 w-full md:w-96 bg-black border-0 md:border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-6 md:py-4 share-menu-dropdown" 
-            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: rgba(0, 0, 0, 0.95);"
+            class="absolute left-0 mt-3 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown" 
+            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important;"
             transition:fade={{ duration: 150 }}
           >
-            <div class="max-w-md mx-auto px-6 md:px-4">
-              <h3 class="text-white text-xl font-bold mb-4 flex items-center justify-between">
-                Share Your Team
-                <button 
-                  class="text-gray-400 hover:text-white md:hidden" 
-                  on:click={() => showShareMenu = false}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </h3>
-              
-              <div class="space-y-3">
-                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { copyDraft(); showShareMenu = false; }}>
-                    <div class="share-icon text-xl bg-amber-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span>📋</span>
-                    </div>
-                    <div class="share-details">
-                      <h4 class="text-white font-medium">Copy Team Code</h4>
-                      <p class="text-gray-400 text-sm">Copy an encoded version to your clipboard</p>
-                    </div>
-                  </button>
-                </div>
-                
-                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { shareLink(); showShareMenu = false; }}>
-                    <div class="share-icon text-xl bg-blue-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span>🔗</span>
-                    </div>
-                    <div class="share-details">
-                      <h4 class="text-white font-medium">Share Link</h4>
-                      <p class="text-gray-400 text-sm">Update URL with shareable link</p>
-                    </div>
-                  </button>
-                </div>
-                
-                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { generateQRCode(); showShareMenu = false; }}>
-                    <div class="share-icon text-xl bg-green-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span>📱</span>
-                    </div>
-                    <div class="share-details">
-                      <h4 class="text-white font-medium">Generate QR Code</h4>
-                      <p class="text-gray-400 text-sm">Create a QR code for easy sharing</p>
-                    </div>
-                  </button>
-                </div>
-                
-                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { importBuild(); showShareMenu = false; }}>
-                    <div class="share-icon text-xl bg-purple-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span>📥</span>
-                    </div>
-                    <div class="share-details">
-                      <h4 class="text-white font-medium">Import Build</h4>
-                      <p class="text-gray-400 text-sm">Load a team from a code</p>
-                    </div>
-                  </button>
-                </div>
-                
-                <div class="sharing-option bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-                  <button type="button" class="w-full p-3 flex items-center text-left" on:click={() => { printTeam(); showShareMenu = false; }}>
-                    <div class="share-icon text-xl bg-red-600 h-10 w-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
-                      <span>🖨️</span>
-                    </div>
-                    <div class="share-details">
-                      <h4 class="text-white font-medium">Print Team</h4>
-                      <p class="text-gray-400 text-sm">Print vehicle dashboards for gameplay</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { copyDraft(); showShareMenu = false; }}>
+              Copy to Clipboard
+            </button>
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { shareLink(); showShareMenu = false; }}>
+              Share Link
+            </button>
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { generateQRCode(); showShareMenu = false; }}>
+              Generate QR Code
+            </button>
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { importBuild(); showShareMenu = false; }}>
+              Import Build
+            </button>
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { printTeam(); showShareMenu = false; }}>
+              Print Team
+            </button>
           </div>
           {/if}
           <button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
@@ -264,105 +204,107 @@
       <slot />
     </main>
   </div>
-  
-  <!-- Teams Modal is handled by the builder page now -->
-  
-  <!-- About Modal -->
-  {#if showAboutModal}
+</div>
+
+<!-- About Modal -->
+{#if showAboutModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="About Gaslands Garage"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showAboutModal = false}
+      on:keydown={e => e.key === 'Escape' && (showAboutModal = false)}
+      aria-label="Close modal background"
+    ></button>
+    
+    <!-- Modal content -->
     <div
-      class="fixed inset-0 bg-black z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-label="About Gaslands Garage"
-      tabindex="-1"
-      transition:fade={{ duration: 150 }}
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
     >
-      <!-- Background overlay -->
-      <button
-        class="absolute inset-0 w-full h-full border-0 cursor-pointer"
-        on:click={() => showAboutModal = false}
-        on:keydown={e => e.key === 'Escape' && (showAboutModal = false)}
-        aria-label="Close modal background"
-      ></button>
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands Garage</h3>
+        <button
+          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          on:click={() => showAboutModal = false}
+          aria-label="Close about modal"
+        >
+          <span class="text-2xl">×</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
       
-      <!-- Modal content -->
-      <div
-        class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
-        role="document"
-        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
-      >
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands Garage</h3>
-          <button
-            class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
-            on:click={() => showAboutModal = false}
-            aria-label="Close about modal"
-          >
-            <span class="text-2xl">×</span>
-            <span class="sr-only">Close</span>
-          </button>
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
+        <p>
+          Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
+        </p>
+        
+        <div>
+          <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Features:</h4>
+          <ul class="list-disc pl-6 space-y-2">
+            <li>Build teams with any combination of vehicles, weapons, and upgrades</li>
+            <li>Validation ensures your team follows Gaslands rules</li>
+            <li>Save teams to your account for easy access</li>
+            <li>Share your builds with QR codes</li>
+            <li>Print vehicle cards for your games</li>
+            <li>Dark mode support</li>
+          </ul>
         </div>
         
-        <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
-          <p>
-            Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
+        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+          <p class="italic text-stone-600 dark:text-gray-400">
+            This is an unofficial fan-made tool. The Gaslands game is © 2017 Mike Hutchinson and this application is done under the Friends of Gaslands program. The Application Copyright © 2025 Anes & Rincon LLC d.b.a. FunBoardGames.Etsy.com.
           </p>
           
-          <div>
-            <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Features:</h4>
-            <ul class="list-disc pl-6 space-y-2">
-              <li>Build teams with any combination of vehicles, weapons, and upgrades</li>
-              <li>Validation ensures your team follows Gaslands rules</li>
-              <li>Save teams to your account for easy access</li>
-              <li>Share your builds with QR codes</li>
-              <li>Print vehicle cards for your games</li>
-              <li>Dark mode support</li>
-            </ul>
-          </div>
-          
-          <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
-            <p class="italic text-stone-600 dark:text-gray-400">
-              This is an unofficial fan-made tool. The Gaslands game is © 2017 Mike Hutchinson and this application is done under the Friends of Gaslands program. The Application Copyright © 2025 Anes & Rincon LLC d.b.a. FunBoardGames.Etsy.com.
-            </p>
+          <div class="mt-4">
+            <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Gaslands Garage</h4>
+            <p class="mb-2">The ultimate team builder for Gaslands tabletop game</p>
             
-            <div class="mt-4">
-              <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Gaslands Garage</h4>
-              <p class="mb-2">The ultimate team builder for Gaslands tabletop game</p>
-              
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                <div>
-                  <h5 class="font-semibold">Create</h5>
-                  <p class="text-sm">Design your perfect Gaslands team with all weapons, upgrades, and sponsor perks.</p>
-                </div>
-                <div>
-                  <h5 class="font-semibold">Share</h5>
-                  <p class="text-sm">Generate QR codes, links, or export your team to share with friends.</p>
-                </div>
-                <div>
-                  <h5 class="font-semibold">Print</h5>
-                  <p class="text-sm">Print vehicle cards for your games with all the information you need.</p>
-                </div>
-                    <!-- Friends of Gaslands Banner -->
-    <div class="mt-10 p-4 bg-amber-100 dark:bg-amber-900 rounded-lg text-center">
-      <h2 class="text-lg font-bold text-amber-800 dark:text-amber-100">Friends of Gaslands</h2>
-      <p class="text-amber-700 dark:text-amber-200 mt-2">
-        This is an unofficial fan-made tool. Gaslands is © 2017 Mike Hutchinson.
-      </p>
-      <p class="text-amber-600 dark:text-amber-300 mt-1 text-sm">
-        <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-amber-800 dark:hover:text-amber-100">Visit the official Gaslands website</a>
-      </p>
-    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div>
+                <h5 class="font-semibold">Create</h5>
+                <p class="text-sm">Design your perfect Gaslands team with all weapons, upgrades, and sponsor perks.</p>
+              </div>
+              <div>
+                <h5 class="font-semibold">Share</h5>
+                <p class="text-sm">Generate QR codes, links, or export your team to share with friends.</p>
+              </div>
+              <div>
+                <h5 class="font-semibold">Print</h5>
+                <p class="text-sm">Print vehicle cards for your games with all the information you need.</p>
               </div>
             </div>
-            <p class="mt-4">
-              <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 underline">Visit the official Gaslands website</a>
-            </p>
+            
+            <!-- Friends of Gaslands Banner -->
+            <div class="mt-10 p-4 bg-amber-100 dark:bg-amber-900 rounded-lg text-center">
+              <h2 class="text-lg font-bold text-amber-800 dark:text-amber-100">Friends of Gaslands</h2>
+              <div class="flex justify-center my-4">
+                <img src="/static/friend-of-gaslands.png" alt="Friend of Gaslands Logo" class="h-24" />
+              </div>
+              <p class="text-amber-700 dark:text-amber-200 mt-2">
+                This is an unofficial fan-made tool. Gaslands is © 2017 Mike Hutchinson.
+              </p>
+              <p class="text-amber-600 dark:text-amber-300 mt-1 text-sm">
+                <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-amber-800 dark:hover:text-amber-100">Visit the official Gaslands website</a>
+              </p>
+            </div>
           </div>
+          <p class="mt-4">
+            <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 underline">Visit the official Gaslands website</a>
+          </p>
         </div>
       </div>
     </div>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style>
 /* Menu styles */
@@ -413,4 +355,3 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 </style>
-

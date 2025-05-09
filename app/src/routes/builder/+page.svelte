@@ -349,49 +349,18 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 	async function printTeam() {
 		// Generate a fresh QR code for printing without showing the modal
-		const tempQrCode = await draftToDataURL(currentDraft);
+		const printQrCode = await draftToDataURL(currentDraft);
 		
-		// Get the print view container
-		const printView = document.getElementById('gaslands-print-view');
-		if (!printView) {
-			console.error('Print view element not found');
-			return;
-		}
-		
-		// Generate the print view HTML content
-		printView.innerHTML = generatePrintView(currentDraft, tempQrCode);
-		
-		// First check for the hidden print-only QR code element
+		// Get the hidden QR code element in the print view
 		const hiddenQrImage = document.querySelector('#print-qr-code');
 		if (hiddenQrImage) {
-			// Make the hidden image visible for printing
-			hiddenQrImage.src = tempQrCode;
-			hiddenQrImage.style.display = 'block';
-			
-			// Hide the placeholder if it exists
-			const placeholder = document.querySelector('.qr-code-placeholder');
-			if (placeholder) placeholder.style.display = 'none';
+			// Set the QR code directly to this element without triggering the modal
+			hiddenQrImage.src = printQrCode;
 		}
 		
-		// Give the browser a moment to render the QR code and print view
+		// Give the browser a moment to render the QR code into the DOM
 		setTimeout(() => {
-			// Add a class to the body to enable print mode styles
-			document.body.classList.add('print-mode');
-			
-			// Use window.print() to open browser print dialog
 			window.print();
-			
-			// After printing, remove the print mode class
-			setTimeout(() => {
-				document.body.classList.remove('print-mode');
-				
-				// Clean up
-				if (hiddenQrImage) {
-					hiddenQrImage.style.display = 'none';
-					const placeholder = document.querySelector('.qr-code-placeholder');
-					if (placeholder) placeholder.style.display = 'block';
-				}
-			}, 500);
 		}, 300);
 	}
 	
@@ -972,7 +941,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 }
 
 /* Print styles */
-@media print, .print-mode {
+@media print {
   /* Hide elements that shouldn't be printed */
   .menu-bar,
   button[aria-label="Remove vehicle"],
@@ -984,6 +953,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   .bg-red-50,
   .bg-green-50 {
     display: none !important;
+  }
+  
+  /* Show the print view */
+  #gaslands-print-view {
+    display: block !important;
   }
   
   /* Page formatting */
@@ -1355,7 +1329,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				<input 
 					type="text" 
 					bind:value={teamName}
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
+					class="bg-transparent dark:bg-gray-700 border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
 				/>&nbsp;&nbsp;
 
@@ -1365,7 +1339,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={maxCans}
 					min="1"
 					max="1000"
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
+					class="bg-transparent dark:bg-gray-700 border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
 					aria-label="Max Cans"
 				/>
 			</div>
@@ -2260,9 +2234,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-12 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Settings</h3>
@@ -2546,13 +2520,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   <!-- QR Code and footer -->
   <div class="print-footer">
     <div class="qr-code-container">
-      {#if qrDataUrl}
-        <img src={qrDataUrl} alt="QR Code" class="qr-code-image" />
-      {:else}
-        <!-- Hidden image element that will be updated when printing without showing the modal -->
-        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" style="display: none;" />
-        <div class="qr-code-placeholder">QR Code</div>
-      {/if}
+      <!-- Print mode: always include both options but control visibility -->
+      <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" />
       <div class="qr-code-caption">Scan to load team</div>
     </div>
     <div class="print-footer-text">
