@@ -17,25 +17,43 @@ import {
 
 const DEFAULT_TEAM_CAP = 50;
 
+// Cached rule data to avoid repeated loading
+let cachedSponsors: any[] | null = null;
+let cachedVehicles: any[] | null = null;
+let cachedWeapons: any[] | null = null;
+let cachedUpgrades: any[] | null = null;
+let cachedPerks: any[] | null = null;
+
 export async function validateDraft(draft: Draft): Promise<Validation> {
   // Use custom maxCans if provided, otherwise use default
   const TEAM_CAP = draft.maxCans || DEFAULT_TEAM_CAP;
-  /* 1 — load all rule data */
-  const [sponsors, vehicles, weapons, upgrades, perks] = await Promise.all([
-    loadSponsors(),
-    loadVehicles(),
-    loadWeapons(),
-    loadUpgrades(),
-    loadPerks()
-  ]);
+  
+  /* 1 — load all rule data */
+  // Use cached data if available to prevent repeated loading
+  if (!cachedSponsors || !cachedVehicles || !cachedWeapons || !cachedUpgrades || !cachedPerks) {
+    [cachedSponsors, cachedVehicles, cachedWeapons, cachedUpgrades, cachedPerks] = await Promise.all([
+      loadSponsors(),
+      loadVehicles(),
+      loadWeapons(),
+      loadUpgrades(),
+      loadPerks()
+    ]);
+  }
+  
+  // Use cached data
+  const sponsors = cachedSponsors;
+  const vehicles = cachedVehicles;
+  const weapons = cachedWeapons;
+  const upgrades = cachedUpgrades;
+  const perks = cachedPerks;
 
-  /* 2 — look-up chosen sponsor BEFORE constructing team */
+  /* 2 — look-up chosen sponsor BEFORE constructing team */
   const sponsor = sponsors.find((s) => s.id === draft.sponsor);
   if (!sponsor) {
     return { cans: 0, errors: ['Unknown sponsor'], vehicleReports: [] };
   }
 
-  /* 3 — hydrate team */
+  /* 3 — hydrate team */
   const team: Team = {
     sponsor,
     vehicles: draft.vehicles
@@ -66,7 +84,7 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
       })
   };
 
-  /* 4 — per-vehicle reports with cans */
+  /* 4 — per-vehicle reports with cans */
   const vehicleReports: VehicleReport[] = team.vehicles.map((v) => {
     // Safety check for missing data
     if (!v.instance || !v.class) {
@@ -90,10 +108,10 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
     };
   });
 
-  /* 5 — rule checks */
+  /* 5 — rule checks */
   runAllChecks(team, vehicleReports);
 
-  /* 6 — team total + cap */
+  /* 6 — team total + cap */
   const totalCans = vehicleReports.reduce((s, r) => s + r.cans, 0);
   const errors: string[] = [];
 

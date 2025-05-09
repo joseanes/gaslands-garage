@@ -243,6 +243,7 @@
             </div>
           </div>
           {/if}
+          <button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
           {#if $user}
           <button type="button" class="menu-item" on:click={openTeamsModal}>My Teams</button>
           {/if}
