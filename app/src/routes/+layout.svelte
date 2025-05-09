@@ -293,7 +293,7 @@
         data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
       >
         <div class="flex justify-between items-center mb-6">
-          <h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands Garage</h3>
+          <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands Garage</h3>
           <button
             class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
             on:click={() => showAboutModal = false}
@@ -304,7 +304,7 @@
           </button>
         </div>
         
-        <div class="space-y-6 text-stone-700 dark:text-gray-200">
+        <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
           <p>
             Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
           </p>

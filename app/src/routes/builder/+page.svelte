@@ -258,34 +258,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	let showImportModal = false;
 	let showSettingsModal = false;
 	
-	// Update modal backgrounds based on dark mode
-	$: {
-		if (darkMode) {
-			setTimeout(() => {
-				// Apply dark mode styling to modal content areas
-				document.querySelectorAll('[data-dark-style]').forEach(el => {
-					const darkStyle = el.getAttribute('data-dark-style');
-					// Apply the dark style attributes to the element's style
-					if (darkStyle) {
-						const styles = darkStyle.split(';').filter(Boolean);
-						styles.forEach(style => {
-							const [property, value] = style.split(':').map(s => s.trim());
-							if (property && value) {
-								el.style.setProperty(property, value);
-							}
-						});
-					}
-				});
-			}, 0);
-		} else {
-			setTimeout(() => {
-				// Ensure light mode has white backgrounds
-				document.querySelectorAll('[data-dark-style]').forEach(el => {
-					el.style.backgroundColor = '#ffffff !important';
-				});
-			}, 0);
-		}
-	}
+	// Dark mode is now handled through CSS classes instead of JavaScript
 	let showTeamsModal = false;
 	let showMenu = false;
 	let showShareMenu = false;
@@ -2025,7 +1998,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Team QR Code</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (qrDataUrl = null)}
@@ -2038,7 +2011,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border-2 border-stone-200 dark:border-gray-600">
             <img src={qrDataUrl} alt="team QR code" class="mx-auto w-64 h-64" />
           </div>
-          <p class="mt-6 text-center text-stone-600 dark:text-amber-300 text-sm font-medium">
+          <p class="mt-6 text-center text-stone-600 dark:text-amber-300 text-sm font-medium modal-text">
             Scan this QR code to share your team build
           </p>
           <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
@@ -2085,7 +2058,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Import Team Build</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showImportModal = false)}
@@ -2097,7 +2070,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           </div>
           
           <div class="space-y-6">
-            <p class="text-stone-600 dark:text-gray-200">
+            <p class="text-stone-600 dark:text-gray-200 modal-text">
               Paste a team build code below to import a shared build
             </p>
             <div class="space-y-3">
@@ -2105,7 +2078,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
               <textarea
                 id="import-draft"
                 bind:value={importString}
-                class="w-full px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[120px] bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
+                class="w-full px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[120px] bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
                 placeholder="Paste encoded draft here"
               ></textarea>
             </div>
@@ -2151,7 +2124,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Settings</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showSettingsModal = false)}
@@ -2175,7 +2148,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
                   Enable Sponsorships
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6 modal-subtext">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
             </div>

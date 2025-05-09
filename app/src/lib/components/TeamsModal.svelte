@@ -116,7 +116,7 @@
     data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
   >
     <div class="flex justify-between items-center mb-6">
-      <h3 class="text-lg font-bold text-stone-800 dark:text-white">My Teams</h3>
+      <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">My Teams</h3>
       <button
         class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
         on:click={closeModal}
@@ -129,19 +129,19 @@
     
     <div class="space-y-6">
       {#if !$user}
-        <p class="text-center py-6 text-stone-600 dark:text-gray-300">
+        <p class="text-center py-6 text-stone-600 dark:text-gray-300 modal-text">
           Please sign in to save and load teams.
         </p>
       {:else}
         <!-- Save current team section -->
         <div class="border-b border-stone-200 dark:border-amber-900 pb-6">
-          <h4 class="font-medium text-stone-800 dark:text-white text-lg mb-4">Save Current Team</h4>
+          <h4 class="font-medium text-stone-800 dark:text-white text-lg mb-4 modal-heading">Save Current Team</h4>
           <div class="flex gap-3">
             <input
               type="text"
               placeholder="Enter team name"
               bind:value={newTeamName}
-              class="flex-1 px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
+              class="flex-1 px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
             />
             <button
               class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg disabled:opacity-50 flex items-center shadow-md"
@@ -160,7 +160,7 @@
         
         <!-- Teams list -->
         <div>
-          <h4 class="font-medium text-stone-800 dark:text-white text-lg mb-4">Your Saved Teams</h4>
+          <h4 class="font-medium text-stone-800 dark:text-white text-lg mb-4 modal-heading">Your Saved Teams</h4>
           
           {#if isLoading}
             <div class="py-6 text-center text-stone-600 dark:text-gray-300">

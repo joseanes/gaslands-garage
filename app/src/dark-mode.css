@@ -36,6 +36,42 @@
   border-color: #92400e !important;
 }
 
+/* Modal styles for dark mode */
+.dark [role="dialog"] [role="document"],
+.dark-mode [role="dialog"] [role="document"] {
+  background-color: #1f2937 !important;
+  color: #f3f4f6 !important;
+  border-color: #f59e0b !important;
+  opacity: 1 !important;
+}
+
+.dark .modal-heading,
+.dark-mode .modal-heading {
+  color: #f3f4f6 !important;
+}
+
+.dark .modal-text,
+.dark-mode .modal-text {
+  color: #d1d5db !important;
+}
+
+.dark .modal-subtext,
+.dark-mode .modal-subtext {
+  color: #9ca3af !important;
+}
+
+.dark .modal-input,
+.dark-mode .modal-input {
+  background-color: #374151 !important;
+  border-color: #4b5563 !important;
+  color: #f3f4f6 !important;
+}
+
+.dark .settings-modal-content,
+.dark-mode .settings-modal-content {
+  background-color: #1f2937 !important;
+}
+
 /* For HTML dark mode */
 .dark-mode body {
   background-color: #111827;
