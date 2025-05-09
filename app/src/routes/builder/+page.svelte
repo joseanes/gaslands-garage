@@ -351,6 +351,16 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		// Generate a fresh QR code for printing without showing the modal
 		const tempQrCode = await draftToDataURL(currentDraft);
 		
+		// Get the print view container
+		const printView = document.getElementById('gaslands-print-view');
+		if (!printView) {
+			console.error('Print view element not found');
+			return;
+		}
+		
+		// Generate the print view HTML content
+		printView.innerHTML = generatePrintView(currentDraft, tempQrCode);
+		
 		// First check for the hidden print-only QR code element
 		const hiddenQrImage = document.querySelector('#print-qr-code');
 		if (hiddenQrImage) {
@@ -361,32 +371,157 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			// Hide the placeholder if it exists
 			const placeholder = document.querySelector('.qr-code-placeholder');
 			if (placeholder) placeholder.style.display = 'none';
-		} else {
-			// Fallback: temporarily set the QR code in the modal
-			// Store the current state so we can restore it
-			const previousQrState = qrDataUrl;
-			qrDataUrl = tempQrCode;
-			
-			// Restore after printing
-			setTimeout(() => {
-				qrDataUrl = previousQrState;
-			}, 1000);
 		}
 		
-		// Give the browser a moment to render the QR code
+		// Give the browser a moment to render the QR code and print view
 		setTimeout(() => {
+			// Add a class to the body to enable print mode styles
+			document.body.classList.add('print-mode');
+			
+			// Use window.print() to open browser print dialog
 			window.print();
 			
-			// After printing, hide the QR code again if we used the hidden element
-			if (hiddenQrImage) {
-				setTimeout(() => {
+			// After printing, remove the print mode class
+			setTimeout(() => {
+				document.body.classList.remove('print-mode');
+				
+				// Clean up
+				if (hiddenQrImage) {
 					hiddenQrImage.style.display = 'none';
-					// Show placeholder again
 					const placeholder = document.querySelector('.qr-code-placeholder');
 					if (placeholder) placeholder.style.display = 'block';
-				}, 500);
-			}
+				}
+			}, 500);
 		}, 300);
+	}
+	
+	// Helper function to generate the print view HTML
+	function generatePrintView(draft, qrCodeUrl) {
+		// Generate HTML for each vehicle card
+		const vehicleCards = draft.vehicles.map((vehicle, index) => {
+			const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+			if (!vehicleType) return '';
+			
+			// Get vehicle data
+			const vehicleName = vehicle.name || `Vehicle ${index + 1}`;
+			const hullBoxes = Array(vehicleType.maxHull).fill(0).map(() => `<div class="hull-box"></div>`).join('');
+			
+			// Get weapons
+			const weapons = vehicle.weapons
+				.map(weaponId => {
+					const baseWeaponId = weaponId.split('_')[0];
+					const weaponObj = weapons.find(w => w.id === baseWeaponId);
+					return weaponObj ? 
+						`<tr><td class="item-name">${weaponObj.name}</td><td class="item-facing">${vehicle.weaponFacings?.[weaponId] || 'front'}</td></tr>` 
+						: '';
+				})
+				.join('');
+				
+			// Get upgrades
+			const upgrades = (vehicle.upgrades || [])
+				.map(upgradeId => {
+					const upgradeObj = upgrades.find(u => u.id === upgradeId);
+					return upgradeObj ? `<li>${upgradeObj.name}</li>` : '';
+				})
+				.join('');
+				
+			// Get perks
+			const perks = vehicle.perks
+				.map(perkId => {
+					const perkObj = perks.find(p => p.id === perkId);
+					return perkObj ? `<li>${perkObj.name}</li>` : '';
+				})
+				.join('');
+				
+			// Return the vehicle card HTML
+			return `
+				<div class="vehicle-card-print">
+					<div class="card-header">
+						<div class="card-title">
+							<div class="card-name">${vehicleName}</div>
+							<div class="vehicle-type">${vehicleType.name}</div>
+						</div>
+						<div class="card-cost">
+							<span>CANS</span>
+							<span class="cost-value">${vehicleBaseCost(vehicleType)}</span>
+						</div>
+					</div>
+					
+					<div class="stats-grid">
+						<div class="stat-block">
+							<div class="stat-label">Hull Points</div>
+							<div class="hull-tracker">${hullBoxes}</div>
+						</div>
+						
+						<div class="stats-row">
+							<div>
+								<div class="stat-label">Handling</div>
+								<div class="stat-value">${vehicleType.handling || 4}</div>
+							</div>
+							<div>
+								<div class="stat-label">Max Gear</div>
+								<div class="stat-value">${vehicleType.maxGear}</div>
+							</div>
+							<div>
+								<div class="stat-label">Crew</div>
+								<div class="stat-value">${vehicleType.crew}</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="loadout">
+						${weapons ? `
+							<div class="loadout-section">
+								<div class="section-header">Weapons</div>
+								<table class="loadout-table">
+									${weapons}
+								</table>
+							</div>
+						` : ''}
+						
+						${upgrades ? `
+							<div class="loadout-section">
+								<div class="section-header">Upgrades</div>
+								<ul class="upgrade-list">
+									${upgrades}
+								</ul>
+							</div>
+						` : ''}
+						
+						${perks ? `
+							<div class="loadout-section">
+								<div class="section-header">Perks</div>
+								<ul class="upgrade-list">
+									${perks}
+								</ul>
+							</div>
+						` : ''}
+					</div>
+				</div>
+			`;
+		}).join('');
+		
+		// Generate the complete print view
+		return `
+			<div class="sponsor-print-header">
+				<h1>${draft.teamName || 'Gaslands Team'}</h1>
+				<p>Total: ${validation.cans} cans | Sponsor: ${sponsor?.name || 'None'}</p>
+			</div>
+			
+			<div class="print-card-grid">
+				${vehicleCards}
+			</div>
+			
+			<div class="print-footer">
+				<div class="qr-code-container">
+					<img src="${qrCodeUrl}" alt="QR Code" class="qr-code-image" />
+					<div class="qr-code-caption">Scan to load team</div>
+				</div>
+				<div class="print-footer-text">
+					Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
+				</div>
+			</div>
+		`;
 	}
 
 	function importBuild() {
@@ -837,7 +972,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 }
 
 /* Print styles */
-@media print {
+@media print, .print-mode {
   /* Hide elements that shouldn't be printed */
   .menu-bar,
   button[aria-label="Remove vehicle"],
@@ -878,6 +1013,15 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     color: #000; 
     font-family: Arial, sans-serif; 
     display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: white;
+    overflow: auto;
+    padding: 20px;
   }
   
   /* Force background printing */

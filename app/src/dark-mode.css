@@ -97,12 +97,20 @@ html.dark-mode [class*="text-black"] {
 }
 
 /* Ensure body text has good contrast */
-.dark p, .dark span, .dark div, 
+.dark p, 
+.dark div, 
 .dark [class*="text-stone-600"], 
 .dark [class*="text-stone-700"],
-html.dark-mode p, html.dark-mode span, html.dark-mode div,
+html.dark-mode p, 
+html.dark-mode div,
 html.dark-mode [class*="text-stone-600"],
 html.dark-mode [class*="text-stone-700"] {
+  color: #d1d5db !important;
+}
+
+/* Exclude specific spans from the general styling */
+.dark span:not(.logo-highlight), 
+html.dark-mode span:not(.logo-highlight) {
   color: #d1d5db !important;
 }
 
@@ -135,10 +143,32 @@ html.dark-mode [class*="text-stone-700"] {
   color: #d1d5db !important;
 }
 
-/* Target all modals by their style attributes - brute force approach */
-.dark [style*="box-shadow"], 
-html.dark-mode [style*="box-shadow"] {
+/* Target modals by their style attributes - but exclude share menu */
+.dark [style*="box-shadow"]:not(.share-menu-dropdown), 
+html.dark-mode [style*="box-shadow"]:not(.share-menu-dropdown) {
   background-color: #1f2937 !important;
+}
+
+/* Ensure share menu has proper styling */
+.dark .share-menu-dropdown,
+html.dark-mode .share-menu-dropdown {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+.dark .sharing-option,
+html.dark-mode .sharing-option {
+  background-color: #1f2937 !important;
+}
+
+.dark .sharing-option:hover,
+html.dark-mode .sharing-option:hover {
+  background-color: #374151 !important;
+}
+
+/* Preserve logo highlight color in dark mode */
+.dark .logo-highlight,
+html.dark-mode .logo-highlight {
+  color: #f59e0b !important;
 }
 
 /* For HTML dark mode */

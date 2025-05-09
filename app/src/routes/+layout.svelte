@@ -162,8 +162,8 @@
           
           {#if showShareMenu}
           <div 
-            class="fixed md:absolute inset-0 md:inset-auto md:left-0 md:mt-3 w-full md:w-96 bg-black/90 md:bg-black border-0 md:border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-6 md:py-4 share-menu-dropdown" 
-            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);"
+            class="fixed md:absolute inset-0 md:inset-auto md:left-0 md:mt-3 w-full md:w-96 bg-black border-0 md:border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-6 md:py-4 share-menu-dropdown" 
+            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: rgba(0, 0, 0, 0.95);"
             transition:fade={{ duration: 150 }}
           >
             <div class="max-w-md mx-auto px-6 md:px-4">
