@@ -35,6 +35,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		perks: string[] 
 	};
 	let vehicles: Veh[] = [];
+	// Track hazard tokens and damage for each vehicle
+	let vehicleHazards: Record<string, number> = {};
+	let vehicleDamage: Record<string, number> = {};
 
 	function calculateUsedBuildSlots(vehicle) {
 		let totalSlots = 0;
@@ -189,23 +192,99 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		);
 	}
 
+	// Hazard token management
+	function getHazardCount(vehicleId: string): number {
+		return vehicleHazards[vehicleId] || 0;
+	}
+
+	function incrementHazard(vehicleId: string) {
+		vehicleHazards = {
+			...vehicleHazards,
+			[vehicleId]: getHazardCount(vehicleId) + 1
+		};
+	}
+
+	function decrementHazard(vehicleId: string) {
+		if (getHazardCount(vehicleId) > 0) {
+			vehicleHazards = {
+				...vehicleHazards,
+				[vehicleId]: getHazardCount(vehicleId) - 1
+			};
+		}
+	}
+	
+	// Damage management
+	function getDamage(vehicleId: string): number {
+		return vehicleDamage[vehicleId] || 0;
+	}
+	
+	function incrementDamage(vehicleId: string) {
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (!vehicle) return;
+		
+		const maxHull = vehicleTypes.find(vt => vt.id === vehicle.type)?.maxHull || 0;
+		const currentDamage = getDamage(vehicleId);
+		
+		// Don't increment if already at max damage
+		if (currentDamage >= maxHull) return;
+		
+		vehicleDamage = {
+			...vehicleDamage,
+			[vehicleId]: currentDamage + 1
+		};
+	}
+	
+	function decrementDamage(vehicleId: string) {
+		if (getDamage(vehicleId) > 0) {
+			vehicleDamage = {
+				...vehicleDamage,
+				[vehicleId]: getDamage(vehicleId) - 1
+			};
+		}
+	}
+	
+	function getRemainingHull(vehicleId: string): number {
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (!vehicle) return 0;
+		
+		const maxHull = vehicleTypes.find(vt => vt.id === vehicle.type)?.maxHull || 0;
+		const damage = getDamage(vehicleId);
+		
+		return Math.max(0, maxHull - damage);
+	}
+
 	/* ---------- modals & menu state ---------- */
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
 	
-	// Update modal background color based on dark mode
-	$: if (showSettingsModal) {
-		setTimeout(() => {
-			const modal = document.querySelector('.settings-modal-content');
-			if (modal) {
-				if (darkMode) {
-					modal.style.backgroundColor = '#1f2937';
-				} else {
-					modal.style.backgroundColor = 'white';
-				}
-			}
-		}, 0);
+	// Update modal backgrounds based on dark mode
+	$: {
+		if (darkMode) {
+			setTimeout(() => {
+				// Apply dark mode styling to modal content areas
+				document.querySelectorAll('[data-dark-style]').forEach(el => {
+					const darkStyle = el.getAttribute('data-dark-style');
+					// Apply the dark style attributes to the element's style
+					if (darkStyle) {
+						const styles = darkStyle.split(';').filter(Boolean);
+						styles.forEach(style => {
+							const [property, value] = style.split(':').map(s => s.trim());
+							if (property && value) {
+								el.style.setProperty(property, value);
+							}
+						});
+					}
+				});
+			}, 0);
+		} else {
+			setTimeout(() => {
+				// Ensure light mode has white backgrounds
+				document.querySelectorAll('[data-dark-style]').forEach(el => {
+					el.style.backgroundColor = '#ffffff !important';
+				});
+			}, 0);
+		}
 	}
 	let showTeamsModal = false;
 	let showMenu = false;
@@ -1161,9 +1240,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={teamName}
 					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
-				/>
-			</div>  
-			<div class="flex items-center gap-2 ml-auto">
+				/>&nbsp;&nbsp;
+
 				<b>Total Cans:</b>&nbsp;&nbsp;&nbsp;
 				<input 
 					type="number" 
@@ -1414,9 +1492,15 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										<div class="hazard-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
 											<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
 											<div class="hazard-counter flex items-center justify-center gap-3">
-												<button class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">-</button>
-												<span class="counter-value text-2xl font-bold">0</span>
-												<button class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl">+</button>
+												<button 
+													class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
+													on:click={() => decrementHazard(v.id)}
+												>-</button>
+												<span class="counter-value text-2xl font-bold">{getHazardCount(v.id)}</span>
+												<button 
+													class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
+													on:click={() => incrementHazard(v.id)}
+												>+</button>
 											</div>
 										</div>
 									</div>
@@ -1921,7 +2005,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 </div>    <!-- QR Modal -->
     {#if qrDataUrl}
       <div
-        class="fixed inset-0 bg-black/90 z-50"
+        class="fixed inset-0 bg-black z-50"
         role="dialog"
         aria-modal="true"
         aria-label="QR Code"
@@ -1937,7 +2021,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
         <div 
           class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 border-2 border-amber-500 z-10 fixed left-1/2 top-1/2 w-auto max-w-md overflow-y-auto transform -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
           role="document"
-          style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: #ffffff !important; opacity: 1 !important;"
+          data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
@@ -1980,7 +2065,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     <!-- Import Modal -->
     {#if showImportModal}
       <div
-        class="fixed inset-0 bg-black/90 z-50"
+        class="fixed inset-0 bg-black z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Import Build"
@@ -1996,7 +2081,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
         <div
           class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: #ffffff !important; opacity: 1 !important;"
+          data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
@@ -2045,7 +2131,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     <!-- Settings Modal -->
     {#if showSettingsModal}
       <div
-        class="fixed inset-0 bg-black/90 z-50"
+        class="fixed inset-0 bg-black z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
@@ -2061,7 +2147,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
         <div
           class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-12 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: #ffffff !important; opacity: 1 !important;"
+          data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>

@@ -270,7 +270,7 @@
   <!-- About Modal -->
   {#if showAboutModal}
     <div
-      class="fixed inset-0 bg-black/90 z-50"
+      class="fixed inset-0 bg-black z-50"
       role="dialog"
       aria-modal="true"
       aria-label="About Gaslands Garage"
@@ -279,7 +279,7 @@
     >
       <!-- Background overlay -->
       <button
-        class="absolute inset-0 w-full h-full border-0 dark:bg-gray-800  cursor-pointer"
+        class="absolute inset-0 w-full h-full border-0 cursor-pointer"
         on:click={() => showAboutModal = false}
         on:keydown={e => e.key === 'Escape' && (showAboutModal = false)}
         aria-label="Close modal background"
@@ -289,7 +289,8 @@
       <div
         class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
         role="document"
-        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+        style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: #ffffff !important; opacity: 1 !important;"
+        data-dark-style="background-color: #1f2937 !important; opacity: 1 !important;"
       >
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands Garage</h3>
