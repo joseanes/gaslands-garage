@@ -3,6 +3,8 @@
   /*  Import the global Tailwind stylesheet once  */
   import "../app.css";
   import "../dark-mode.css";
+  import "../form-styles.css";
+  import "../print-styles.css";
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';
@@ -226,7 +228,7 @@
     
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
     >
@@ -242,7 +244,7 @@
         </button>
       </div>
       
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
         <p>
           Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
         </p>
@@ -287,7 +289,7 @@
             <div class="mt-10 p-4 bg-amber-100 dark:bg-amber-900 rounded-lg text-center">
               <h2 class="text-lg font-bold text-amber-800 dark:text-amber-100">Friends of Gaslands</h2>
               <div class="flex justify-center my-4">
-                <img src="/static/friend-of-gaslands.png" alt="Friend of Gaslands Logo" class="h-24" />
+                <img src="/images/friend-of-gaslands.webp" alt="Friend of Gaslands Logo" class="h-24" />
               </div>
               <p class="text-amber-700 dark:text-amber-200 mt-2">
                 This is an unofficial fan-made tool. Gaslands is © 2017 Mike Hutchinson.
@@ -297,9 +299,7 @@
               </p>
             </div>
           </div>
-          <p class="mt-4">
-            <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 hover:text-amber-700 dark:text-amber-500 dark:hover:text-amber-400 underline">Visit the official Gaslands website</a>
-          </p>
+
         </div>
       </div>
     </div>

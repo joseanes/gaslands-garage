@@ -22,6 +22,20 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		perks: import('$lib/rules/types').Perk[];
 	};
 	const { sponsors, vehicleTypes, weapons, upgrades, perks } = data;
+  
+  // Sort all data alphabetically
+  $: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedVehicleTypes = [...filteredVehicleTypes].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedWeapons = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedUpgrades = [...upgrades].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedPerks = [...perks].sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Sort all data alphabetically
+  $: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedVehicleTypes = [...filteredVehicleTypes].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedWeapons = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedUpgrades = [...upgrades].sort((a, b) => a.name.localeCompare(b.name));
+  $: sortedPerks = [...perks].sort((a, b) => a.name.localeCompare(b.name));
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
@@ -35,9 +49,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		perks: string[] 
 	};
 	let vehicles: Veh[] = [];
-	// Track hazard tokens and damage for each vehicle
+	// Track hazard tokens for each vehicle
 	let vehicleHazards: Record<string, number> = {};
-	let vehicleDamage: Record<string, number> = {};
 
 	function calculateUsedBuildSlots(vehicle) {
 		let totalSlots = 0;
@@ -52,7 +65,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					// These weapons don't consume build slots
 					continue;
 				}
-				totalSlots += weaponObj.buildSlots || 1;
+				totalSlots += weaponObj.buildSlots || weaponObj.slots || 1;
 			}
 		}
 		
@@ -65,7 +78,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					// These upgrades don't consume build slots
 					continue;
 				}
-				totalSlots += upgradeObj.buildSlots || 1;
+				totalSlots += upgradeObj.buildSlots || upgradeObj.slots || 1;
 			}
 		}
 		
@@ -105,6 +118,26 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 	function addWeapon(vehicleId: string, weaponId: string, facing?: string) {
 		const weaponObj = weapons.find(w => w.id === weaponId);
+		if (!weaponObj) return; // Don't add if weapon not found
+		
+		// Check if adding this weapon would exceed the vehicle's build slots
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (!vehicle) return; // Don't add if vehicle not found
+		
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return; // Don't add if vehicle type not found
+		
+		const currentBuildSlots = calculateUsedBuildSlots(vehicle);
+		const weaponBuildSlots = weaponObj.buildSlots || weaponObj.slots || 1;
+		
+		// Skip buildSlot validation for free weapons
+		const isSpecialFreeWeapon = ['handgun', 'molotov', 'grenades', 'ram', 'oil_slick', 'smokescreen'].includes(weaponObj.id) || weaponBuildSlots === 0;
+		
+		// Validate build slots unless it's a free weapon
+		if (!isSpecialFreeWeapon && currentBuildSlots + weaponBuildSlots > vehicleType.buildSlots) {
+			console.warn(`Cannot add weapon ${weaponObj.name} - exceeds build slot limit`);
+			return; // Do not add the weapon if it would exceed build slots
+		}
 		
 		// Apply weapon facing rules:
 		// 1. Crew Fired weapons are always 360° (any)
@@ -113,11 +146,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		// 4. Otherwise use provided facing or default to front
 		let actualFacing = 'front';
 		
-		if (weaponObj?.crewFired) {
+		if (weaponObj.crewFired) {
 			actualFacing = 'any'; // Crew fired weapons are always 360°
-		} else if (weaponObj?.dropped) {
+		} else if (weaponObj.dropped) {
 			actualFacing = 'rear'; // Dropped weapons default to rear
-		} else if (weaponObj?.facing && weaponObj.facing !== 'any') {
+		} else if (weaponObj.facing && weaponObj.facing !== 'any') {
 			actualFacing = weaponObj.facing; // Use fixed facing
 		} else if (facing) {
 			actualFacing = facing; // Use provided facing
@@ -161,6 +194,28 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	}
 
 	function addUpgrade(vehicleId: string, upgradeId: string) {
+		const upgradeObj = upgrades.find(u => u.id === upgradeId);
+		if (!upgradeObj) return; // Don't add if upgrade not found
+		
+		// Check if adding this upgrade would exceed the vehicle's build slots
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (!vehicle) return; // Don't add if vehicle not found
+		
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return; // Don't add if vehicle type not found
+		
+		const currentBuildSlots = calculateUsedBuildSlots(vehicle);
+		const upgradeBuildSlots = upgradeObj.buildSlots || upgradeObj.slots || 1;
+		
+		// Skip buildSlot validation for free upgrades
+		const isSpecialFreeUpgrade = ['grenades'].includes(upgradeObj.id) || upgradeBuildSlots === 0;
+		
+		// Validate build slots unless it's a free upgrade
+		if (!isSpecialFreeUpgrade && currentBuildSlots + upgradeBuildSlots > vehicleType.buildSlots) {
+			console.warn(`Cannot add upgrade ${upgradeObj.name} - exceeds build slot limit`);
+			return; // Do not add the upgrade if it would exceed build slots
+		}
+		
 		vehicles = vehicles.map(v =>
 			v.id === vehicleId ?
 			{ ...v, upgrades: [...v.upgrades, upgradeId] } :
@@ -212,53 +267,25 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			};
 		}
 	}
-	
-	// Damage management
-	function getDamage(vehicleId: string): number {
-		return vehicleDamage[vehicleId] || 0;
-	}
-	
-	function incrementDamage(vehicleId: string) {
-		const vehicle = vehicles.find(v => v.id === vehicleId);
-		if (!vehicle) return;
-		
-		const maxHull = vehicleTypes.find(vt => vt.id === vehicle.type)?.maxHull || 0;
-		const currentDamage = getDamage(vehicleId);
-		
-		// Don't increment if already at max damage
-		if (currentDamage >= maxHull) return;
-		
-		vehicleDamage = {
-			...vehicleDamage,
-			[vehicleId]: currentDamage + 1
-		};
-	}
-	
-	function decrementDamage(vehicleId: string) {
-		if (getDamage(vehicleId) > 0) {
-			vehicleDamage = {
-				...vehicleDamage,
-				[vehicleId]: getDamage(vehicleId) - 1
-			};
-		}
-	}
-	
-	function getRemainingHull(vehicleId: string): number {
-		const vehicle = vehicles.find(v => v.id === vehicleId);
-		if (!vehicle) return 0;
-		
-		const maxHull = vehicleTypes.find(vt => vt.id === vehicle.type)?.maxHull || 0;
-		const damage = getDamage(vehicleId);
-		
-		return Math.max(0, maxHull - damage);
-	}
 
 	/* ---------- modals & menu state ---------- */
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
 	
-	// Dark mode is now handled through CSS classes instead of JavaScript
+	// Update modal background color based on dark mode
+	$: if (showSettingsModal) {
+		setTimeout(() => {
+			const modal = document.querySelector('.settings-modal-content');
+			if (modal) {
+				if (darkMode) {
+					modal.style.backgroundColor = '#1f2937';
+				} else {
+					modal.style.backgroundColor = 'white';
+				}
+			}
+		}, 0);
+	}
 	let showTeamsModal = false;
 	let showMenu = false;
 	let showShareMenu = false;
@@ -361,136 +388,17 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		// Give the browser a moment to render the QR code into the DOM
 		setTimeout(() => {
 			window.print();
+			
+			// After printing, hide the QR code again if we used the hidden element
+			if (hiddenQrImage) {
+				setTimeout(() => {
+					hiddenQrImage.style.display = 'none';
+					// Show placeholder again
+					const placeholder = document.querySelector('.qr-code-placeholder');
+					if (placeholder) placeholder.style.display = 'block';
+				}, 500);
+			}
 		}, 300);
-	}
-	
-	// Helper function to generate the print view HTML
-	function generatePrintView(draft, qrCodeUrl) {
-		// Generate HTML for each vehicle card
-		const vehicleCards = draft.vehicles.map((vehicle, index) => {
-			const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
-			if (!vehicleType) return '';
-			
-			// Get vehicle data
-			const vehicleName = vehicle.name || `Vehicle ${index + 1}`;
-			const hullBoxes = Array(vehicleType.maxHull).fill(0).map(() => `<div class="hull-box"></div>`).join('');
-			
-			// Get weapons
-			const weapons = vehicle.weapons
-				.map(weaponId => {
-					const baseWeaponId = weaponId.split('_')[0];
-					const weaponObj = weapons.find(w => w.id === baseWeaponId);
-					return weaponObj ? 
-						`<tr><td class="item-name">${weaponObj.name}</td><td class="item-facing">${vehicle.weaponFacings?.[weaponId] || 'front'}</td></tr>` 
-						: '';
-				})
-				.join('');
-				
-			// Get upgrades
-			const upgrades = (vehicle.upgrades || [])
-				.map(upgradeId => {
-					const upgradeObj = upgrades.find(u => u.id === upgradeId);
-					return upgradeObj ? `<li>${upgradeObj.name}</li>` : '';
-				})
-				.join('');
-				
-			// Get perks
-			const perks = vehicle.perks
-				.map(perkId => {
-					const perkObj = perks.find(p => p.id === perkId);
-					return perkObj ? `<li>${perkObj.name}</li>` : '';
-				})
-				.join('');
-				
-			// Return the vehicle card HTML
-			return `
-				<div class="vehicle-card-print">
-					<div class="card-header">
-						<div class="card-title">
-							<div class="card-name">${vehicleName}</div>
-							<div class="vehicle-type">${vehicleType.name}</div>
-						</div>
-						<div class="card-cost">
-							<span>CANS</span>
-							<span class="cost-value">${vehicleBaseCost(vehicleType)}</span>
-						</div>
-					</div>
-					
-					<div class="stats-grid">
-						<div class="stat-block">
-							<div class="stat-label">Hull Points</div>
-							<div class="hull-tracker">${hullBoxes}</div>
-						</div>
-						
-						<div class="stats-row">
-							<div>
-								<div class="stat-label">Handling</div>
-								<div class="stat-value">${vehicleType.handling || 4}</div>
-							</div>
-							<div>
-								<div class="stat-label">Max Gear</div>
-								<div class="stat-value">${vehicleType.maxGear}</div>
-							</div>
-							<div>
-								<div class="stat-label">Crew</div>
-								<div class="stat-value">${vehicleType.crew}</div>
-							</div>
-						</div>
-					</div>
-					
-					<div class="loadout">
-						${weapons ? `
-							<div class="loadout-section">
-								<div class="section-header">Weapons</div>
-								<table class="loadout-table">
-									${weapons}
-								</table>
-							</div>
-						` : ''}
-						
-						${upgrades ? `
-							<div class="loadout-section">
-								<div class="section-header">Upgrades</div>
-								<ul class="upgrade-list">
-									${upgrades}
-								</ul>
-							</div>
-						` : ''}
-						
-						${perks ? `
-							<div class="loadout-section">
-								<div class="section-header">Perks</div>
-								<ul class="upgrade-list">
-									${perks}
-								</ul>
-							</div>
-						` : ''}
-					</div>
-				</div>
-			`;
-		}).join('');
-		
-		// Generate the complete print view
-		return `
-			<div class="sponsor-print-header">
-				<h1>${draft.teamName || 'Gaslands Team'}</h1>
-				<p>Total: ${validation.cans} cans | Sponsor: ${sponsor?.name || 'None'}</p>
-			</div>
-			
-			<div class="print-card-grid">
-				${vehicleCards}
-			</div>
-			
-			<div class="print-footer">
-				<div class="qr-code-container">
-					<img src="${qrCodeUrl}" alt="QR Code" class="qr-code-image" />
-					<div class="qr-code-caption">Scan to load team</div>
-				</div>
-				<div class="print-footer-text">
-					Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
-				</div>
-			</div>
-		`;
 	}
 
 	function importBuild() {
@@ -955,11 +863,6 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     display: none !important;
   }
   
-  /* Show the print view */
-  #gaslands-print-view {
-    display: block !important;
-  }
-  
   /* Page formatting */
   @page { 
     size: 8.5in 11in portrait; 
@@ -987,15 +890,6 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     color: #000; 
     font-family: Arial, sans-serif; 
     display: block !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
-    background: white;
-    overflow: auto;
-    padding: 20px;
   }
   
   /* Force background printing */
@@ -1329,7 +1223,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				<input 
 					type="text" 
 					bind:value={teamName}
-					class="bg-transparent dark:bg-gray-700 border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
 					aria-label="Team Name"
 				/>&nbsp;&nbsp;
 
@@ -1339,7 +1233,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					bind:value={maxCans}
 					min="1"
 					max="1000"
-					class="bg-transparent dark:bg-gray-700 border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
+					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
 					aria-label="Max Cans"
 				/>
 			</div>
@@ -1353,18 +1247,18 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			<div class="flex flex-wrap md:flex-nowrap items-start gap-4">
 				<div class="w-full md:w-1/3">
 					<div class="flex items-center gap-4">
-						<label for="sponsor-select" class="text-lg font-bold text-stone-800 whitespace-nowrap">
+						<label for="sponsor-select" class="form-label text-lg whitespace-nowrap font-bold">
 							Choose Your Sponsor: &nbsp;&nbsp;
 						</label>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
 								bind:value={sponsorId}
-								class="w-full px-4 py-3 border-2 border-amber-200 rounded-lg bg-white appearance-none pr-10 text-stone-800 focus:outline-none focus:border-amber-500"
+								class="form-select"
 							>
-								{#each sponsors as s}
-									<option value={s.id}>{s.name}</option>
-								{/each}
+								{#each [...sponsors].sort((a, b) => a.name.localeCompare(b.name)) as s}
+    <option value={s.id}>{s.name}</option>
+  {/each}
 							</select>
 						</div>
 
@@ -1467,27 +1361,33 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 							<div class="flex-1 min-w-0">
 								<div class="flex flex-row gap-2 items-start">
 									<div class="w-2/5">
-										<label for="vehicle-type-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Type</label>
-										<select
-											id="vehicle-type-{v.id}"
-											bind:value={v.type}
-											class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-											on:change={() => {
-												const vt = vehicleTypes.find((t) => t.id === v.type)!;
-												v.name = vt.name;
-											}}
-										>
-											{#each filteredVehicleTypes as vt}
+										<label for="vehicle-type-{v.id}" class="form-label uppercase">Vehicle Type</label>
+										<div class="relative">
+											<select
+												id="vehicle-type-{v.id}"
+												bind:value={v.type}
+												class="form-select"
+												on:change={() => {
+													const vt = vehicleTypes.find((t) => t.id === v.type)!;
+													v.name = vt.name;
+												}}
+											>
+											{#each filteredVehicleTypes.slice().sort((a, b) => a.name.localeCompare(b.name)) as vt}
 												<option value={vt.id}>{vt.name}</option>
 											{/each}
-										</select>
+											</select>
+											<!-- Custom dropdown arrow -->
+											<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-amber-500">
+												<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
+											</div>
+										</div>
 									</div>
 									<div class="flex-1">
-										<label for="vehicle-name-{v.id}" class="block text-xs text-stone-600 dark:text-gray-300 mb-1 font-semibold uppercase">Vehicle Name</label>
+										<label for="vehicle-name-{v.id}" class="form-label uppercase">Vehicle Name</label>
 										<input
 											id="vehicle-name-{v.id}"
 											bind:value={v.name}
-											class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 dark:text-gray-200 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+											class="form-input"
 											placeholder="Vehicle name"
 										/>
 									</div>
@@ -1820,7 +1720,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add weapon</option>
-										{#each filteredWeapons as w}
+										{#each [...filteredWeapons].sort((a, b) => a.name.localeCompare(b.name)) as w}
 											<option value={w.id} disabled={(w.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
 												{w.name}
 												{w.crewFired ? " (Crew Fired)" : ""}
@@ -1884,7 +1784,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
 									>
 										<option value="" disabled selected>+ Add upgrade</option>
-										{#each filteredUpgrades as u}
+										{#each filteredUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
 											<option value={u.id} disabled={(u.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
 												{u.name}
 												{(u.buildSlots || 1) === 0 ? " (Free)" : ""}
@@ -2096,7 +1996,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 </div>    <!-- QR Modal -->
     {#if qrDataUrl}
       <div
-        class="fixed inset-0 bg-black z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="QR Code"
@@ -2115,7 +2015,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Team QR Code</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (qrDataUrl = null)}
@@ -2128,7 +2028,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border-2 border-stone-200 dark:border-gray-600">
             <img src={qrDataUrl} alt="team QR code" class="mx-auto w-64 h-64" />
           </div>
-          <p class="mt-6 text-center text-stone-600 dark:text-amber-300 text-sm font-medium modal-text">
+          <p class="mt-6 text-center text-stone-600 dark:text-amber-300 text-sm font-medium">
             Scan this QR code to share your team build
           </p>
           <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
@@ -2155,7 +2055,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     <!-- Import Modal -->
     {#if showImportModal}
       <div
-        class="fixed inset-0 bg-black z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Import Build"
@@ -2169,12 +2069,12 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
           style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Import Team Build</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showImportModal = false)}
@@ -2186,7 +2086,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           </div>
           
           <div class="space-y-6">
-            <p class="text-stone-600 dark:text-gray-200 modal-text">
+            <p class="text-stone-600 dark:text-gray-200">
               Paste a team build code below to import a shared build
             </p>
             <div class="space-y-3">
@@ -2194,7 +2094,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
               <textarea
                 id="import-draft"
                 bind:value={importString}
-                class="w-full px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[120px] bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
+                class="w-full px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg focus:border-amber-500 focus:ring-1 focus:ring-amber-500 min-h-[120px] bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
                 placeholder="Paste encoded draft here"
               ></textarea>
             </div>
@@ -2220,7 +2120,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
     <!-- Settings Modal -->
     {#if showSettingsModal}
       <div
-        class="fixed inset-0 bg-black z-50"
+        class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
         aria-modal="true"
         aria-label="Settings"
@@ -2234,12 +2134,12 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">Settings</h3>
+            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
             <button
               class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
               on:click={() => (showSettingsModal = false)}
@@ -2250,58 +2150,57 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
             </button>
           </div>
           
-          <div class="space-y-10">
-            <div class="space-y-2">
+          <div class="space-y-8 px-4">
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
                 <input 
                   type="checkbox" 
                   id="enable-sponsorships" 
                   bind:checked={enableSponsorships}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="enable-sponsorships" class="ml-2 text-stone-800 dark:text-white font-medium">
+                <label for="enable-sponsorships" class="ml-3 text-stone-800 dark:text-white font-medium">
                   Enable Sponsorships
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6 modal-subtext">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
             </div>
             
-            <div class="space-y-2">
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
                 <input 
                   type="checkbox" 
                   id="include-advanced" 
                   bind:checked={includeAdvanced}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="include-advanced" class="ml-2 text-stone-800 dark:text-white font-medium">
+                <label for="include-advanced" class="ml-3 text-stone-800 dark:text-white font-medium">
                   Include Advanced
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
                 Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
               </p>
             </div>
             
-            <div class="space-y-2">
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
                 <input 
                   type="checkbox" 
                   id="dark-mode" 
                   bind:checked={darkMode}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
-                <label for="dark-mode" class="ml-2 text-stone-800 dark:text-white font-medium">
+                <label for="dark-mode" class="ml-3 text-stone-800 dark:text-white font-medium">
                   Dark Mode
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-6">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
                 Enable dark mode for better visibility in low-light conditions.
               </p>
             </div>
-            
             
             <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
               <button
@@ -2520,8 +2419,13 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   <!-- QR Code and footer -->
   <div class="print-footer">
     <div class="qr-code-container">
-      <!-- Print mode: always include both options but control visibility -->
-      <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" />
+      {#if qrDataUrl}
+        <img src={qrDataUrl} alt="QR Code" class="qr-code-image" />
+      {:else}
+        <!-- Hidden image element that will be updated when printing without showing the modal -->
+        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" style="display: none;" />
+        <div class="qr-code-placeholder">QR Code</div>
+      {/if}
       <div class="qr-code-caption">Scan to load team</div>
     </div>
     <div class="print-footer-text">
