@@ -1739,12 +1739,14 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 											{#each specialRules as ruleName}
 												{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
-												{#if ruleDetails}
-													<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-														<span class="font-bold text-stone-700 dark:text-gray-300">{ruleDetails.ruleName}</span>
+												<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
+													<span class="font-bold text-stone-700 dark:text-gray-300">{ruleName.trim()}</span>
+													{#if ruleDetails}
 														<div class="text-xs text-stone-500 dark:text-gray-400">{@html ruleDetails.rule}</div>
-													</div>
-												{/if}
+													{:else}
+														<div class="text-xs text-stone-500 dark:text-gray-400 italic">Unknown rule.</div>
+													{/if}
+												</div>
 											{/each}
 										{/if}
 										
@@ -2053,14 +2055,16 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 											<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
 												{#each specialRules as ruleName}
 													{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
-													{#if ruleDetails}
-														<li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
-															<div class="flex-1">
-																<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{ruleDetails.ruleName}</span></b>
+													<li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
+														<div class="flex-1">
+															<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{ruleName.trim()}</span></b>
+															{#if ruleDetails}
 																<div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
-															</div>
-														</li>
-													{/if}
+															{:else}
+																<div class="text-stone-500 dark:text-gray-400 text-sm mt-1 italic">Unknown rule.</div>
+															{/if}
+														</div>
+													</li>
 												{/each}
 											</ul>
 										{/if}
