@@ -339,6 +339,10 @@
           <p class="italic text-stone-600 dark:text-gray-400">
             This is an unofficial fan-made tool. The Gaslands game is © 2017 Mike Hutchinson and this application is done under the Friends of Gaslands program. The Application Copyright © 2025 Anes & Rincon LLC d.b.a. FunBoardGames.Etsy.com.
           </p>
+
+          <p class="italic text-stone-600 dark:text-gray-400 mt-2">
+            This work is licensed under a <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Creative Commons Attribution-NonCommercial 4.0 International License</a>. You are free to share and adapt this work for non-commercial purposes, provided you give appropriate credit.
+          </p>
           
           <div class="mt-4">
             <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Gaslands Garage</h4>
@@ -371,6 +375,11 @@
               <p class="text-amber-600 dark:text-amber-300 mt-1 text-sm">
                 <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="underline hover:text-amber-800 dark:hover:text-amber-100">Visit the official Gaslands website</a>
               </p>
+              <div class="mt-3 flex justify-center">
+                <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer">
+                  <img src="https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by-nc.png" alt="Creative Commons BY-NC License" class="h-8" />
+                </a>
+              </div>
             </div>
           </div>
 
@@ -519,6 +528,8 @@
         <p>
           Gaslands Garage is made possible by the following contributors:
         </p>
+        <ul><li>Jose Anes, Project creator and <a href="https://FunBoardGames.Etsy.com">Gaslands Purveyor at FunBoardGames.</a></li>
+        <li>Luca Vince Caltabiano from <a href="https://www.youtube.com/c/gaslandstv">Gaslands TV</a> for the video content</li></ul>
 
         <div class="space-y-4">
           <!-- Contributors list will go here -->
