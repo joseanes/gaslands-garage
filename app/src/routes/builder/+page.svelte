@@ -1393,9 +1393,6 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					</div>
 				</div>
 				<div class="w-full md:w-2/3 md:pt-8">
-					Sponsor Source:&nbsp;&nbsp;
-						{sponsors.find(s => s.id === sponsorId)?.source || "Unknown source"}
-					
 					{#if currentSponsor?.perks?.length}
 						<div class="mt-2 text-sm text-stone-700 dark:text-gray-300">
 							<span class="font-medium">Available Perks:</span> 
