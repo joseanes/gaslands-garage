@@ -29,13 +29,6 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
   $: sortedWeapons = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedUpgrades = [...upgrades].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedPerks = [...perks].sort((a, b) => a.name.localeCompare(b.name));
-  
-  // Sort all data alphabetically
-  $: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
-  $: sortedVehicleTypes = [...filteredVehicleTypes].sort((a, b) => a.name.localeCompare(b.name));
-  $: sortedWeapons = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
-  $: sortedUpgrades = [...upgrades].sort((a, b) => a.name.localeCompare(b.name));
-  $: sortedPerks = [...perks].sort((a, b) => a.name.localeCompare(b.name));
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
