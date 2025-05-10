@@ -20,6 +20,7 @@
   let showHelpMenu = false;
   let showTeamsModal = false;
   let showAboutModal = false;
+  let showAboutGaslandsModal = false;
   let showChangeLogModal = false;
   let showUpcomingFeaturesModal = false;
   let showContributorsModal = false;
@@ -27,10 +28,8 @@
   // Hook for My Teams functionality
   function openTeamsModal() {
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
-      // Forward to builder's teams modal function
-      if (typeof window.openTeamsModalFn === 'function') {
-        window.openTeamsModalFn();
-      }
+      // Directly open the Teams modal in the layout
+      showTeamsModal = true;
     } else {
       alert('Team management requires the builder page. Please use on the builder page.');
     }
@@ -155,6 +154,10 @@
     showAboutModal = true;
   }
 
+  function openAboutGaslands() {
+    showAboutGaslandsModal = true;
+  }
+
   function openChangeLog() {
     showChangeLogModal = true;
   }
@@ -203,11 +206,9 @@
             style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
             transition:fade={{ duration: 150 }}
           >
-            {#if $user}
             <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openTeamsModal(); showShareMenu = false; }}>
               Save/Load Team
             </button>
-            {/if}
             <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { printTeam(); showShareMenu = false; }}>
               Print Team
             </button>
@@ -247,7 +248,10 @@
               transition:fade={{ duration: 150 }}
             >
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openAbout(); showHelpMenu = false; }}>
-                About
+                About Gaslands Garage
+              </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openAboutGaslands(); showHelpMenu = false; }}>
+                About Gaslands
               </button>
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openChangeLog(); showHelpMenu = false; }}>
                 Change Log
@@ -522,6 +526,101 @@
       </div>
     </div>
   </div>
+{/if}
+
+<!-- About Gaslands Modal -->
+{#if showAboutGaslandsModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="About Gaslands"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showAboutGaslandsModal = false}
+      on:keydown={e => e.key === 'Escape' && (showAboutGaslandsModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands</h3>
+        <button
+          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          on:click={() => showAboutGaslandsModal = false}
+          aria-label="Close about gaslands modal"
+        >
+          <span class="text-2xl">×</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+        <p>
+          Gaslands is a tabletop game of post-apocalyptic vehicular combat. Using converted Hot Wheels or Matchbox cars, it simulates a televised bloodsport where drivers compete in a variety of deadly scenarios.  Gaslands puts players in control of custom battle cars, buggies, trucks, and other vehicles armed with machine guns, rockets, flamethrowers and more. Players are encourage to modify readily available Hotwheels or Matchbox vehicles with bits and paint to make them look like a post-apocalyptical combat vehicle.  The game is set in a dystopian future where Earth has been devastated and Mars has been colonized by the wealthy elite. The poor left behind on Earth compete in televised death races for a chance to win citizenship on Mars.
+        The game was created by Mike Hutchinson and published by Osprey Games.    To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
+          
+        
+        
+
+
+
+        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+          <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
+          <ul class="list-disc pl-5 space-y-2">
+            <li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
+            <li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game</li>
+            <li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics</li>
+            <li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles</li>
+            <li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify</li>
+          </ul>
+        </div>
+
+
+        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+          <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
+          <div class="bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
+            <div class="flex items-center gap-3 mb-2">
+              <div>
+                <center><iframe width="560" height="315" src="https://www.youtube.com/embed/CL66NMhWwHo?si=KltcYCh9RbCqU2HQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                <p class="text-sm">
+                  Gaslands TV features game tutorials, battle reports, and showcases of custom Gaslands vehicles. A must-watch resource for beginners and experienced players alike.
+                </p></center>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Teams Modal -->
+{#if showTeamsModal && typeof window !== 'undefined' && window.location.pathname.includes('/builder')}
+  <!-- Log for debugging -->
+  {@const draftValue = window.currentDraftFn ? window.currentDraftFn() : null}
+  {@const _ = console.log('Opening Teams Modal with draft:', draftValue)}
+
+  <TeamsModal
+    bind:showModal={showTeamsModal}
+    currentDraft={draftValue}
+    importDraft={(draft) => {
+      if (typeof window !== 'undefined' && window.importDraftFn && draft) {
+        window.importDraftFn(draft);
+        console.log('Importing draft in TeamsModal:', draft);
+      }
+    }}
+  />
 {/if}
 
 <style>

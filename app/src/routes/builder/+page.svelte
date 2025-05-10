@@ -7,7 +7,6 @@
 	import { goto } from '$app/navigation';
 	import { draftToDataURL } from '$lib/draft/qr';
 	import Auth from '$lib/components/Auth.svelte';
-	import TeamsModal from '$lib/components/TeamsModal.svelte';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 	import { onMount } from 'svelte';
@@ -98,6 +97,43 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		vehicles = vehicles.filter((v) => v.id !== id);
 		collapsedVehicles.delete(id);
 		collapsedVehicles = collapsedVehicles; // Trigger reactivity
+	}
+
+	function cloneVehicle(id: string) {
+		const sourceVehicle = vehicles.find(v => v.id === id);
+		if (!sourceVehicle) return;
+
+		// Generate new IDs for the cloned vehicle and its weapons
+		const clonedVehicleId = nanoid(6);
+		const clonedWeaponFacings: Record<string, string> = {};
+
+		// Clone the weapons with new instance IDs
+		const clonedWeapons = sourceVehicle.weapons.map(weaponId => {
+			const baseParts = weaponId.split('_');
+			const baseWeaponId = baseParts[0];
+			const newWeaponId = `${baseWeaponId}_${nanoid(4)}`;
+
+			// Copy the facing for this weapon
+			if (sourceVehicle.weaponFacings && sourceVehicle.weaponFacings[weaponId]) {
+				clonedWeaponFacings[newWeaponId] = sourceVehicle.weaponFacings[weaponId];
+			}
+
+			return newWeaponId;
+		});
+
+		// Create the cloned vehicle
+		const clonedVehicle = {
+			id: clonedVehicleId,
+			type: sourceVehicle.type,
+			name: `${sourceVehicle.name} (Clone)`,
+			weapons: clonedWeapons,
+			weaponFacings: clonedWeaponFacings,
+			upgrades: [...sourceVehicle.upgrades],
+			perks: [...sourceVehicle.perks]
+		};
+
+		// Add the cloned vehicle to the vehicles array
+		vehicles = [...vehicles, clonedVehicle];
 	}
 	
 	function toggleVehicleCollapse(id: string) {
@@ -240,6 +276,48 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		);
 	}
 
+	// Calculate max hull points including modifiers from upgrades and perks
+	function calculateMaxHull(vehicle): number {
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return 0;
+
+		let maxHull = vehicleType.maxHull;
+
+		// Add hull points from upgrades
+		for (const upgradeId of vehicle.upgrades) {
+			// Check for Armor Plating, which adds +1 hull
+			if (upgradeId === 'armor') {
+				maxHull += 1;
+			}
+			// Add any other upgrades that affect hull here
+		}
+
+		// Add hull points from perks (if any)
+		for (const perkId of vehicle.perks) {
+			// Add any perks that affect hull here
+			// For example: if (perkId === 'fortified' || perkId === 'tank_commander') maxHull += 1;
+		}
+
+		return maxHull;
+	}
+
+	function calculateTotalAttackDice(vehicle): number {
+		if (!vehicle || !vehicle.weapons || vehicle.weapons.length === 0) return 0;
+
+		let totalAttackDice = 0;
+
+		// Calculate total attack dice from all weapons
+		for (const weaponInstanceId of vehicle.weapons) {
+			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const weaponObj = weapons.find(w => w.id === baseWeaponId);
+			if (weaponObj && weaponObj.attackDice) {
+				totalAttackDice += weaponObj.attackDice;
+			}
+		}
+
+		return totalAttackDice;
+	}
+
 	// Hazard token management
 	function getHazardCount(vehicleId: string): number {
 		return vehicleHazards[vehicleId] || 0;
@@ -309,6 +387,15 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 						enableSponsorships = result.settings.enableSponsorships;
 						includeAdvanced = result.settings.includeAdvanced;
 						darkMode = result.settings.darkMode;
+
+						// Initialize new settings with defaults if not present
+						showTeamSummary = result.settings.showTeamSummary !== undefined
+							? result.settings.showTeamSummary
+							: DEFAULT_SETTINGS.showTeamSummary;
+
+						showGaslandsMath = result.settings.showGaslandsMath !== undefined
+							? result.settings.showGaslandsMath
+							: DEFAULT_SETTINGS.showGaslandsMath;
 					}
 				} catch (error) {
 					console.error("Error loading settings:", error);
@@ -327,10 +414,14 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	let includeAdvanced = true;
 	let maxCans = 50;
 	let teamName = "My Gaslands Team";
-	
+
 	// Mode toggle for Edit/Play mode
 	let playMode = false;
-	
+
+	// Display settings
+	let showTeamSummary = true;
+	let showGaslandsMath = true;
+
 	// For vehicle card collapse state
 	let collapsedVehicles = new Set();
 	let darkMode = false;
@@ -342,7 +433,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				await saveUserSettings({
 					enableSponsorships,
 					includeAdvanced,
-					darkMode
+					darkMode,
+					showTeamSummary,
+					showGaslandsMath
 				});
 			} catch (error) {
 				console.error("Error saving settings:", error);
@@ -412,8 +505,32 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			window.printTeamFn = printTeam;
 			window.openSettingsFn = openSettings;
 			window.openTeamsModalFn = () => { showTeamsModal = true; };
+
+			// Add functions for the Teams Modal in the layout
+			window.currentDraftFn = () => currentDraft;
+			window.importDraftFn = (draft) => {
+				if (draft) {
+					sponsorId = draft.sponsor;
+					vehicles = draft.vehicles;
+
+					// Import team name if available
+					if (draft.teamName) {
+						teamName = draft.teamName;
+					}
+
+					// Import maxCans if available
+					if (draft.maxCans) {
+						maxCans = draft.maxCans;
+					}
+
+					// Import darkMode if available
+					if (draft.darkMode !== undefined) {
+						darkMode = draft.darkMode;
+					}
+				}
+			};
 		}
-		
+
 		return () => {
 			// Clean up when component is destroyed
 			if (typeof window !== 'undefined') {
@@ -424,6 +541,8 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				window.printTeamFn = undefined;
 				window.openSettingsFn = undefined;
 				window.openTeamsModalFn = undefined;
+				window.currentDraftFn = undefined;
+				window.importDraftFn = undefined;
 			}
 		};
 	});
@@ -1330,14 +1449,14 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 				</div>
 			</div>
 			<button
-				class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold transition-colors shadow-md flex items-center"
+				class="p-2 h-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
 				on:click={() => addVehicle()}
 				disabled={playMode}
 				class:opacity-50={playMode}
 				class:cursor-not-allowed={playMode}
 			>
-				<span class="mr-2">+</span>
-				Add Vehicle
+				<span>+</span>
+				<span class="sr-only">Add Vehicle</span>
 			</button>
 		</div>
 
@@ -1386,23 +1505,38 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 									</div>
 								</div>
 							</div>
-							<div class="flex items-center gap-2 self-start mt-6">
-								<button
-									class="p-2 h-8 w-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
-									on:click={() => toggleVehicleCollapse(v.id)}
-									aria-label={collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}
-								>
-									<span>{collapsedVehicles.has(v.id) ? "+" : "-"}</span>
-									<span class="sr-only">{collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}</span>
-								</button>
-								<button
-									class="p-2 h-8 w-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
-									on:click={() => removeVehicle(v.id)}
-									aria-label="Remove vehicle"
-								>
-									<span>×</span>
-									<span class="sr-only">Remove vehicle</span>
-								</button>
+								<div class="flex items-center gap-2 self-start mt-6">
+									<!-- Clone Vehicle Button -->
+									<button
+										class="p-2 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-full transition-colors"
+										on:click={() => cloneVehicle(v.id)}
+										aria-label="Clone vehicle"
+										disabled={playMode}
+										class:opacity-50={playMode}
+										class:cursor-not-allowed={playMode}
+									>
+										<span>+ Clone</span>
+										<span class="sr-only">Clone vehicle</span>
+									</button>
+
+									<button
+										class="p-2 h-8 w-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
+										on:click={() => toggleVehicleCollapse(v.id)}
+										aria-label={collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}
+									>
+										<span>{collapsedVehicles.has(v.id) ? "+" : "-"}</span>
+										<span class="sr-only">{collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}</span>
+									</button>
+
+									<!-- Delete / Remove Vehicle Button-->
+									<button
+										class="p-2 h-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
+										on:click={() => removeVehicle(v.id)}
+										aria-label="Remove vehicle"
+									>
+										<span>×</span>
+										<span class="sr-only">Remove vehicle</span>
+									</button>
 							</div>
 						</div>
 						
@@ -1431,9 +1565,14 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 								
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 									<div class="hull-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
-										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hull Points</div>
+										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">
+											Hull Points
+											{#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
+												<span class="text-green-500 text-xs">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
+											{/if}
+										</div>
 										<div class="flex flex-wrap gap-1">
-											{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0) as _, i}
+											{#each Array(calculateMaxHull(v)) as _, i}
 												<div class="hull-checkbox">
 													<input type="checkbox" id="hull-{v.id}-{i}" class="hull-checkbox-input" />
 													<label for="hull-{v.id}-{i}" class="hull-checkbox-label"></label>
@@ -1864,8 +2003,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
 									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
 									<span class="font-bold text-lg">
-										{vehicleTypes.find(vt => vt.id === v.type)?.maxHull || '?'}
+										{calculateMaxHull(v)}
 									</span>
+									{#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
+										<span class="text-green-500 text-xs font-bold">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
+									{/if}
 									<span class="text-xs">points</span>
 								</div>
 								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
@@ -1902,6 +2044,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 
 	<hr>
 <!-- Totals / legality -->
+{#if showTeamSummary && vehicles.length > 0}
 <div class="bg-white p-5 rounded-lg shadow-md mb-6">
 	<div class="flex items-center justify-between mb-4">
 		<div>
@@ -1954,27 +2097,64 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			</ul>
 		</div>
 	{/if}
+</div>
+{/if}
 <!-- Gaslands Math -->
+{#if showGaslandsMath && vehicles.length > 0}
 <div class="mt-6 bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
 	<h3 class="text-lg font-bold text-stone-800 dark:text-white mb-3">Gaslands Math:</h3>
-	<div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+	<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
 			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{vehicles.reduce((total, v) => total + (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0), 0)}
+				{#if vehicles.length > 0}
+					{Math.min(...vehicles.map(v => calculateMaxHull(v)))} /
+					{Math.round(vehicles.reduce((sum, v) => sum + calculateMaxHull(v), 0) / vehicles.length)} /
+					{Math.max(...vehicles.map(v => calculateMaxHull(v)))} /
+					{vehicles.reduce((total, v) => total + calculateMaxHull(v), 0)}
+				{:else}
+					0 / 0 / 0 / 0
+				{/if}
 			</div>
 		</div>
 
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Gear (Min/Avg/Max/Total)</div>
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Vehicle Attack Dice Per Turn (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{vehicles.length > 0 ? Math.max(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0)) : 0}
+				{#if vehicles.length > 0}
+					{Math.min(...vehicles.map(v => calculateTotalAttackDice(v)))} /
+					{Math.round(vehicles.reduce((sum, v) => sum + calculateTotalAttackDice(v), 0) / vehicles.length)} /
+					{Math.max(...vehicles.map(v => calculateTotalAttackDice(v)))} /
+					{vehicles.reduce((total, v) => total + calculateTotalAttackDice(v), 0)}
+				{:else}
+					0 / 0 / 0 / 0
+				{/if}
+			</div>
+		</div>
+
+		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
+			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Gear (Min/Avg/Max)</div>
+			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
+				{#if vehicles.length > 0}
+					{Math.min(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0))} /
+					{Math.round(vehicles.reduce((sum, v) => sum + (vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0), 0) / vehicles.length)} /
+					{Math.max(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0))}
+				{:else}
+					0 / 0 / 0
+				{/if}
 			</div>
 		</div>
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
 			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons (Min/Avg/Max/Total)</div>
 			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{vehicles.reduce((total, v) => total + v.weapons.length, 0)}
+				{#if vehicles.length > 0}
+					{Math.min(...vehicles.map(v => v.weapons.length))} /
+					{Math.round(vehicles.reduce((sum, v) => sum + v.weapons.length, 0) / vehicles.length)} /
+					{Math.max(...vehicles.map(v => v.weapons.length))} /
+					{vehicles.reduce((total, v) => total + v.weapons.length, 0)}
+				{:else}
+					0 / 0 / 0 / 0
+				{/if}
 			</div>
 		</div>
 		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
@@ -1985,8 +2165,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		</div>
 	</div>
 </div>
- 
-</div>    <!-- QR Modal -->
+{/if}
+
+<!-- QR Modal -->
     {#if qrDataUrl}
       <div
         class="fixed inset-0 bg-black/90 z-50"
@@ -2180,9 +2361,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
             
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="dark-mode" 
+                <input
+                  type="checkbox"
+                  id="dark-mode"
                   bind:checked={darkMode}
                   class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
@@ -2194,7 +2375,41 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
                 Enable dark mode for better visibility in low-light conditions.
               </p>
             </div>
-            
+
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="show-team-summary"
+                  bind:checked={showTeamSummary}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="show-team-summary" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Show Team Summary
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+                Show or hide the Team Summary section at the bottom of the page.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="show-gaslands-math"
+                  bind:checked={showGaslandsMath}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="show-gaslands-math" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Show Gaslands Math
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+                Show or hide the Gaslands Math section at the bottom of the page.
+              </p>
+            </div>
+
             <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
               <button
                 class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
@@ -2211,32 +2426,6 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
       </div>
     {/if}
     
-    <!-- Teams Modal -->
-    <TeamsModal 
-      bind:showModal={showTeamsModal} 
-      currentDraft={currentDraft} 
-      importDraft={(draft) => {
-        if (draft) {
-          sponsorId = draft.sponsor;
-          vehicles = draft.vehicles;
-          
-          // Import team name if available
-          if (draft.teamName) {
-            teamName = draft.teamName;
-          }
-          
-          // Import maxCans if available
-          if (draft.maxCans) {
-            maxCans = draft.maxCans;
-          }
-          
-          // Import darkMode if available
-          if (draft.darkMode !== undefined) {
-            darkMode = draft.darkMode;
-          }
-        }
-      }}
-    />
 
 
 </section>
@@ -2278,7 +2467,10 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
           <div class="stat-block">
             <div class="stat-label">Hull</div>
             <div class="hull-tracker">
-              {#each Array(Math.min(10, vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)) as _, i}
+              {#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
+                <span class="text-green-500 text-xs font-bold mr-1">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
+              {/if}
+              {#each Array(Math.min(10, calculateMaxHull(v))) as _, i}
                 <span class="hull-box"></span>
               {/each}
             </div>

@@ -3,7 +3,8 @@
   import { getUserTeams, saveTeam, deleteTeam } from '$lib/services/team';
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  
+  import Auth from './Auth.svelte';
+
   export let showModal = false;
   export let currentDraft;
   export let importDraft;
@@ -18,40 +19,87 @@
   $: if (showModal && $user) {
     loadUserTeams();
   }
+
+  // Watch for modal opening to set default values
+  let previousModalState = false;
+  $: {
+    if (showModal && !previousModalState) {
+      // Modal was just opened
+      if (currentDraft && currentDraft.teamName) {
+        newTeamName = currentDraft.teamName;
+      }
+    }
+    previousModalState = showModal;
+  }
   
   async function loadUserTeams() {
-    if (!$user) return;
-    
+    if (!$user) {
+      console.log("No user logged in, unable to load teams");
+      return;
+    }
+
     isLoading = true;
+    console.log("Loading teams for user:", $user.uid);
     const result = await getUserTeams();
     isLoading = false;
-    
+
     if (result.success) {
       userTeams = result.teams;
+      console.log(`Successfully loaded ${result.teams.length} teams`);
     } else {
-      console.error("Failed to load teams");
+      console.error("Failed to load teams:", result.error);
     }
   }
   
   // Save current team
   async function saveCurrentTeam() {
     if (!$user || !newTeamName.trim()) return;
-    
-    isSaving = true;
+
+    // First check if a team with this name already exists
+    const existingTeam = userTeams.find(team => team.teamName === newTeamName.trim());
+
+    // If team exists, ask for confirmation before overwriting
+    if (existingTeam) {
+      const confirmOverwrite = confirm(`A team named "${newTeamName}" already exists. Do you want to overwrite it?`);
+      if (!confirmOverwrite) {
+        return; // User canceled the overwrite
+      }
+
+      // If user confirmed, delete the existing team first
+      isSaving = true;
+      try {
+        const deleteResult = await deleteTeam(existingTeam.id);
+        if (!deleteResult.success) {
+          console.error("Failed to delete existing team:", deleteResult.error);
+          alert(`Failed to overwrite team: ${deleteResult.error}`);
+          isSaving = false;
+          return;
+        }
+      } catch (error) {
+        console.error("Exception deleting existing team:", error);
+        alert(`Error overwriting team: ${error instanceof Error ? error.message : "Unknown error"}`);
+        isSaving = false;
+        return;
+      }
+    } else {
+      isSaving = true;
+    }
+
     try {
       // Log info that might help identify issues
       console.log("Saving team with name:", newTeamName);
       console.log("Current draft type:", typeof currentDraft);
-      console.log("Current draft has vehicles:", 
-        currentDraft && Array.isArray(currentDraft.vehicles) ? 
+      console.log("Current draft has vehicles:",
+        currentDraft && Array.isArray(currentDraft.vehicles) ?
         currentDraft.vehicles.length : "N/A");
-      
+
       const result = await saveTeam(currentDraft, newTeamName);
-      
+
       if (result.success) {
-        newTeamName = '';
+        // Keep the name field populated with the team name for convenience
+        // since the user may want to create multiple saves with different names
         await loadUserTeams(); // Reload teams
-        alert("Team saved successfully!");
+        alert(existingTeam ? "Team updated successfully!" : "Team saved successfully!");
       } else {
         console.error("Failed to save team:", result.error);
         alert(`Failed to save team: ${result.error}`);
@@ -110,9 +158,9 @@
   
   <!-- Modal content -->
   <div
-    class="!bg-white dark:!bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+    class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
     role="document"
-    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
   >
     <div class="flex justify-between items-center mb-6">
       <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">My Teams</h3>
@@ -128,9 +176,14 @@
     
     <div class="space-y-6">
       {#if !$user}
-        <p class="text-center py-6 text-stone-600 dark:text-gray-300 modal-text">
-          Please sign in to save and load teams.
-        </p>
+        <div class="text-center py-6 space-y-4">
+          <p class="text-stone-600 dark:text-gray-300 modal-text">
+            Please sign in to save and load teams.
+          </p>
+          <div class="flex justify-center">
+            <Auth />
+          </div>
+        </div>
       {:else}
         <!-- Save current team section -->
         <div class="border-b border-stone-200 dark:border-amber-900 pb-6">
