@@ -1,4 +1,4 @@
-<!-- Updated from the content provided by the user -->
+<!-- Updated from the content provided by the user - Refactored with VehicleCard component -->
 <script lang="ts">
 	import { nanoid } from 'nanoid';
 	import { validateDraft } from '$lib/validate';
@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { draftToDataURL } from '$lib/draft/qr';
 	import Auth from '$lib/components/Auth.svelte';
+	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
@@ -759,11 +760,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// Save dark mode preference to localStorage when it changes
 	$: if (typeof window !== 'undefined') {
 		localStorage.setItem('darkMode', darkMode.toString());
-		// Add dark mode class to html element for global styling
+		// Add dark mode classes to html element for global styling
 		if (darkMode) {
 			document.documentElement.classList.add('dark-mode');
+			document.documentElement.classList.add('dark');
 		} else {
 			document.documentElement.classList.remove('dark-mode');
+			document.documentElement.classList.remove('dark');
 		}
 	}
 
@@ -832,7 +835,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// Ensure modals have proper background in dark mode
 		document.addEventListener('DOMContentLoaded', function() {
 			function fixModalBackgrounds() {
-				const isDarkMode = document.documentElement.classList.contains('dark-mode');
+				const isDarkMode = document.documentElement.classList.contains('dark-mode') ||
+                                     document.documentElement.classList.contains('dark');
 				const modals = document.querySelectorAll('.bg-white.dark\\:bg-gray-800, .settings-modal-content');
 				modals.forEach(modal => {
 					if (isDarkMode) {
@@ -1536,37 +1540,41 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-4">
 				<h2 class="text-2xl font-bold text-stone-800 dark:text-gray-100">Vehicles</h2>
-				<!-- Edit/Play Mode Toggle -->&nbsp;&nbsp;&nbsp;&nbsp;
-				<div class="bg-stone-300 dark:bg-gray-700 p-1 rounded-full flex">
-					<button
-						class="px-3 py-1 rounded-full text-sm font-medium transition-colors {!playMode ? 'bg-amber-600 text-white' : 'text-stone-700 dark:text-gray-300 hover:bg-stone-400 dark:hover:bg-gray-600'}"
-						on:click={() => playMode = false}
-					>
-						Edit Team
-					</button>
-					<button
-						class="px-3 py-1 rounded-full text-sm font-medium transition-colors {playMode ? 'bg-green-600 text-white' : 'text-stone-700 dark:text-gray-300 hover:bg-stone-400 dark:hover:bg-gray-600'}"
-						on:click={() => playMode = true}
-					>
-						Play Mode
-					</button>
-				</div>
+				<!-- Edit/Play Mode Toggle Button -->
+				<button
+					class="flex items-center px-3 py-1 bg-stone-300 dark:bg-gray-700 rounded-full transition-colors shadow-sm gap-2 hover:bg-stone-400 dark:hover:bg-gray-600"
+					on:click={() => playMode = !playMode}
+				>
+					<span class="w-4 h-4 rounded-full {playMode ? 'bg-amber-500' : 'bg-green-500'} transition-colors"></span>
+					<span class="text-sm font-medium">{playMode ? 'Play Mode' : 'Edit Team'}</span>
+				</button>
 			</div>
 			<button
-				class="p-2 h-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
+				class="py-2 px-4 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors"
 				on:click={() => addVehicle()}
 				disabled={playMode}
 				class:opacity-50={playMode}
 				class:cursor-not-allowed={playMode}
 			>
-				<span>+</span>
-				<span class="sr-only">Add Vehicle</span>
+				<span>+ Add Vehicle</span>
 			</button>
 		</div>
 
 		{#if vehicles.length === 0}
 			<div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
-				<p class="text-stone-600 dark:text-gray-300 mt-4 text-lg font-bold">No vehicles yet. Add some vehicles to your team!</p>
+				<p class="text-stone-600 dark:text-gray-300 text-lg font-bold mb-4">Your team has no vehicles yet</p>
+				<p class="text-stone-600 dark:text-gray-300 mb-4">Get started by adding a vehicle to your team.</p>
+				<button
+					class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-md transition-colors"
+					on:click={() => addVehicle()}
+				>
+					+ Add Vehicle
+				</button>
+				<div class="text-center mt-6">
+					<p class="italic text-stone-500 dark:text-gray-400">
+						To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
+					</p>
+				</div>
 			</div>
 
 			<!-- About Gaslands Content when no vehicles -->
@@ -1580,665 +1588,63 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						Gaslands is a tabletop game of post-apocalyptic vehicular combat. Using converted Hot Wheels or Matchbox cars, it simulates a televised bloodsport where drivers compete in a variety of deadly scenarios. Gaslands puts players in control of custom battle cars, buggies, trucks, and other vehicles armed with machine guns, rockets, flamethrowers and more.
 					</p>
 
-						<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
-						<ul class="list-disc pl-5 space-y-2">
-							<li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
-							<li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game</li>
-							<li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics</li>
-							<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles</li>
-							<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify</li>
-						</ul>
+					<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
+					<ul class="list-disc pl-5 space-y-2">
+						<li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
+						<li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game</li>
+						<li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics</li>
+						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles</li>
+						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify</li>
+					</ul>
 
-				<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
-						<div class="bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
-							<div class="flex items-center gap-3 mb-2">
-								<div class="w-full">
-									<div class="flex justify-center">
-										<iframe width="560" height="315" src="https://www.youtube.com/embed/CL66NMhWwHo?si=KltcYCh9RbCqU2HQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-									</div>
-									<p class="text-sm mt-3 text-center">
-										Gaslands TV features game tutorials, battle reports, and showcases of custom Gaslands vehicles. A must-watch resource for beginners and experienced players alike.
-									</p>
+					<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
+					<div class="bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
+						<div class="flex items-center gap-3 mb-2">
+							<div class="w-full">
+								<div class="flex justify-center">
+									<iframe width="560" height="315" src="https://www.youtube.com/embed/CL66NMhWwHo?si=KltcYCh9RbCqU2HQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 								</div>
 							</div>
 						</div>
-
-
-					<div class="text-center mt-6">
-						<p class="italic text-stone-500 dark:text-gray-400">
-							To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
-						</p>
 					</div>
 				</div>
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
 				{#each vehicles as v (v.id)}
-					<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 no-card-padding" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'}">
-						<!-- Vehicle header -->
-						<div class="flex items-center justify-between bg-stone-300 dark:bg-gray-700 p-5 border-b-2 border-gray-400 dark:border-gray-600">
-							<div class="flex-1 min-w-0">
-								<div class="flex flex-row gap-2 items-start">
-									<div class="w-2/5">
-										<label for="vehicle-type-{v.id}" class="form-label uppercase">Vehicle Type</label>
-										<div class="relative">
-											<select
-												id="vehicle-type-{v.id}"
-												bind:value={v.type}
-												class="form-select"
-												on:change={() => {
-													const vt = vehicleTypes.find((t) => t.id === v.type)!;
-													v.name = vt.name;
-												}}
-											>
-											{#each filteredVehicleTypes.slice().sort((a, b) => a.name.localeCompare(b.name)) as vt}
-												<option value={vt.id}>{vt.name}</option>
-											{/each}
-											</select>
-											<!-- Custom dropdown arrow -->
-											<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-amber-500">
-												<svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path clip-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" fill-rule="evenodd"></path></svg>
-											</div>
-										</div>
-									</div>
-									<div class="flex-1">
-										<label for="vehicle-name-{v.id}" class="form-label uppercase">Vehicle Name</label>
-										<input
-											id="vehicle-name-{v.id}"
-											bind:value={v.name}
-											class="form-input"
-											placeholder="Vehicle name"
-										/>
-									</div>
-								</div>
-							</div>
-								<div class="flex items-center gap-2 self-start mt-6">
-									<!-- Clone Vehicle Button -->
-									<button
-										class="p-2 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-full transition-colors"
-										on:click={() => cloneVehicle(v.id)}
-										aria-label="Clone vehicle"
-										disabled={playMode}
-										class:opacity-50={playMode}
-										class:cursor-not-allowed={playMode}
-									>
-										<span>+ Clone</span>
-										<span class="sr-only">Clone vehicle</span>
-									</button>
-
-									<button
-										class="p-2 h-8 w-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-full transition-colors"
-										on:click={() => toggleVehicleCollapse(v.id)}
-										aria-label={collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}
-									>
-										<span>{collapsedVehicles.has(v.id) ? "+" : "-"}</span>
-										<span class="sr-only">{collapsedVehicles.has(v.id) ? "Expand vehicle" : "Collapse vehicle"}</span>
-									</button>
-
-									<!-- Delete / Remove Vehicle Button-->
-									<button
-										class="p-2 h-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
-										on:click={() => removeVehicle(v.id)}
-										aria-label="Remove vehicle"
-									>
-										<span>×</span>
-										<span class="sr-only">Remove vehicle</span>
-									</button>
-							</div>
-						</div>
-						
-						<!-- Collapsed view - Only shown when collapsed -->
-						{#if collapsedVehicles.has(v.id)}
-							<div class="p-4 flex items-center justify-between bg-stone-100 dark:bg-gray-800">
-								<div class="flex items-center gap-4">
-									<div class="vehicle-type-icon vehicle-type-{v.type}" title="{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}"></div>
-									<div class="font-medium">
-										{v.weapons.length} weapons | {v.upgrades.length} upgrades | Cost: {validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'} cans
-									</div>
-								</div>
-								<div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === v.type)?.weight || 1}">
-									{vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
-									vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
-									vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
-								</div>
-							</div>
-						{/if}
-						
-						<!-- Vehicle details - Hidden when collapsed -->
-						<div class="p-8" class:hidden={collapsedVehicles.has(v.id)}>
-							
-							<!-- Interactive dashboard elements - Always visible in Play Mode -->
-							<div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6" class:hidden={!playMode}>
-								
-								<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-									<div class="hull-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
-										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">
-											Hull Points
-											{#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
-												<span class="text-green-500 text-xs">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
-											{/if}
-										</div>
-										<div class="flex flex-wrap gap-1">
-											{#each Array(calculateMaxHull(v)) as _, i}
-												<div class="hull-checkbox">
-													<input type="checkbox" id="hull-{v.id}-{i}" class="hull-checkbox-input" />
-													<label for="hull-{v.id}-{i}" class="hull-checkbox-label"></label>
-												</div>
-											{/each}
-										</div>
-									</div>
-									
-									<div class="gear-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
-										<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Current Gear</div>
-										<div class="gear-slider">
-											<input 
-												type="range" 
-												min="1" 
-												max="{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6}" 
-												value="1" 
-												class="gear-range w-full h-7 appearance-none bg-stone-200 dark:bg-gray-600 rounded-full" 
-											/>
-											<div class="gear-markers flex justify-between px-2 mt-1">
-												{#each Array((vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6)) as _, i}
-													<span class="gear-number text-xs font-bold">{i+1}</span>
-												{/each}
-											</div>
-										</div>
-									</div>
-									
-									<div class="crew-hazard-row flex gap-4 col-span-1 md:col-span-2">
-										<div class="crew-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
-											<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
-											<div class="flex flex-wrap gap-1">
-												{#each Array(vehicleTypes.find(vt => vt.id === v.type)?.crew || 1) as _, i}
-													<div class="crew-checkbox">
-														<input type="checkbox" id="crew-{v.id}-{i}" class="crew-checkbox-input" />
-														<label for="crew-{v.id}-{i}" class="crew-checkbox-label"></label>
-													</div>
-												{/each}
-											</div>
-										</div>
-										
-										<div class="hazard-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
-											<div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
-											<div class="hazard-counter flex items-center justify-center gap-3">
-												<button 
-													class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
-													on:click={() => decrementHazard(v.id)}
-												>-</button>
-												<span class="counter-value text-2xl font-bold">{getHazardCount(v.id)}</span>
-												<button 
-													class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
-													on:click={() => incrementHazard(v.id)}
-												>+</button>
-											</div>
-										</div>
-									</div>
-								</div>
-							</div>
-							
-							<!-- Play Mode Loadout summary -->
-							{#if playMode}
-								<div class="loadout-summary mt-4 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-3">
-									<div class="mb-2">
-										{#each v.weapons as weaponId, i}
-											{@const baseWeaponId = weaponId.split('_')[0]}
-											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
-											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-												<span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || weaponId}</span>
-												<span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
-												{#if weaponObj?.specialRules}
-													<div class="text-xs text-stone-500 dark:text-gray-400">{weaponObj.specialRules}</div>
-												{/if}
-											</div>
-										{/each}
-										
-										{#each v.upgrades as upgradeId}
-											{@const upgrade = upgrades.find(u => u.id === upgradeId)}
-											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-												<span class="font-bold text-stone-700 dark:text-gray-300">{upgrade?.name || upgradeId}</span>
-												{#if upgrade?.specialRules}
-													<div class="text-xs text-stone-500 dark:text-gray-400">{upgrade.specialRules}</div>
-												{/if}
-											</div>
-										{/each}
-										
-										{#each v.perks as perkId}
-											{@const perk = perks.find(p => p.id === perkId)}
-											<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-												<span class="font-bold text-stone-700 dark:text-gray-300">{perk?.name || perkId}</span>
-												{#if perk?.text}
-													<div class="text-xs text-stone-500 dark:text-gray-400">{perk.text}</div>
-												{/if}
-											</div>
-										{/each}
-
-										<!-- Special rules in Play Mode -->
-										{#if vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
-											{@const vType = vehicleTypes.find(vt => vt.id === v.type)}
-											{@const specialRules = vType?.specialRules?.split(',') || []}
-
-											{#each specialRules as ruleName}
-												{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
-												<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-													<span class="font-bold text-stone-700 dark:text-gray-300">{ruleName.trim()}</span>
-													{#if ruleDetails}
-														<div class="text-xs text-stone-500 dark:text-gray-400">{@html ruleDetails.rule}</div>
-													{:else}
-														<div class="text-xs text-stone-500 dark:text-gray-400 italic">Unknown rule.</div>
-													{/if}
-												</div>
-											{/each}
-										{/if}
-										
-										{#if v.weapons.length === 0 && v.upgrades.length === 0 && v.perks.length === 0 && !vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
-											<div class="text-sm text-stone-500 dark:text-gray-400 italic">No weapons, upgrades, perks, or special rules</div>
-										{/if}
-									</div>
-								</div>
-							{/if}
-							
-							<!-- Weapons section - Hidden in Play Mode -->
-							<div class="mb-4" class:hidden={playMode}>
-								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
-									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">WEAPONS</span>
-								</h3>
-								
-								{#if v.weapons.length === 0}
-									<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No weapons equipped.</p>
-								{:else}
-									<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
-										{#each v.weapons as weaponId, i}
-											{@const baseWeaponId = weaponId.split('_')[0]}
-											{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-											{@const facing = v.weaponFacings?.[weaponId] || 'front'}
-											{@const isFixedFacing = weaponObj?.facing && weaponObj.facing !== 'any'}
-											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
-												<div class="flex items-center justify-between">
-													<!-- Weapon details -->
-													<div class="flex-1">
-														<b><div class="text-stone-700 dark:text-gray-200 font-bold">
-															{weaponObj?.name || weaponId}
-															{#if weaponObj?.advanced}
-																<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
-															{/if}
-														</div></b>
-														<div class="text-stone-600 dark:text-gray-400 text-xs mt-1 flex flex-wrap gap-3">
-															{#if weaponObj?.cost}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.cost} cans&nbsp;
-																</span>
-															{/if}
-															{#if weaponObj?.slots}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.slots} {weaponObj.slots === 1 ? 'slot' : 'slots'}&nbsp;
-																</span>
-															{/if}
-															{#if weaponObj?.range}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	Range: {weaponObj.range} range
-																</span>
-															{/if}
-															{#if weaponObj?.attackDice != null}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.attackDice}D attack dice
-																</span>
-															{/if}
-															{#if weaponObj?.crewFired}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	Crew fired
-																</span>
-															{/if}
-															{#if weaponObj?.dropped}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	Dropped
-																</span>
-															{/if}
-															{#if weaponObj?.unique}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	Unique
-																</span>
-															{/if}
-															{#if weaponObj?.source && weaponObj.source !== "Gaslands Refueled"}
-																<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-																	{weaponObj.source}
-																</span>
-															{/if}
-														</div>
-														{#if weaponObj?.specialRules}
-															<div class="text-stone-500 dark:text-gray-400 text-xs mt-2 w-full">Rules: {weaponObj.specialRules}</div>
-														{/if}
-														{#if weaponObj?.crewFired}
-														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-															&nbsp;Crew fired&nbsp;
-														</span>
-													{/if}
-													{#if weaponObj?.dropped}
-														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-															&nbsp;Dropped&nbsp;
-														</span>
-													{/if}
-													{#if weaponObj?.unique}
-														<span class="px-2 py-0.5 bg-stone-200 dark:bg-gray-600 rounded">
-															&nbsp;Unique&nbsp;
-														</span>
-													{/if}
-													</div>
-													<!-- Remove button -->
-													<button
-														class="p-1 h-6 w-6 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors ml-2 flex-shrink-0"
-														on:click={() => removeWeapon(v.id, i)}
-														aria-label="Remove weapon"
-													>
-														<span>×</span>
-														<span class="sr-only">Remove weapon</span>
-													</button>
-												</div>
-												
-												<!-- Weapon facing controls -->
-												<div class="mt-2 flex items-center">
-													<span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
-													{#if isFixedFacing || weaponObj?.crewFired || weaponObj?.dropped}
-														<!-- Disabled dropdown for fixed facing weapons, crew fired weapons, or dropped weapons -->
-														<div class="relative inline-flex">
-															<select 
-																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-stone-100 dark:bg-gray-800 text-stone-700 dark:text-gray-400 font-medium cursor-not-allowed appearance-none"
-																value={weaponObj?.crewFired ? "any" : (weaponObj?.dropped ? (weaponObj?.facing || "rear") : weaponObj?.facing)}
-																disabled
-															>
-																<option value={weaponObj?.crewFired ? "any" : (weaponObj?.dropped ? (weaponObj?.facing || "rear") : weaponObj?.facing)}>
-																	{weaponObj?.crewFired ? "360° arc" : (weaponObj?.dropped ? `${weaponObj?.facing || "rear"} (dropped)` : `${weaponObj?.facing} (fixed)`)}
-																</option>
-															</select>
-															<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 dark:text-gray-400">
-																<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-																	<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path>
-																</svg>
-															</div>
-														</div>
-													{:else}
-														<!-- Enabled dropdown for variable facing weapons -->
-														<div class="relative inline-flex">
-															<select 
-																class="text-xs py-1 px-2 pr-8 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-700 dark:text-white focus:border-amber-500 focus:ring-1 focus:ring-amber-500 appearance-none"
-																value={facing}
-																on:change={e => {
-																	const newFacing = e.target.value;
-																	// Update the facing for this weapon
-																	vehicles = vehicles.map(vehicle => {
-																		if (vehicle.id === v.id) {
-																			return {
-																				...vehicle,
-																				weaponFacings: {
-																					...(vehicle.weaponFacings || {}),
-																					[weaponId]: newFacing
-																				}
-																			};
-																		}
-																		return vehicle;
-																	});
-																}}
-															>
-																<option value="front">front</option>
-																<option value="side">side</option>
-																<option value="rear">rear</option>
-																<option value="turret">turret</option>
-																<option value="hull">hull</option>
-																<option value="any">360° arc</option>
-															</select>
-															<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 dark:text-gray-400">
-																<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20">
-																	<path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" fill-rule="evenodd"></path>
-																</svg>
-															</div>
-														</div>
-													{/if}
-												</div>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-								
-								<div class="relative">
-									<label for="add-weapon-{v.id}" class="sr-only">Add a weapon</label>
-									<select
-										id="add-weapon-{v.id}"
-										class="w-full p-2 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-stone-800 dark:text-gray-200 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-										on:change={e => {
-											const target = e.target as HTMLSelectElement;
-											const weaponId = target.value;
-											if (weaponId) {
-												// The addWeapon function will now enforce facing rules automatically
-												addWeapon(v.id, weaponId);
-												target.value = ""; // Reset selection
-											}
-										}}
-										disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
-									>
-										<option value="" disabled selected>+ Add weapon</option>
-										{#each [...filteredWeapons].sort((a, b) => a.name.localeCompare(b.name)) as w}
-											<option value={w.id} disabled={(w.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
-												{w.name}
-												{w.crewFired ? " (Crew Fired)" : ""}
-												{w.dropped ? " (Dropped)" : ""}
-												{(w.buildSlots || 1) === 0 ? " (Free)" : ""}
-											</option>
-										{/each}
-									</select>
-									<!-- Dropdown arrow removed -->
-								</div>
-							</div>
-							
-							<!-- Upgrades section - Hidden in Play Mode -->
-							<div class="mb-4 mt-6" class:hidden={playMode}>
-								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
-									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">UPGRADES</span>
-								</h3>
-								
-								{#if v.upgrades.length === 0}
-									<p class="text-stone-500 text-sm italic px-2">No upgrades installed.</p>
-								{:else}
-									<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
-										{#each v.upgrades as upgradeId, i}
-									{@const upgrade = upgrades.find(u => u.id === upgradeId)}
-											<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
-												<div class="flex-1">
-													<b><span class="text-stone-700 dark:text-gray-200 font-bold block">
-														{upgrade?.name || upgradeId}
-														{#if upgrade?.advanced}
-															<span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
-														{/if}
-													</span></b>
-													<span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
-												</div>
-												<button
-													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
-													on:click={() => removeUpgrade(v.id, i)}
-													aria-label="Remove upgrade"
-												>
-													<span>×</span>
-													<span class="sr-only">Remove upgrade</span>
-												</button>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-								
-								<div class="relative">
-									<label for="add-upgrade-{v.id}" class="sr-only">Add an upgrade</label>
-									<select
-										id="add-upgrade-{v.id}"
-										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-										on:change={e => {
-											const target = e.target as HTMLSelectElement;
-											const upgradeId = target.value;
-											if (upgradeId) {
-												addUpgrade(v.id, upgradeId);
-												target.value = ""; // Reset selection
-											}
-										}}
-										disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && calculateUsedBuildSlots(v) >= (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}
-									>
-										<option value="" disabled selected>+ Add upgrade</option>
-										{#each filteredUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
-											<option value={u.id} disabled={(u.buildSlots || 1) > 0 && calculateUsedBuildSlots(v) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
-												{u.name}
-												{(u.buildSlots || 1) === 0 ? " (Free)" : ""}
-											</option>
-										{/each}
-									</select>
-								</div>
-							</div>
-							
-							<!-- Perks section - Hidden in Play Mode -->
-							<div class="mb-4 mt-6" class:hidden={playMode}>
-								<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
-									<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">PERKS</span>
-
-								</h3>
-								
-								{#if v.perks.length === 0}
-									<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No perks selected.</p>
-								{:else}
-									<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
-										{#each v.perks as perkId, i}
-											{@const perk = perks.find(p => p.id === perkId)}
-											<li class="flex items-center justify-between bg-stone-50 dark:bg-gray-700 px-3 py-2">
-												<div class="flex-1">
-													<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{perk?.name || perkId}</span></b>
-													<span class="text-stone-500 dark:text-gray-400 text-xs">{perk?.text || ""}</span>
-												</div>
-												<button
-													class="p-1 h-6 w-6 ml-2 flex-shrink-0 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-full transition-colors"
-													on:click={() => removePerk(v.id, i)}
-													aria-label="Remove perk"
-												>
-													<span>×</span>
-													<span class="sr-only">Remove perk</span>
-												</button>
-											</li>
-										{/each}
-									</ul>
-								{/if}
-
-								<!-- Special Rules Section - Only in Edit Mode -->
-								{#if vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
-									{@const vType = vehicleTypes.find(vt => vt.id === v.type)}
-									{@const specialRules = vType?.specialRules?.split(',') || []}
-									<div class="mt-4">
-										<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
-											<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">SPECIAL RULES</span>
-										</h3>
-
-										{#if specialRules.length === 0}
-											<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No special rules.</p>
-										{:else}
-											<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
-												{#each specialRules as ruleName}
-													{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
-													<li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
-														<div class="flex-1">
-															<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{ruleName.trim()}</span></b>
-															{#if ruleDetails}
-																<div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
-															{:else}
-																<div class="text-stone-500 dark:text-gray-400 text-sm mt-1 italic">Unknown rule.</div>
-															{/if}
-														</div>
-													</li>
-												{/each}
-											</ul>
-										{/if}
-									</div>
-								{/if}
-
-								<div class="relative">
-									<label for="add-perk-{v.id}" class="sr-only">Add a perk</label>
-									<select
-										id="add-perk-{v.id}"
-										class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
-										on:change={e => {
-											const target = e.target as HTMLSelectElement;
-											const perkId = target.value;
-											if (perkId) {
-												addPerk(v.id, perkId);
-												target.value = ""; // Reset selection
-											}
-										}}
-										disabled={availablePerks.filter(p => !v.perks.includes(p.id)).length === 0}
-									>
-										<option value="" disabled selected>+ Add perk</option>
-										{#each availablePerks as p}
-											{#if !v.perks.includes(p.id)}
-												<option value={p.id} title={p.text}>{p.name}</option>
-											{/if}
-										{/each}
-									</select>
-								</div>
-							</div>
-							
-							<!-- Vehicle stats -->
-							<div class="flex flex-wrap gap-2 text-sm bg-stone-100 dark:bg-gray-700 p-3 rounded mt-3">
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center flex-1 min-w-[70px]">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Cost</span>
-									<span class="font-bold text-lg dark:text-white">
-										{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}
-									</span>
-									<span class="text-xs">cans</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-								<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Type</span>
-								<span class="font-bold text-base truncate block dark:text-white">
-									{vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-								</span>
-								{#if vehicleTypes.find(vt => vt.id === v.type)?.advanced}
-									<span class="text-xs text-amber-600 dark:text-amber-400 font-semibold block">(Advanced)</span>
-								{/if}
-							</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull</span>
-									<span class="font-bold text-lg">
-										{calculateMaxHull(v)}
-									</span>
-									{#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
-										<span class="text-green-500 text-xs font-bold">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
-									{/if}
-									<span class="text-xs">points</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weight</span>
-									<span class="font-bold text-lg">
-										{vehicleTypes.find(vt => vt.id === v.type)?.weight || '1'}
-									</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Max Gear</span>
-									<span class="font-bold text-lg">
-										{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || '?'}
-									</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Build Slots</span>
-									<span class="font-bold text-lg" class:text-red-600={calculateUsedBuildSlots(v) > (vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2)}>
-										{calculateUsedBuildSlots(v)} / {vehicleTypes.find(vt => vt.id === v.type)?.buildSlots || 2}
-									</span>
-								</div>
-								<div class="bg-stone-300 dark:bg-gray-600 rounded p-2 text-center">
-									<span class="block text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Perks</span>
-									<span class="font-bold text-lg" class:text-red-600={v.perks.some(perkId => !currentSponsor?.perks.includes(perkId))}>
-										{v.perks.length} / {availablePerks.length}
-									</span>
-								</div>
-							</div>
-						</div>
-					</div>
+					<VehicleCard
+						vehicle={v}
+						vehicleTypes={vehicleTypes}
+						weapons={weapons}
+						upgrades={upgrades}
+						perks={perks}
+						vehicleRules={vehicleRules}
+						collapsed={collapsedVehicles.has(v.id)}
+						playMode={playMode}
+						validationReport={validation.vehicleReports.find(r => r.vehicleId === v.id)}
+						hazardCount={getHazardCount(v.id)}
+						filteredWeapons={filteredWeapons}
+						filteredUpgrades={filteredUpgrades}
+						filteredPerks={perks.filter(p => currentSponsor?.perks.includes(p.id))}
+						on:remove={e => removeVehicle(e.detail.id)}
+						on:clone={e => cloneVehicle(e.detail.id)}
+						on:toggleCollapse={e => toggleVehicleCollapse(e.detail.id)}
+						on:addWeapon={e => addWeapon(e.detail.vehicleId, e.detail.weaponId, e.detail.facing)}
+						on:removeWeapon={e => removeWeapon(e.detail.vehicleId, e.detail.weaponIndex)}
+						on:addUpgrade={e => addUpgrade(e.detail.vehicleId, e.detail.upgradeId)}
+						on:removeUpgrade={e => removeUpgrade(e.detail.vehicleId, e.detail.upgradeIndex)}
+						on:addPerk={e => addPerk(e.detail.vehicleId, e.detail.perkId)}
+						on:removePerk={e => removePerk(e.detail.vehicleId, e.detail.perkIndex)}
+						on:incrementHazard={e => incrementHazard(e.detail.vehicleId)}
+						on:decrementHazard={e => decrementHazard(e.detail.vehicleId)}
+					/>
 				{/each}
 			</div>
 		{/if}
 	</div>
 
 	<hr>
+<!-- Totals / legality -->	<hr>
 <!-- Totals / legality -->
 {#if showTeamSummary && vehicles.length > 0}
 <div class="bg-white p-5 rounded-lg shadow-md mb-6">
