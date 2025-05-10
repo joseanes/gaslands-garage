@@ -535,19 +535,38 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	async function printTeam() {
 		// Generate a fresh QR code for printing without showing the modal
 		const printQrCode = await draftToDataURL(currentDraft);
-		
+
 		// Get the hidden QR code element in the print view
 		const hiddenQrImage = document.querySelector('#print-qr-code');
 		if (hiddenQrImage) {
 			// Set the QR code directly to this element without triggering the modal
 			hiddenQrImage.src = printQrCode;
+
+			// Make sure the image is visible (in case it was hidden)
+			hiddenQrImage.style.display = "block";
+
+			// Hide any placeholder that might be showing
+			const placeholder = document.querySelector('.qr-code-placeholder');
+			if (placeholder) {
+				placeholder.style.display = "none";
+			}
 		}
-		
+
+		// Apply the correct print format to the body element
+		if (printStyle && typeof document !== 'undefined') {
+			document.body.setAttribute('data-print-format', printStyle);
+		}
+
 		// Give the browser a moment to render the QR code into the DOM
 		setTimeout(() => {
 			window.print();
-			
-			// After printing, hide the QR code again if we used the hidden element
+
+			// After printing, reset the body attribute
+			if (typeof document !== 'undefined') {
+				document.body.removeAttribute('data-print-format');
+			}
+
+			// Reset the QR code display after printing
 			if (hiddenQrImage) {
 				setTimeout(() => {
 					hiddenQrImage.style.display = 'none';
@@ -1043,7 +1062,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
   .relative select,
   #import-draft,
   .bg-red-50,
-  .bg-green-50 {
+  .bg-green-50,
+  .print-hide {
     display: none !important;
   }
   
@@ -2851,8 +2871,9 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
         <img src={qrDataUrl} alt="QR Code" class="qr-code-image" />
       {:else}
         <!-- Hidden image element that will be updated when printing without showing the modal -->
-        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" style="display: none;" />
-        <div class="qr-code-placeholder">QR Code</div>
+        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" />
+        <!-- Placeholder is only shown when not printing -->
+        <div class="qr-code-placeholder print-hide">QR Code</div>
       {/if}
       <div class="qr-code-caption">Scan to load team</div>
     </div>
