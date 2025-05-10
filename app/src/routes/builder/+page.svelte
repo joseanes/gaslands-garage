@@ -9,6 +9,7 @@
 	import Auth from '$lib/components/Auth.svelte';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
+import { saveTeam, getUserTeams } from '$lib/services/team';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
@@ -350,6 +351,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	let showImportModal = false;
 	let showSettingsModal = false;
 	let printStyle = localStorage.getItem('printStyle') || DEFAULT_SETTINGS.printStyle;
+	let quickSaving = false;
 	
 	// Update modal background color based on dark mode
 	$: if (showSettingsModal) {
@@ -453,6 +455,63 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			} catch (error) {
 				console.error("Error saving settings:", error);
 			}
+		}
+	}
+
+	// Quick save team function
+	async function quickSaveTeam() {
+		if (!$user) {
+			alert("Please log in to save your team.");
+			return;
+		}
+
+		if (!teamName.trim()) {
+			alert("Please enter a team name before saving.");
+			return;
+		}
+
+		quickSaving = true;
+
+		try {
+			// First check if a team with this name already exists
+			const teamsResult = await getUserTeams();
+			if (teamsResult.success && teamsResult.teams) {
+				const existingTeam = teamsResult.teams.find(team => team.teamName === teamName.trim());
+
+				// If team exists, ask for confirmation before overwriting
+				if (existingTeam) {
+					const confirmOverwrite = confirm(`A team named "${teamName}" already exists. Do you want to overwrite it?`);
+					if (!confirmOverwrite) {
+						quickSaving = false;
+						return; // User canceled the overwrite
+					}
+
+					// Will proceed to save and overwrite
+				}
+			}
+
+			// Prepare draft data (similar to TeamsModal.svelte)
+			const draftData = {
+				teamName,
+				sponsorId,
+				vehicles,
+				maxCans
+			};
+
+			// Save the team
+			const result = await saveTeam(draftData, teamName);
+
+			if (result.success) {
+				alert("Team saved successfully!");
+			} else {
+				console.error("Failed to save team:", result.error);
+				alert(`Failed to save team: ${result.error}`);
+			}
+		} catch (error) {
+			console.error("Error saving team:", error);
+			alert(`Error saving team: ${error instanceof Error ? error.message : "Unknown error"}`);
+		} finally {
+			quickSaving = false;
 		}
 	}
 
@@ -1363,6 +1422,18 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
 						aria-label="Total Cans"
 					/>
+					<button
+						class="ml-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-sm transition-all shadow-md disabled:opacity-50 flex items-center"
+						on:click={quickSaveTeam}
+						disabled={quickSaving}
+					>
+						{#if quickSaving}
+							<div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
+							Saving...
+						{:else}
+							Quick Save
+						{/if}
+					</button>
 				</div>
 			</div>
 		</div>
