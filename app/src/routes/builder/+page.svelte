@@ -1345,7 +1345,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
 			<div class="flex flex-col gap-4">
 				<div class="flex items-center gap-2">
-					<b>Team Name:</b>&nbsp;&nbsp;&nbsp;
+					<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>&nbsp;&nbsp;&nbsp;
 					<input
 						type="text"
 						bind:value={teamName}
@@ -1354,7 +1354,7 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					/>
 				</div>
 				<div class="flex items-center gap-2">
-					<b>Total Cans:</b>&nbsp;&nbsp;&nbsp;
+					<b class="text-lg font-bold whitespace-nowrap">Total Cans:</b>&nbsp;&nbsp;&nbsp;
 					<input
 						type="number"
 						bind:value={maxCans}
