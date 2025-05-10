@@ -4,7 +4,7 @@
   import "../app.css";
   import "../dark-mode.css";
   import "../form-styles.css";
-  import "$lib/../print-styles.css";
+  import "../print-styles.css";
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';
