@@ -17,8 +17,12 @@
   
   // Menu state
   let showShareMenu = false;
+  let showHelpMenu = false;
   let showTeamsModal = false;
   let showAboutModal = false;
+  let showChangeLogModal = false;
+  let showUpcomingFeaturesModal = false;
+  let showContributorsModal = false;
   
   // Hook for My Teams functionality
   function openTeamsModal() {
@@ -39,26 +43,39 @@
     if (darkMode) {
       document.documentElement.classList.add('dark-mode');
     }
-    
+
     // You could potentially load ad preferences here too
     // const adsDisabled = localStorage.getItem('adsDisabled') === 'true';
     // showAds = !adsDisabled;
-    
+
     const handleClickOutside = (event) => {
+      // Handle Share menu clicks outside
       const shareMenuButton = document.querySelector('.share-menu-trigger');
       const shareMenu = document.querySelector('.share-menu-dropdown');
-      
-      if (showShareMenu && 
-        shareMenuButton && 
-        shareMenu && 
-        !shareMenuButton.contains(event.target) && 
+
+      if (showShareMenu &&
+        shareMenuButton &&
+        shareMenu &&
+        !shareMenuButton.contains(event.target) &&
         !shareMenu.contains(event.target)) {
         showShareMenu = false;
       }
+
+      // Handle Help menu clicks outside
+      const helpMenuButton = document.querySelector('.help-menu-trigger');
+      const helpMenu = document.querySelector('.help-menu-dropdown');
+
+      if (showHelpMenu &&
+        helpMenuButton &&
+        helpMenu &&
+        !helpMenuButton.contains(event.target) &&
+        !helpMenu.contains(event.target)) {
+        showHelpMenu = false;
+      }
     };
-    
+
     document.addEventListener('click', handleClickOutside);
-    
+
     return () => {
       document.removeEventListener('click', handleClickOutside);
     };
@@ -133,8 +150,21 @@
     }
   }
   
+  // Help menu functions
   function openAbout() {
     showAboutModal = true;
+  }
+
+  function openChangeLog() {
+    showChangeLogModal = true;
+  }
+
+  function openUpcomingFeatures() {
+    showUpcomingFeaturesModal = true;
+  }
+
+  function openContributors() {
+    showContributorsModal = true;
   }
 </script>
 
@@ -144,30 +174,43 @@
   <header class="w-full print:hidden">
     <nav class="menu-bar print:hidden">
       <div class="menu-container">
-        <span class="logo">
-          <span class="logo-highlight">Gaslands</span> Garage
-        </span>
+        <div class="flex flex-col">
+          <span class="logo">
+            <span class="logo-highlight">Gaslands</span> Garage
+          </span>
+          <span class="logo-sponsor">
+            by <a href="https://funboardgames.etsy.com/" target="_blank" rel="noopener noreferrer" class="etsy-link">Fun Board Games</a>
+          </span>
+        </div>
         
-        <div class="flex flex-wrap items-center" style="gap: 16px;">
+        <div class="flex flex-wrap items-center" style="gap: 10px;">
           <button 
             type="button" 
-            class="menu-item flex items-center share-menu-trigger" 
+            class="menu-item flex items-center share-menu-trigger"
             on:click={() => showShareMenu = !showShareMenu}
             aria-haspopup="true"
             aria-expanded={showShareMenu}
           >
-            Share Team
+            Teams
             <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
             </svg>
           </button>
           
           {#if showShareMenu}
-          <div 
-            class="absolute left-0 mt-3 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown" 
-            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important;"
+          <div
+            class="absolute left-0 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
+            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
             transition:fade={{ duration: 150 }}
           >
+            {#if $user}
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openTeamsModal(); showShareMenu = false; }}>
+              Save/Load Team
+            </button>
+            {/if}
+            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { printTeam(); showShareMenu = false; }}>
+              Print Team
+            </button>
             <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { copyDraft(); showShareMenu = false; }}>
               Copy to Clipboard
             </button>
@@ -180,17 +223,44 @@
             <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { importBuild(); showShareMenu = false; }}>
               Import Build
             </button>
-            <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { printTeam(); showShareMenu = false; }}>
-              Print Team
-            </button>
           </div>
           {/if}
-          <button type="button" class="menu-item" on:click={printTeam}>Print Team</button>
-          {#if $user}
-          <button type="button" class="menu-item" on:click={openTeamsModal}>My Teams</button>
-          {/if}
           <button type="button" class="menu-item" on:click={openSettings}>Settings</button>
-          <button type="button" class="menu-item" on:click={openAbout}>About</button>
+          <div class="relative inline-block ml-1">
+            <button
+              type="button"
+              class="menu-item flex items-center help-menu-trigger"
+              on:click={() => showHelpMenu = !showHelpMenu}
+              aria-haspopup="true"
+              aria-expanded={showHelpMenu}
+            >
+              Help
+              <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+
+            {#if showHelpMenu}
+            <div
+              class="absolute right-0 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 help-menu-dropdown"
+              style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
+              transition:fade={{ duration: 150 }}
+            >
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openAbout(); showHelpMenu = false; }}>
+                About
+              </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openChangeLog(); showHelpMenu = false; }}>
+                Change Log
+              </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openUpcomingFeatures(); showHelpMenu = false; }}>
+                Upcoming Features
+              </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openContributors(); showHelpMenu = false; }}>
+                Contributors
+              </button>
+            </div>
+            {/if}
+          </div>
           <Auth />
         </div>
       </div>
@@ -306,13 +376,161 @@
   </div>
 {/if}
 
+<!-- Change Log Modal -->
+{#if showChangeLogModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Change Log"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showChangeLogModal = false}
+      on:keydown={e => e.key === 'Escape' && (showChangeLogModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Change Log</h3>
+        <button
+          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          on:click={() => showChangeLogModal = false}
+          aria-label="Close change log modal"
+        >
+          <span class="text-2xl">×</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+        <p>
+          Below is a history of major updates and improvements to Gaslands Garage.
+        </p>
+
+        <div class="space-y-4">
+          <!-- Change log entries will go here -->
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Upcoming Features Modal -->
+{#if showUpcomingFeaturesModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Upcoming Features"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showUpcomingFeaturesModal = false}
+      on:keydown={e => e.key === 'Escape' && (showUpcomingFeaturesModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Upcoming Features</h3>
+        <button
+          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          on:click={() => showUpcomingFeaturesModal = false}
+          aria-label="Close upcoming features modal"
+        >
+          <span class="text-2xl">×</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+        <p>
+          Here's what we're working on for future updates to Gaslands Garage:
+        </p><ul><li>Printing Options<li>Apple Login<li>Where to purchase accessories</li>
+        </ul>
+
+        <div class="space-y-4">
+          <!-- Upcoming features list will go here -->
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Contributors Modal -->
+{#if showContributorsModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Contributors"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showContributorsModal = false}
+      on:keydown={e => e.key === 'Escape' && (showContributorsModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Contributors</h3>
+        <button
+          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          on:click={() => showContributorsModal = false}
+          aria-label="Close contributors modal"
+        >
+          <span class="text-2xl">×</span>
+          <span class="sr-only">Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+        <p>
+          Gaslands Garage is made possible by the following contributors:
+        </p>
+
+        <div class="space-y-4">
+          <!-- Contributors list will go here -->
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}
+
 <style>
 /* Menu styles */
 .menu-bar {
   background-color: #000000;
   color: white;
-  padding: 12px 0;
-  margin-bottom: 16px;
+  padding: 8px 0;
+  margin-bottom: 12px;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -323,30 +541,52 @@
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  padding: 8px 16px;
+  gap: 10px;
+  padding: 6px 16px;
   justify-content: space-between;
   align-items: center;
 }
 
 .logo {
   font-weight: bold;
-  font-size: 1.125rem;
-  padding: 0.5rem 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
 }
 
 .logo-highlight {
   color: #f59e0b;
 }
 
+.logo-sponsor {
+  font-size: 0.65rem;
+  color: #cccccc;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+.etsy-link {
+  color: #f59e0b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.etsy-link:hover {
+  color: #fcd34d;
+  text-decoration: underline;
+}
+
 .menu-item {
   color: white;
   background: transparent;
   border: none;
-  padding: 8px 12px;
+  padding: 5px 10px;
   margin: 0;
   cursor: pointer;
   font: inherit;
+  font-size: 0.9rem;
   border-radius: 4px;
 }
 
