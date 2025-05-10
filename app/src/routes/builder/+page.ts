@@ -1,5 +1,5 @@
 // runs in browser *and* during dev SSR
-import { loadSponsors, loadVehicles, loadWeapons, loadUpgrades, loadPerks } from '$lib/rules/loadRules';
+import { loadSponsors, loadVehicles, loadWeapons, loadUpgrades, loadPerks, loadVehicleRules } from '$lib/rules/loadRules';
 
 export const prerender = false;   // keep SPA behaviour
 
@@ -9,7 +9,8 @@ export async function load() {
     vehicleTypes: await loadVehicles(),
     weapons: await loadWeapons(),
     upgrades: await loadUpgrades(),
-    perks: await loadPerks()
+    perks: await loadPerks(),
+    vehicleRules: await loadVehicleRules()
   };
 }
 

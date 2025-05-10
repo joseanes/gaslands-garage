@@ -7,13 +7,15 @@ export interface UserSettings {
   enableSponsorships: boolean;
   includeAdvanced: boolean;
   darkMode: boolean;
+  printStyle?: string;
 }
 
 // Default settings
 export const DEFAULT_SETTINGS: UserSettings = {
   enableSponsorships: true,
   includeAdvanced: true,
-  darkMode: false
+  darkMode: false,
+  printStyle: 'classic'
 };
 
 /**

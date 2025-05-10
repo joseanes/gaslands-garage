@@ -1,0 +1,50 @@
+[
+  {
+    "ruleName": "UPPERS",
+    "rule": "<p>If this vehicle is involved in a Collision in which both vehicles declare an Evade, both vehicles must declare a single change Gear up immediately after the Collision is resolved (gaining a Hazard Token as normal). If either vehicle is already at its max Gear, the change of Gear does not affect that vehicle's current Gear, but that vehicle does gain a Hazard Token.</p>"
+  },
+  {
+    "ruleName": "DOWNERS",
+    "rule": "<p>When this vehicle is involved in a Collision during its activation in which it declares a Smash Attack, the target vehicle does not gain any Hazard Tokens from the Collision and instead discards 2 Hazard Tokens. Then reduce the target vehicle's Crew Value by 1 until the end of the Gear Phase.</p>"
+  },
+  {
+    "ruleName": "FULL THROTTLE",
+    "rule": "<p>This vehicle considers the Long Straight movement template to be permitted in any Gear. The Long Straight is not considered either Hazardous or Trivial in any Gear.</p>"
+  },
+  {
+    "ruleName": "PIVOT",
+    "rule": "<p>At the start of this vehicle's activation, if this vehicle's current Gear is 1, this vehicle may make a pivot about its centre to face any direction. This pivot cannot cause a Collision and cannot leave this vehicle touching an obstruction.</p>"
+  },
+  {
+    "ruleName": "JET ENGINE",
+    "rule": "<p>A vehicle with a jet engine counts as having a Nitro Booster with infinite ammo tokens. This means this vehicle automatically Explodes when it is Wrecked. A vehicle with a jet engine must use Nitro Booster every time it activates.</p>"
+  },
+  {
+    "ruleName": "AIRBORNE",
+    "rule": "<p>This vehicle ignores non-tall obstructions, dropped weapons, and terrain at all times, except when checking for Cover, and when targeting other vehicles in its Attack Step.<br>Other vehicles ignore this vehicle at all times, except that other vehicles may target this vehicle during their Attack Steps. This vehicle cannot be involved in Collisions.</p>"
+  },
+  {
+    "ruleName": "AIRWOLF",
+    "rule": "<p>At the start of this vehicle's activation, this vehicle may gain 2 Hazard Tokens to make a single pivot about its centre point, up to 90 degrees.</p>"
+  },
+  {
+    "ruleName": "BOMBS AWAY",
+    "rule": "<p>When purchasing weapons for this vehicle, this vehicle may count dropped weapons as requiring 0 build slots. This vehicle may attack with any number of dropped weapons in a single Attack Step.</p>"
+  },
+  {
+    "ruleName": "INFURIATING JINGLE",
+    "rule": "<p>Vehicles that target this vehicle with a Smash Attack during a Collision gain no Hazard Tokens during step 6 of the Collision resolution.</p>"
+  },
+  {
+    "ruleName": "ALL TERRAIN",
+    "rule": "<p>This vehicle may ignore the penalties for rough and treacherous surfaces.</p>"
+  },
+  {
+    "ruleName": "UP AND OVER",
+    "rule": "<p>During this vehicle's Movement Step, after resolving a Collision with an obstruction of a lower weight class, this vehicle may declare that it is going \"Up and Over\". If it does, it may ignore the obstruction for the remainder of its Movement Step, as it drives right over the top of it. This vehicle cannot use this ability to ignore another vehicle with the Up and Over special rule.</p>"
+  },
+  {
+    "ruleName": "TURRET",
+    "rule": "<p>This vehicle may count one weapon as turret-mounted without paying for the upgrade.</p>"
+  }
+]

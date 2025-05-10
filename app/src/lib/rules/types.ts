@@ -23,9 +23,11 @@ export const Vehicle = z.object({
   buildSlots: z.number().int().positive().default(2),
   crew: z.number().int().nonnegative().default(1),
   color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i).optional(),
-  weight: z.number().int().positive().default(1),
+  weight: z.union([z.string(), z.number().int().positive()]).default(1),
   advanced: z.boolean().optional().default(false),
-  source: z.string().optional()
+  source: z.string().optional(),
+  handling: z.number().int().optional(),
+  specialRules: z.string().optional()
 });
 export type Vehicle = z.infer<typeof Vehicle>;
 
@@ -71,4 +73,10 @@ export const Perk = z.object({
   text: z.string()
 });
 export type Perk = z.infer<typeof Perk>;
+
+export const VehicleRule = z.object({
+  ruleName: z.string(),
+  rule: z.string()
+});
+export type VehicleRule = z.infer<typeof VehicleRule>;
 

@@ -19,8 +19,9 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		weapons: import('$lib/rules/types').Weapon[];
 		upgrades: import('$lib/rules/types').Upgrade[];
 		perks: import('$lib/rules/types').Perk[];
+		vehicleRules: import('$lib/rules/types').VehicleRule[];
 	};
-	const { sponsors, vehicleTypes, weapons, upgrades, perks } = data;
+	const { sponsors, vehicleTypes, weapons, upgrades, perks, vehicleRules } = data;
   
   // Sort all data alphabetically
   $: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
@@ -318,6 +319,10 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 		return totalAttackDice;
 	}
 
+	function getVehicleRuleDetails(ruleName: string) {
+		return vehicleRules.find(rule => rule.ruleName === ruleName);
+	}
+
 	// Hazard token management
 	function getHazardCount(vehicleId: string): number {
 		return vehicleHazards[vehicleId] || 0;
@@ -340,9 +345,11 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 	}
 
 	/* ---------- modals & menu state ---------- */
+	// For settings and modals that need persistence
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
+	let printStyle = localStorage.getItem('printStyle') || DEFAULT_SETTINGS.printStyle;
 	
 	// Update modal background color based on dark mode
 	$: if (showSettingsModal) {
@@ -435,8 +442,14 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 					includeAdvanced,
 					darkMode,
 					showTeamSummary,
-					showGaslandsMath
+					showGaslandsMath,
+					printStyle
 				});
+
+				// Also save printStyle to localStorage for persistence
+				if (typeof localStorage !== 'undefined') {
+					localStorage.setItem('printStyle', printStyle);
+				}
 			} catch (error) {
 				console.error("Error saving settings:", error);
 			}
@@ -1330,24 +1343,27 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 <section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
 	<header class="mb-6 md:mb-8">
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
-			<div class="flex items-center gap-2">
-				<b>Team:</b>&nbsp;&nbsp;&nbsp; 
-				<input 
-					type="text" 
-					bind:value={teamName}
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl" 
-					aria-label="Team Name"
-				/>&nbsp;&nbsp;
-
-				<b>Total Cans:</b>&nbsp;&nbsp;&nbsp;
-				<input 
-					type="number" 
-					bind:value={maxCans}
-					min="1"
-					max="1000"
-					class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 w-[80px] text-center text-2xl md:text-3xl" 
-					aria-label="Max Cans"
-				/>
+			<div class="flex flex-col gap-4">
+				<div class="flex items-center gap-2">
+					<b>Team Name:</b>&nbsp;&nbsp;&nbsp;
+					<input
+						type="text"
+						bind:value={teamName}
+						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl"
+						aria-label="Team Name"
+					/>
+				</div>
+				<div class="flex items-center gap-2">
+					<b>Total Cans:</b>&nbsp;&nbsp;&nbsp;
+					<input
+						type="number"
+						bind:value={maxCans}
+						min="1"
+						max="1000"
+						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
+						aria-label="Total Cans"
+					/>
+				</div>
 			</div>
 		</div>
 		<!-- <p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p> -->
@@ -1715,9 +1731,25 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 												{/if}
 											</div>
 										{/each}
+
+										<!-- Special rules in Play Mode -->
+										{#if vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
+											{@const vType = vehicleTypes.find(vt => vt.id === v.type)}
+											{@const specialRules = vType?.specialRules?.split(',') || []}
+
+											{#each specialRules as ruleName}
+												{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
+												{#if ruleDetails}
+													<div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
+														<span class="font-bold text-stone-700 dark:text-gray-300">{ruleDetails.ruleName}</span>
+														<div class="text-xs text-stone-500 dark:text-gray-400">{@html ruleDetails.rule}</div>
+													</div>
+												{/if}
+											{/each}
+										{/if}
 										
-										{#if v.weapons.length === 0 && v.upgrades.length === 0 && v.perks.length === 0}
-											<div class="text-sm text-stone-500 dark:text-gray-400 italic">No weapons, upgrades, or perks</div>
+										{#if v.weapons.length === 0 && v.upgrades.length === 0 && v.perks.length === 0 && !vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
+											<div class="text-sm text-stone-500 dark:text-gray-400 italic">No weapons, upgrades, perks, or special rules</div>
 										{/if}
 									</div>
 								</div>
@@ -2005,7 +2037,36 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 										{/each}
 									</ul>
 								{/if}
-								
+
+								<!-- Special Rules Section - Only in Edit Mode -->
+								{#if vehicleTypes.find(vt => vt.id === v.type)?.specialRules}
+									{@const vType = vehicleTypes.find(vt => vt.id === v.type)}
+									{@const specialRules = vType?.specialRules?.split(',') || []}
+									<div class="mt-4">
+										<h3 class="font-bold text-stone-800 dark:text-gray-200 mb-2 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+											<span class="bg-stone-300 dark:bg-gray-600 px-2 py-1 rounded-t mr-2">SPECIAL RULES</span>
+										</h3>
+
+										{#if specialRules.length === 0}
+											<p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No special rules.</p>
+										{:else}
+											<ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
+												{#each specialRules as ruleName}
+													{@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
+													{#if ruleDetails}
+														<li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
+															<div class="flex-1">
+																<b><span class="text-stone-700 dark:text-gray-200 font-bold block">{ruleDetails.ruleName}</span></b>
+																<div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
+															</div>
+														</li>
+													{/if}
+												{/each}
+											</ul>
+										{/if}
+									</div>
+								{/if}
+
 								<div class="relative">
 									<label for="add-perk-{v.id}" class="sr-only">Add a perk</label>
 									<select
@@ -2456,6 +2517,67 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
               </div>
               <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
                 Show or hide the Gaslands Math section at the bottom of the page.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Print Style</h4>
+              <div class="space-y-2">
+                <div class="flex items-center">
+                  <input
+                    type="radio"
+                    id="print-style-classic"
+                    name="print-style"
+                    value="classic"
+                    bind:group={printStyle}
+                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
+                  />
+                  <label for="print-style-classic" class="ml-3 text-stone-800 dark:text-white">
+                    Classic
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                    type="radio"
+                    id="print-style-compact"
+                    name="print-style"
+                    value="compact"
+                    bind:group={printStyle}
+                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
+                  />
+                  <label for="print-style-compact" class="ml-3 text-stone-800 dark:text-white">
+                    Compact
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                    type="radio"
+                    id="print-style-dashboard"
+                    name="print-style"
+                    value="dashboard"
+                    bind:group={printStyle}
+                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
+                  />
+                  <label for="print-style-dashboard" class="ml-3 text-stone-800 dark:text-white">
+                    Dashboard
+                  </label>
+                </div>
+                <div class="flex items-center">
+                  <input
+                    type="radio"
+                    id="print-style-roster"
+                    name="print-style"
+                    value="roster"
+                    bind:group={printStyle}
+                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
+                  />
+                  <label for="print-style-roster" class="ml-3 text-stone-800 dark:text-white">
+                    Roster
+                  </label>
+                </div>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+                Choose your preferred print layout style.
               </p>
             </div>
 
