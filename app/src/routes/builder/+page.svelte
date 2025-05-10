@@ -1464,6 +1464,55 @@ import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/servic
 			<div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
 				<p class="text-stone-500 dark:text-gray-400 mt-4 text-lg">No vehicles yet. Add some vehicles to your team!</p>
 			</div>
+
+			<!-- About Gaslands Content when no vehicles -->
+			<div class="mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-2 border-amber-400">
+				<div class="flex justify-between items-center mb-6">
+					<h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands</h3>
+				</div>
+
+				<div class="space-y-6 text-stone-700 dark:text-gray-200">
+					<p>
+						Gaslands is a tabletop game of post-apocalyptic vehicular combat. Using converted Hot Wheels or Matchbox cars, it simulates a televised bloodsport where drivers compete in a variety of deadly scenarios. Gaslands puts players in control of custom battle cars, buggies, trucks, and other vehicles armed with machine guns, rockets, flamethrowers and more.
+					</p>
+					<p>
+						Players are encouraged to modify readily available Hotwheels or Matchbox vehicles with bits and paint to make them look like post-apocalyptic combat vehicles. The game is set in a dystopian future where Earth has been devastated and Mars has been colonized by the wealthy elite. The poor left behind on Earth compete in televised death races for a chance to win citizenship on Mars.
+					</p>
+
+					<div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+						<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
+						<ul class="list-disc pl-5 space-y-2">
+							<li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
+							<li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game</li>
+							<li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics</li>
+							<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles</li>
+							<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify</li>
+						</ul>
+					</div>
+
+					<div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+						<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
+						<div class="bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
+							<div class="flex items-center gap-3 mb-2">
+								<div class="w-full">
+									<div class="flex justify-center">
+										<iframe width="560" height="315" src="https://www.youtube.com/embed/CL66NMhWwHo?si=KltcYCh9RbCqU2HQ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+									</div>
+									<p class="text-sm mt-3 text-center">
+										Gaslands TV features game tutorials, battle reports, and showcases of custom Gaslands vehicles. A must-watch resource for beginners and experienced players alike.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="text-center mt-6">
+						<p class="italic text-stone-500 dark:text-gray-400">
+							To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
+						</p>
+					</div>
+				</div>
+			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
 				{#each vehicles as v (v.id)}
