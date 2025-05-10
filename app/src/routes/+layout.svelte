@@ -4,7 +4,7 @@
   import "../app.css";
   import "../dark-mode.css";
   import "../form-styles.css";
-  import "../print-styles.css";
+  /* Print styles now included directly in this file */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';
@@ -593,5 +593,82 @@
 .menu-item:hover {
   color: #fcd34d;
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Print Styles */
+@media print {
+  /* Important overrides to ensure content is visible */
+  @page {
+    size: auto;
+    margin: 10mm;
+  }
+
+  /* Reset all elements to default display */
+  body * {
+    display: none !important;
+  }
+
+  /* Show only the selected format */
+  .print-views {
+    display: block !important;
+    position: static !important;
+    left: auto !important;
+    visibility: visible !important;
+  }
+
+  .print-view {
+    display: none !important;
+  }
+
+  /* Only show the selected format */
+  .print-view[data-format=classic] {
+    display: block !important;
+  }
+
+  /* Format-specific display rules */
+  body[data-print-format=classic] .print-view[data-format=classic],
+  body[data-print-format=compact] .print-view[data-format=compact],
+  body[data-print-format=dashboard] .print-view[data-format=dashboard],
+  body[data-print-format=roster] .print-view[data-format=roster] {
+    display: block !important;
+  }
+
+  /* Make all content inside the selected view visible */
+  body[data-print-format=classic] .print-view[data-format=classic] *,
+  body[data-print-format=compact] .print-view[data-format=compact] *,
+  body[data-print-format=dashboard] .print-view[data-format=dashboard] *,
+  body[data-print-format=roster] .print-view[data-format=roster] * {
+    display: revert !important;
+    visibility: visible !important;
+    color: black !important;
+    background-color: white !important;
+    opacity: 1 !important;
+  }
+
+  /* Exception for backgrounds and colors */
+  .card, .vehicle-card {
+    background-color: white !important;
+    border: 1px solid black !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Badge specific colors */
+  .vehicle-type-badge {
+    color: white !important;
+    background-color: #333 !important;
+  }
+
+  .card-cost {
+    background-color: black !important;
+    color: white !important;
+  }
+
+  /* Reset dark mode for printing - ALWAYS use light mode */
+  html,
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
 }
 </style>
