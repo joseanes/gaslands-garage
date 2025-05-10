@@ -8,7 +8,7 @@ import type { Team, VehicleReport } from './model';
    ------------------------------------------------------------ */
 export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
   team.vehicles.forEach((v, i) => {
-    const max = v.class.weaponSlots;         // needs weaponSlots in vehicles.json
+    const max = v.class.weaponSlots ?? 0;    // Default to 0 if undefined
     if (v.weapons.length > max) {
       reports[i].errors.push(
         `Too many weapons: ${v.weapons.length}/${max} slots`
@@ -39,7 +39,7 @@ export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
    ------------------------------------------------------------ */
    export function upgradeSlotCheck(team: Team, reports: VehicleReport[]) {
     team.vehicles.forEach((v, i) => {
-      const max = v.class.upgradeSlots;
+      const max = v.class.upgradeSlots ?? 0;  // Default to 0 if undefined
       if (v.upgrades.length > max) {
         reports[i].errors.push(
           `Too many upgrades: ${v.upgrades.length}/${max} slots`

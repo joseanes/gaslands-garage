@@ -5,8 +5,8 @@ export const Vehicle = z.object({
   name: z.string(),
   baseCost: z.number().int().nonnegative(),
   maxHull: z.number().int().positive(),
-  weaponSlots: z.number().int().positive(),
-  upgradeSlots: z.number().int().positive().default(2),  // Most vehicles have 2 upgrade slots by default
+  weaponSlots: z.number().int().nonnegative().optional().default(2),
+  upgradeSlots: z.number().int().nonnegative().optional().default(2),  // Most vehicles have 2 upgrade slots by default
   advanced: z.boolean().optional().default(false),
   color: z.string().optional()
 });

@@ -41,6 +41,7 @@
     const darkMode = localStorage.getItem('darkMode') === 'true';
     if (darkMode) {
       document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.add('dark');
     }
 
     // You could potentially load ad preferences here too
@@ -343,7 +344,11 @@
           <p class="italic text-stone-600 dark:text-gray-400 mt-2">
             This work is licensed under a <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Creative Commons Attribution-NonCommercial 4.0 International License</a>. You are free to share and adapt this work for non-commercial purposes, provided you give appropriate credit.
           </p>
-          
+
+          <p class="text-stone-600 dark:text-gray-400 mt-2">
+            This project is open source! Check out the <a href="https://github.com/joseanes/gaslands-garage" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">GitHub repository</a> to contribute or report issues.
+          </p>
+
           <div class="mt-4">
             <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Gaslands Garage</h4>
             <p class="mb-2">The ultimate team builder for Gaslands tabletop game</p>
@@ -584,7 +589,6 @@
         
 
 
-
         <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
           <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
           <ul class="list-disc pl-5 space-y-2">
@@ -639,7 +643,7 @@
   --modal-bg-color: white;
 }
 
-:global(.dark-mode) {
+.dark, :global(.dark-mode) {
   --modal-bg-color: #1f2937; /* Matches dark:bg-gray-800 */
 }
 
