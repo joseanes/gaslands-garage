@@ -90,6 +90,7 @@
     $: vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
     $: vehicleCost = calculateVehicleCost(vehicle, vehicleType);
     $: maxBuildSlots = vehicleType?.buildSlots || 2;
+    $: usedBuildSlots = calculateUsedBuildSlots(vehicle);
 
     function calculateVehicleCost(vehicle, vehicleType) {
         // Use the passed vehicleType to avoid redundant lookups
@@ -458,44 +459,43 @@
                         {@const baseWeaponId = weaponId.split('_')[0]}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
-                        <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2 m-0">
+                        <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
-                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold">
+                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
                                         {weaponObj?.name || weaponId}
                                         {#if weaponObj?.advanced}
                                             <span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
                                         {/if}
                                     </span></b>
-                                    <!-- Remove button -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-stone-500 dark:text-gray-400 text-xs">{weaponObj?.specialRules || ""}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <!-- Weapon facing controls -->
+                                    <div class="flex items-center">
+                                        <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Dice:</span>
+                                        <span class="text-stone-700 dark:text-gray-200 text-xs mr-4">{weaponObj?.attackDice || 0}</span>
+                                        <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
+                                        <select 
+                                            bind:value={vehicle.weaponFacings[weaponId]} 
+                                            class="text-xs p-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
+                                            disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || playMode}
+                                        >
+                                            <option value="front">Front</option>
+                                            <option value="side">Side</option>
+                                            <option value="rear">Rear</option>
+                                            <option value="any" disabled={!weaponObj?.crewFired}>360°</option>
+                                        </select>
+                                    </div>
                                     <button
-                                        class="p-1 h-6 px-2 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded transition-colors ml-2 flex-shrink-0 text-xs"
+                                        class="p-1 h-6 px-2 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded transition-colors flex-shrink-0 text-xs"
                                         on:click={() => removeWeapon(i)}
                                         aria-label="Remove weapon"
                                     >
                                         <span>× Remove</span>
                                     </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Weapon facing controls -->
-                            <div class="mt-2 flex items-center">
-                                <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
-                                <div class="flex flex-wrap gap-1">
-                                    <select 
-                                        bind:value={vehicle.weaponFacings[weaponId]} 
-                                        class="text-xs p-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
-                                        disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || playMode}
-                                    >
-                                        <option value="front">Front</option>
-                                        <option value="side">Side</option>
-                                        <option value="rear">Rear</option>
-                                        <option value="any" disabled={!weaponObj?.crewFired}>360°</option>
-                                    </select>
-                                    
-                                    {#if weaponObj?.specialRules}
-                                        <span class="ml-2 text-xs text-stone-500 dark:text-gray-400">{weaponObj.specialRules}</span>
-                                    {/if}
                                 </div>
                             </div>
                         </li>
@@ -512,19 +512,24 @@
                         const target = e.target as HTMLSelectElement;
                         const weaponId = target.value;
                         if (weaponId) {
-                            const facingSelect = document.getElementById(`facing-select-${vehicle.id}`);
-                            const facing = facingSelect ? (facingSelect as HTMLSelectElement).value : 'front';
-                            addWeapon(weaponId, facing);
+                            addWeapon(weaponId, 'front');
                             target.value = ""; // Reset selection
                         }
                     }}
                     disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add weapon</option>
-                    {#each filteredWeapons as w}
-                        <option value={w.id} disabled={(w.buildSlots || 1) > 0 && usedBuildSlots + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
+                    {#each filteredWeapons.slice().sort((a, b) => a.name.localeCompare(b.name)) as w}
+                        {@const weaponSlots = w.buildSlots || 1}
+                        {@const canAddWeapon = weaponSlots === 0 || usedBuildSlots + weaponSlots <= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                        <option 
+                            value={w.id} 
+                            disabled={!canAddWeapon}
+                            class={!canAddWeapon ? 'text-gray-400' : ''}
+                        >
                             {w.name}
-                            {(w.buildSlots || 1) === 0 ? " (Free)" : ""}
+                            {weaponSlots === 0 ? " (Free)" : ` (${weaponSlots} slot${weaponSlots > 1 ? 's' : ''})`}
+                            {!canAddWeapon ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
                 </select>

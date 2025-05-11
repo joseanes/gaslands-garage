@@ -1613,8 +1613,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
 			<div class="flex flex-col gap-4 w-full">
 				<div class="flex items-center justify-between w-full gap-4">
-					<div class="flex items-center">
-						<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>&nbsp;&nbsp;&nbsp;
+					<div class="flex items-center gap-4">
+						<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>
 						<input
 							type="text"
 							bind:value={teamName}
@@ -1622,46 +1622,45 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 							aria-label="Team Name"
 						/>
 					</div>
-					<div class="flex flex-col items-end gap-2">
-						<!-- Edit/Play Mode Toggle Button -->
-						<button
-							class="form-button flex items-center gap-2"
-							on:click={() => playMode = !playMode}
-						>
-							<span class="w-4 h-4 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
-							<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
-						</button>
-						<!-- Quick Save Button -->
-						<button
-							class="form-button flex items-center"
-							on:click={quickSaveTeam}
-							disabled={quickSaving}
-						>
-							{#if quickSaving}
-								<div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
-								Saving...
-							{:else}
-								Quick Save
-							{/if}
-						</button>
-					</div>
+					<!-- Edit/Play Mode Toggle Button -->
+					<button
+						class="form-button flex items-center gap-2 h-8"
+						on:click={() => playMode = !playMode}
+					>
+						<span class="w-3 h-3 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
+						<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
+					</button>
 				</div>
-				<div class="flex items-center gap-2 mt-2">
-					<b class="text-lg font-bold whitespace-nowrap">Cans: </b>&nbsp;&nbsp;&nbsp;
-					<span class="font-extrabold text-amber-700 dark:text-amber-300 text-2xl md:text-3xl mr-2">{totalCans || 0}</span>
-					<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
-					<input
-						type="number"
-						bind:value={maxCans}
-						min="1"
-						max="1000"
-						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
-						aria-label="Maximum Cans"
-					/>
+				<div class="flex items-center justify-between w-full gap-4">
+					<div class="flex items-center gap-4">
+						<b class="text-lg font-bold whitespace-nowrap">Cans: </b>
+						<span class="font-extrabold text-amber-700 dark:text-amber-300 text-2xl md:text-3xl">{totalCans || 0}</span>
+						<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
+						<input
+							type="number"
+							bind:value={maxCans}
+							min="1"
+							max="1000"
+							class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
+							aria-label="Maximum Cans"
+						/>
+					</div>
+					<!-- Quick Save Button -->
+					<button
+						class="form-button flex items-center h-8"
+						on:click={quickSaveTeam}
+						disabled={quickSaving}
+					>
+						{#if quickSaving}
+							<div class="animate-spin mr-2 h-3 w-3 border-b-2 border-white rounded-full"></div>
+							Saving...
+						{:else}
+							Quick Save
+						{/if}
+					</button>
 				</div>
 			</div>
 		</div>
-		<!-- <p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p> -->
 	</header>
 
 	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
@@ -1793,21 +1792,22 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			</div>
 		{:else}
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-				{#each vehicles as v (v.id)}
+				{#each vehicles as vehicle (vehicle.id)}
 					<VehicleCard
-						vehicle={v}
-						vehicleTypes={vehicleTypes}
-						weapons={weapons}
-						upgrades={upgrades}
-						perks={perks}
-						vehicleRules={vehicleRules}
-						collapsed={collapsedVehicles.has(v.id)}
-						usedBuildSlots={calculateUsedBuildSlots(v)}
-						playMode={playMode}
-						validationReport={validation.vehicleReports.find(r => r.vehicleId === v.id)}
-						hazardCount={getHazardCount(v.id)}
-						filteredWeapons={filteredWeapons}
-						filteredUpgrades={filteredUpgrades}
+						{vehicle}
+						{vehicleTypes}
+						{weapons}
+						{upgrades}
+						{perks}
+						{currentSponsor}
+						{playMode}
+						{validation}
+						{showTeamSummary}
+						{showGaslandsMath}
+						{totalCans}
+						{maxCans}
+						{filteredWeapons}
+						{filteredUpgrades}
 						filteredPerks={perks.filter(p => currentSponsor?.perks.includes(p.id))}
 						on:remove={e => removeVehicle(e.detail.id)}
 						on:clone={e => cloneVehicle(e.detail.id)}
