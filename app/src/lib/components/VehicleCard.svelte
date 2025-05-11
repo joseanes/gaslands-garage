@@ -86,12 +86,13 @@
     // Helper functions
     // We now use the usedBuildSlots prop from the parent component
 
-    // Create a reactive statement to recalculate the vehicle cost when relevant properties change
-    $: vehicleCost = calculateVehicleCost(vehicle);
+    // Create reactive statements to recalculate values when properties change
+    $: vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+    $: vehicleCost = calculateVehicleCost(vehicle, vehicleType);
+    $: maxBuildSlots = vehicleType?.buildSlots || 2;
 
-    function calculateVehicleCost(vehicle) {
-        // Get the base cost from the vehicle type
-        const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+    function calculateVehicleCost(vehicle, vehicleType) {
+        // Use the passed vehicleType to avoid redundant lookups
         if (!vehicleType) return 0;
 
         let totalCost = vehicleType.baseCost || 0;
@@ -213,7 +214,10 @@
                         id="vehicle-type-{vehicle.id}"
                         class="form-select"
                         bind:value={vehicle.type}
-                        on:change={() => {dispatch('vehicleTypeChanged', { id: vehicle.id })}}
+                        on:change={() => {
+                            // Immediately dispatch event for parent to handle
+                            dispatch('vehicleTypeChanged', { id: vehicle.id, vehicleType: vehicle.type });
+                        }}
                         disabled={playMode}
                         class:opacity-50={playMode}
                         class:cursor-not-allowed={playMode}
@@ -240,9 +244,9 @@
         </div>
         <div class="mt-6">
             <BuildHeader
-                vehicleCost={validationReport?.cans ?? vehicleCost}
+                vehicleCost={vehicleCost}
                 usedBuildSlots={usedBuildSlots}
-                maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
+                maxBuildSlots={maxBuildSlots}
             />
         </div>
         <div class="flex items-center gap-2 self-start mt-2">
@@ -287,9 +291,9 @@
                     {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades
                 </div>
                 <BuildHeader
-                    vehicleCost={validationReport?.cans ?? vehicleCost}
+                    vehicleCost={vehicleCost}
                     usedBuildSlots={usedBuildSlots}
-                    maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
+                    maxBuildSlots={maxBuildSlots}
                 />
             </div>
             <div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">

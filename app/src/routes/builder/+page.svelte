@@ -82,18 +82,38 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	function addVehicle(type = filteredVehicleTypes[0]?.id) {
 		const vt = vehicleTypes.find((v) => v.id === type)!;
-		vehicles = [
-			...vehicles,
-			{
-				id: nanoid(6),
-				type: vt.id,
-				name: `New ${vt.name}`,
-				weapons: [],
-				weaponFacings: {},
-				upgrades: [],
-				perks: []
-			}
-		];
+		const newVehicleId = nanoid(6);
+
+		// Create the new vehicle
+		const newVehicle = {
+			id: newVehicleId,
+			type: vt.id,
+			name: `New ${vt.name}`,
+			weapons: [],
+			weaponFacings: {},
+			upgrades: [],
+			perks: []
+		};
+
+		// Add to vehicles list
+		vehicles = [...vehicles, newVehicle];
+
+		// For immediate UI feedback, manually update the validation
+		// Create a basic vehicle report with just the base cost
+		if (validation && validation.vehicleReports) {
+			const newVehicleReport = {
+				vehicleId: newVehicleId,
+				cans: vt.baseCost || 0,
+				errors: []
+			};
+
+			// Update the validation object
+			validation.vehicleReports = [...validation.vehicleReports, newVehicleReport];
+			validation.cans += newVehicleReport.cans;
+		}
+
+		// Also trigger a full validation
+		forceValidation();
 	}
 
 	function removeVehicle(id: string) {
@@ -137,12 +157,26 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Add the cloned vehicle to the vehicles array
 		vehicles = [...vehicles, clonedVehicle];
-
-		// Force validation to run immediately
-		currentDraft = {
-			...currentDraft,
-			vehicles
-		};
+		
+		// For immediate UI feedback, manually update the validation
+		// Find the source vehicle report to copy its values
+		if (validation && validation.vehicleReports) {
+			const sourceReport = validation.vehicleReports.find(r => r.vehicleId === sourceVehicle.id);
+			if (sourceReport) {
+				const clonedReport = {
+					vehicleId: clonedVehicleId,
+					cans: sourceReport.cans,
+					errors: [...sourceReport.errors]
+				};
+				
+				// Update the validation object
+				validation.vehicleReports = [...validation.vehicleReports, clonedReport];
+				validation.cans += clonedReport.cans;
+			}
+		}
+		
+		// Also trigger a full validation
+		forceValidation();
 	}
 	
 	function toggleVehicleCollapse(id: string) {
@@ -790,6 +824,68 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	function forceValidation() {
 		// Force reactivity by creating a new currentDraft object
 		currentDraft = { ...currentDraft };
+	}
+
+	// Function to handle vehicle type changes
+	function handleVehicleTypeChange(vehicleId, newVehicleType) {
+		// Find the vehicle in the validation reports for updating UI immediately
+		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicleId);
+		if (vehicleReport) {
+			// Find the new vehicle type
+			const vehicleType = vehicleTypes.find(vt => vt.id === newVehicleType);
+			if (vehicleType) {
+				// Update the total cans immediately by recalculating
+				const vehicle = vehicles.find(v => v.id === vehicleId);
+				if (vehicle) {
+					// Manually update the total cans
+					const oldCost = vehicleReport.cans;
+					const newCost = calculateVehicleCost(vehicle);
+					validation.cans = validation.cans - oldCost + newCost;
+
+					// Update the vehicle report
+					vehicleReport.cans = newCost;
+				}
+			}
+		}
+
+		// Also trigger the full validation
+		forceValidation();
+	}
+
+	// Function to calculate vehicle cost for immediate updates
+	function calculateVehicleCost(vehicle) {
+		// Get the base cost from the vehicle type
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return 0;
+
+		let totalCost = vehicleType.baseCost || 0;
+
+		// Add weapon costs
+		for (const weaponInstanceId of vehicle.weapons) {
+			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const weaponObj = weapons.find(w => w.id === baseWeaponId);
+			if (weaponObj && weaponObj.cost) {
+				totalCost += weaponObj.cost;
+			}
+		}
+
+		// Add upgrade costs
+		for (const upgradeId of vehicle.upgrades) {
+			const upgradeObj = upgrades.find(u => u.id === upgradeId);
+			if (upgradeObj && upgradeObj.cost) {
+				totalCost += upgradeObj.cost;
+			}
+		}
+
+		// Add perk costs
+		for (const perkId of vehicle.perks) {
+			const perkObj = perks.find(p => p.id === perkId);
+			if (perkObj && perkObj.level) {
+				totalCost += perkObj.level; // Perk cost is its level
+			}
+		}
+
+		return totalCost;
 	}
 	$: validateDraft(currentDraft).then((r) => {
 		// Create a copy of the validation result
@@ -1645,7 +1741,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						on:removePerk={e => removePerk(e.detail.vehicleId, e.detail.perkIndex)}
 						on:incrementHazard={e => incrementHazard(e.detail.vehicleId)}
 						on:decrementHazard={e => decrementHazard(e.detail.vehicleId)}
-						on:vehicleTypeChanged={() => forceValidation()}
+						on:vehicleTypeChanged={e => handleVehicleTypeChange(e.detail.id, e.detail.vehicleType)}
 					/>
 				{/each}
 			</div>
