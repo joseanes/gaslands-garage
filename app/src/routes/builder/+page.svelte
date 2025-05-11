@@ -785,6 +785,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		darkMode
 	} satisfies Draft;
 	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
+
+	// Function to force validation to run immediately
+	function forceValidation() {
+		// Force reactivity by creating a new currentDraft object
+		currentDraft = { ...currentDraft };
+	}
 	$: validateDraft(currentDraft).then((r) => {
 		// Create a copy of the validation result
 		const validationCopy = { ...r };
@@ -1639,6 +1645,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						on:removePerk={e => removePerk(e.detail.vehicleId, e.detail.perkIndex)}
 						on:incrementHazard={e => incrementHazard(e.detail.vehicleId)}
 						on:decrementHazard={e => decrementHazard(e.detail.vehicleId)}
+						on:vehicleTypeChanged={() => forceValidation()}
 					/>
 				{/each}
 			</div>

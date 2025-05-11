@@ -86,6 +86,9 @@
     // Helper functions
     // We now use the usedBuildSlots prop from the parent component
 
+    // Create a reactive statement to recalculate the vehicle cost when relevant properties change
+    $: vehicleCost = calculateVehicleCost(vehicle);
+
     function calculateVehicleCost(vehicle) {
         // Get the base cost from the vehicle type
         const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
@@ -206,10 +209,11 @@
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-type-{vehicle.id}" class="form-label uppercase">Vehicle Type</label>
                 <div class="form-field">
-                    <select 
-                        id="vehicle-type-{vehicle.id}" 
+                    <select
+                        id="vehicle-type-{vehicle.id}"
                         class="form-select"
                         bind:value={vehicle.type}
+                        on:change={() => {dispatch('vehicleTypeChanged', { id: vehicle.id })}}
                         disabled={playMode}
                         class:opacity-50={playMode}
                         class:cursor-not-allowed={playMode}
@@ -236,7 +240,7 @@
         </div>
         <div class="mt-6">
             <BuildHeader
-                vehicleCost={validationReport?.cans ?? calculateVehicleCost(vehicle)}
+                vehicleCost={validationReport?.cans ?? vehicleCost}
                 usedBuildSlots={usedBuildSlots}
                 maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
             />
@@ -283,7 +287,7 @@
                     {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades
                 </div>
                 <BuildHeader
-                    vehicleCost={validationReport?.cans ?? calculateVehicleCost(vehicle)}
+                    vehicleCost={validationReport?.cans ?? vehicleCost}
                     usedBuildSlots={usedBuildSlots}
                     maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
                 />
