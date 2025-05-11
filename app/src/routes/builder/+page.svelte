@@ -25,8 +25,40 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	};
 	const { sponsors, vehicleTypes, weapons, upgrades, perks, vehicleRules } = data;
   
-  // Sort all data alphabetically
-  $: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
+	console.log('vehicleTypes', vehicleTypes);
+  
+	/* ---------- settings ---------- */
+	let includeAdvanced = true;
+	let enableSponsorships = true;
+	let darkMode = false;
+	let printStyle = 'classic';
+
+	// Load settings on mount
+	onMount(async () => {
+		// Only try to load settings if user is authenticated
+		if ($user) {
+			const { success, settings } = await getUserSettings();
+			if (success && settings) {
+				includeAdvanced = settings.includeAdvanced;
+				enableSponsorships = settings.enableSponsorships;
+				darkMode = settings.darkMode;
+				printStyle = settings.printStyle || 'classic';
+			}
+		} else {
+			// Use default settings when not authenticated
+			includeAdvanced = DEFAULT_SETTINGS.includeAdvanced;
+			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
+			darkMode = DEFAULT_SETTINGS.darkMode;
+			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
+		}
+	});
+
+	// Filter vehicle types based on includeAdvanced setting
+	$: filteredVehicleTypes = includeAdvanced 
+		? vehicleTypes 
+		: vehicleTypes.filter(v => !v.advanced);
+	// Sort all data alphabetically
+	$: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedVehicleTypes = [...filteredVehicleTypes].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedWeapons = [...weapons].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedUpgrades = [...upgrades].sort((a, b) => a.name.localeCompare(b.name));
@@ -34,6 +66,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	/* ---------- UI state ---------- */
 	let sponsorId: string = sponsors[0]?.id ?? '';
+	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
 	type Veh = { 
 		id: string; 
 		type: string; 
@@ -46,6 +79,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let vehicles: Veh[] = [];
 	// Track hazard tokens for each vehicle
 	let vehicleHazards: Record<string, number> = {};
+
+
 
 	function calculateUsedBuildSlots(vehicle) {
 		let totalSlots = 0;
@@ -80,7 +115,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		return totalSlots;
 	}
 
-	function addVehicle(type = filteredVehicleTypes[0]?.id) {function addVehicle(type = filteredVehicleTypes[0]?.id) {
+	function addVehicle(type = filteredVehicleTypes[0]?.id) {
+		console.log('addVehicle called');
 		// Make sure we have a valid vehicle type
 		const vt = vehicleTypes.find((v) => v.id === type);
 		if (!vt) {
@@ -108,6 +144,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		
 		// Add to vehicles list - ensure reactivity by creating a new array
 		vehicles = [...vehicles, newVehicle];
+		console.log('vehicles', vehicles);
 		
 		// For immediate UI feedback, manually update the validation
 		// Create a basic vehicle report with just the base cost
@@ -409,7 +446,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
-	let printStyle = localStorage.getItem('printStyle') || DEFAULT_SETTINGS.printStyle;
 	let quickSaving = false;
 	
 	// Update modal background color based on dark mode
@@ -478,8 +514,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	});
 
 	/* ---------- settings state ---------- */
-	let enableSponsorships = true;
-	let includeAdvanced = true;
+	// let enableSponsorships = true;  // Already declared at the top
+	// let includeAdvanced = true;     // Already declared at the top
 	let maxCans = 50;
 	let teamName = "My Gaslands Team";
 
@@ -492,7 +528,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	// For vehicle card collapse state
 	let collapsedVehicles = new Set();
-	let darkMode = false;
+	// let darkMode = false;  // Already declared at the top
 
 	// Save settings to Firebase when they change
 	async function saveSettingsToFirebase() {
@@ -836,7 +872,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		maxCans,
 		darkMode
 	} satisfies Draft;
-	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
 
 	// Function to force validation to run immediately
 	function forceValidation() {
@@ -933,11 +968,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// Trigger re-rendering when vehicles array changes its length
 	$: vehicleCount = vehicles.length;
 
-	// Filter vehicle types based on includeAdvanced setting
-	$: filteredVehicleTypes = includeAdvanced 
-		? vehicleTypes 
-		: vehicleTypes.filter(v => !v.advanced);
-	
 	// Filter weapons based on includeAdvanced setting
 	$: filteredWeapons = includeAdvanced 
 		? weapons 
@@ -956,6 +986,31 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	/* ---------- import box ---------- */
 	let importString = '';
+
+	// Remove all duplicate settings declarations
+	// let printStyle = localStorage.getItem('printStyle') || DEFAULT_SETTINGS.printStyle;
+	// let enableSponsorships = true;
+	// let includeAdvanced = true;
+	// let darkMode = false;
+
+	onMount(async () => {
+		// Only try to load settings if user is authenticated
+		if ($user) {
+			const { success, settings } = await getUserSettings();
+			if (success && settings) {
+				includeAdvanced = settings.includeAdvanced;
+				enableSponsorships = settings.enableSponsorships;
+				darkMode = settings.darkMode;
+				printStyle = settings.printStyle || 'classic';
+			}
+		} else {
+			// Use default settings when not authenticated
+			includeAdvanced = DEFAULT_SETTINGS.includeAdvanced;
+			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
+			darkMode = DEFAULT_SETTINGS.darkMode;
+			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
+		}
+	});
 
 </script>
 

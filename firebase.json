@@ -1,0 +1,6 @@
+{
+  "firestore": {
+    "rules": "q",
+    "indexes": "firebase init firestore"
+  }
+}

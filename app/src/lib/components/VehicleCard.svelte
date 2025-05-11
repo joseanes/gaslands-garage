@@ -15,11 +15,11 @@
         upgrades: string[];
         perks: string[];
     };
-    export let vehicleTypes;
-    export let weapons;
-    export let upgrades;
-    export let perks;
-    export let vehicleRules;
+    export let vehicleTypes = [];
+    export let weapons = [];
+    export let upgrades = [];
+    export let perks = [];
+    export let vehicleRules = [];
     export let collapsed: boolean = false;
     export let playMode: boolean = false;
     export let validationReport = null;
@@ -288,7 +288,12 @@
             <div class="flex items-center gap-4">
                 <div class="vehicle-type-icon vehicle-type-{vehicle.type}" title="{vehicleTypes.find(vt => vt.id === vehicle.type)?.name || 'Unknown'}"></div>
                 <div class="font-medium">
-                    {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades
+                    {#if vehicle.weapons && vehicle.weapons.length > 0}
+                        {vehicle.weapons.length} weapons
+                    {/if}
+                    {#if vehicle.upgrades && vehicle.upgrades.length > 0}
+                        | {vehicle.upgrades.length} upgrades
+                    {/if}
                 </div>
                 <BuildHeader
                     vehicleCost={vehicleCost}
@@ -445,7 +450,7 @@
                 <span class="bg-stone-300 dark:bg-gray-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Weapons</span>
             </h3>
             
-            {#if vehicle.weapons.length === 0}
+            {#if vehicle.weapons && vehicle.weapons.length === 0}
                 <p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No weapons installed.</p>
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
@@ -539,7 +544,7 @@
                 <span class="bg-stone-300 dark:bg-gray-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Upgrades</span>
             </h3>
             
-            {#if vehicle.upgrades.length === 0}
+            {#if vehicle.upgrades && vehicle.upgrades.length === 0}
                 <p class="text-stone-500 text-sm italic px-2">No upgrades installed.</p>
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
@@ -599,7 +604,7 @@
                 <span class="bg-stone-300 dark:bg-gray-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Perks</span>
             </h3>
             
-            {#if vehicle.perks.length === 0}
+            {#if vehicle.perks && vehicle.perks.length === 0}
                 <p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No perks selected.</p>
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
@@ -676,7 +681,7 @@
         </div>
         
         <!-- Validation errors section -->
-        {#if validationReport && validationReport.errors.length > 0}
+        {#if validationReport && validationReport.errors && validationReport.errors.length > 0}
             <div class="mt-4 p-3 bg-red-100 dark:bg-red-900 rounded-md border border-red-300 dark:border-red-700">
                 <h4 class="text-sm font-bold text-red-800 dark:text-red-200 mb-2">Validation Errors:</h4>
                 <ul class="list-disc pl-5 text-sm text-red-700 dark:text-red-300">
@@ -688,7 +693,7 @@
         {/if}
         
         <!-- Validation warnings section -->
-        {#if validationReport && validationReport.warnings.length > 0}
+        {#if validationReport && validationReport.warnings && validationReport.warnings.length > 0}
             <div class="mt-4 p-3 bg-amber-100 dark:bg-amber-900 rounded-md border border-amber-300 dark:border-amber-700">
                 <h4 class="text-sm font-bold text-amber-800 dark:text-amber-200 mb-2">Warnings:</h4>
                 <ul class="list-disc pl-5 text-sm text-amber-700 dark:text-amber-300">
