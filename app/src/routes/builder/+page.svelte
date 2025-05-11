@@ -80,10 +80,21 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		return totalSlots;
 	}
 
-	function addVehicle(type = filteredVehicleTypes[0]?.id) {
-		const vt = vehicleTypes.find((v) => v.id === type)!;
+	function addVehicle(type = filteredVehicleTypes[0]?.id) {function addVehicle(type = filteredVehicleTypes[0]?.id) {
+		// Make sure we have a valid vehicle type
+		const vt = vehicleTypes.find((v) => v.id === type);
+		if (!vt) {
+			console.error("No valid vehicle type found", type, vehicleTypes);
+			
+			// Try to use the first available vehicle type
+			if (vehicleTypes.length > 0) {
+				return addVehicle(vehicleTypes[0].id);
+			}
+			return; // Can't add a vehicle without a type
+		}
+		
 		const newVehicleId = nanoid(6);
-
+		
 		// Create the new vehicle
 		const newVehicle = {
 			id: newVehicleId,
@@ -94,10 +105,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			upgrades: [],
 			perks: []
 		};
-
-		// Add to vehicles list
+		
+		// Add to vehicles list - ensure reactivity by creating a new array
 		vehicles = [...vehicles, newVehicle];
-
+		
 		// For immediate UI feedback, manually update the validation
 		// Create a basic vehicle report with just the base cost
 		if (validation && validation.vehicleReports) {
@@ -106,12 +117,19 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				cans: vt.baseCost || 0,
 				errors: []
 			};
-
+			
 			// Update the validation object
 			validation.vehicleReports = [...validation.vehicleReports, newVehicleReport];
 			validation.cans += newVehicleReport.cans;
+			
+			// Ensure reactivity by forcing the update
+			validation = { ...validation };
 		}
-
+		
+		// Log the current state to verify
+		console.log("Added new vehicle", newVehicle);
+		console.log("Current vehicles", vehicles.length);
+		
 		// Also trigger a full validation
 		forceValidation();
 	}
@@ -910,8 +928,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	});
 	$: totalCans = validation.cans;
 	$: teamErrors = validation.errors;
-	
+
 	/* ---------- filtered assets based on settings ---------- */
+	// Trigger re-rendering when vehicles array changes its length
+	$: vehicleCount = vehicles.length;
+
 	// Filter vehicle types based on includeAdvanced setting
 	$: filteredVehicleTypes = includeAdvanced 
 		? vehicleTypes 
@@ -1656,7 +1677,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		</div>
 	{/if}
 <hr>
-	<!-- Vehicle list -->
+	<!-- Vehicle list - Current count: {vehicles.length} -->
 	<div class="mb-8">
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-4">
