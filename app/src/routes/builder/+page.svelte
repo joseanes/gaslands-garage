@@ -1611,8 +1611,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 <section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
 	<header class="mb-6 md:mb-8">
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
-			<div class="flex flex-col gap-4">
-				<div class="flex items-center gap-2 justify-between">
+			<div class="flex flex-col gap-4 w-full">
+				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center">
 						<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>&nbsp;&nbsp;&nbsp;
 						<input
@@ -1622,17 +1622,31 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 							aria-label="Team Name"
 						/>
 					</div>
-
-					<!-- Edit/Play Mode Toggle Button -->
-					<button
-						class="flex items-center px-3 py-1 bg-stone-300 dark:bg-gray-700 rounded-full transition-colors shadow-sm gap-2 hover:bg-stone-400 dark:hover:bg-gray-600 ml-4"
-						on:click={() => playMode = !playMode}
-					>
-						<span class="w-4 h-4 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
-						<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
-					</button>
+					<div class="flex flex-col items-end gap-2">
+						<!-- Edit/Play Mode Toggle Button -->
+						<button
+							class="form-button flex items-center gap-2"
+							on:click={() => playMode = !playMode}
+						>
+							<span class="w-4 h-4 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
+							<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
+						</button>
+						<!-- Quick Save Button -->
+						<button
+							class="form-button flex items-center"
+							on:click={quickSaveTeam}
+							disabled={quickSaving}
+						>
+							{#if quickSaving}
+								<div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
+								Saving...
+							{:else}
+								Quick Save
+							{/if}
+						</button>
+					</div>
 				</div>
-				<div class="flex items-center gap-2">
+				<div class="flex items-center gap-2 mt-2">
 					<b class="text-lg font-bold whitespace-nowrap">Cans: </b>&nbsp;&nbsp;&nbsp;
 					<span class="font-extrabold text-amber-700 dark:text-amber-300 text-2xl md:text-3xl mr-2">{totalCans || 0}</span>
 					<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
@@ -1644,18 +1658,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
 						aria-label="Maximum Cans"
 					/>
-					<button
-						class="ml-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-sm transition-all shadow-md disabled:opacity-50 flex items-center"
-						on:click={quickSaveTeam}
-						disabled={quickSaving}
-					>
-						{#if quickSaving}
-							<div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
-							Saving...
-						{:else}
-							Quick Save
-						{/if}
-					</button>
 				</div>
 			</div>
 		</div>

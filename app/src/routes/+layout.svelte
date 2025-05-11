@@ -319,12 +319,12 @@
         </button>
       </div>
       
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
         <p>
           Gaslands Garage is a free tool for building and managing your Gaslands teams. The app includes all the official rules, vehicle types, weapons, upgrades, and sponsor perks.
         </p>
         
-        <div>
+        <div class="px-4">
           <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Features:</h4>
           <ul class="list-disc pl-6 space-y-2">
             <li>Build teams with any combination of vehicles, weapons, and upgrades</li>
@@ -430,12 +430,12 @@
         </button>
       </div>
 
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
         <p>
           Below is a history of major updates and improvements to Gaslands Garage.
         </p>
 
-        <div class="space-y-4">
+        <div class="space-y-4 px-4">
           <!-- Change log entries will go here -->
         </div>
       </div>
@@ -479,10 +479,14 @@
         </button>
       </div>
 
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
         <p>
           Here's what we're working on for future updates to Gaslands Garage:
-        </p><ul><li>Printing Options<li>Apple Login<li>Where to purchase accessories</li>
+        </p>
+        <ul class="px-4 space-y-2">
+          <li>Printing Options</li>
+          <li>Apple Login</li>
+          <li>Where to purchase accessories</li>
         </ul>
 
         <div class="space-y-4">
@@ -529,12 +533,14 @@
         </button>
       </div>
 
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
         <p>
           Gaslands Garage is made possible by the following contributors:
         </p>
-        <ul><li>Jose Anes, Project creator and <a href="https://FunBoardGames.Etsy.com">Gaslands Purveyor at FunBoardGames.</a></li>
-        <li>Luca Vince Caltabiano from <a href="https://www.youtube.com/c/gaslandstv">Gaslands TV</a> for the video content</li></ul>
+        <ul class="px-4 space-y-2">
+          <li>Jose Anes, Project creator and <a href="https://FunBoardGames.Etsy.com">Gaslands Purveyor at FunBoardGames.</a></li>
+          <li>Luca Vince Caltabiano from <a href="https://www.youtube.com/c/gaslandstv">Gaslands TV</a> for the video content</li>
+        </ul>
 
         <div class="space-y-4">
           <!-- Contributors list will go here -->
@@ -580,7 +586,7 @@
         </button>
       </div>
 
-      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text p-2">
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
         <p>
           Gaslands is a tabletop game of post-apocalyptic vehicular combat. Using converted Hot Wheels or Matchbox cars, it simulates a televised bloodsport where drivers compete in a variety of deadly scenarios.  Gaslands puts players in control of custom battle cars, buggies, trucks, and other vehicles armed with machine guns, rockets, flamethrowers and more. Players are encourage to modify readily available Hotwheels or Matchbox vehicles with bits and paint to make them look like a post-apocalyptical combat vehicle.  The game is set in a dystopian future where Earth has been devastated and Mars has been colonized by the wealthy elite. The poor left behind on Earth compete in televised death races for a chance to win citizenship on Mars.
         The game was created by Mike Hutchinson and published by Osprey Games.    To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
@@ -589,7 +595,7 @@
         
 
 
-        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4 px-4">
           <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
           <ul class="list-disc pl-5 space-y-2">
             <li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
@@ -601,7 +607,7 @@
         </div>
 
 
-        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4">
+        <div class="border-t border-stone-200 dark:border-gray-700 pt-4 mt-4 px-4">
           <h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
           <div class="bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
             <div class="flex items-center gap-3 mb-2">

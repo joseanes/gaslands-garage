@@ -196,7 +196,7 @@
               class="flex-1 px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
             />
             <button
-              class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg disabled:opacity-50 flex items-center shadow-md"
+              class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md disabled:opacity-50 flex items-center shadow-md text-sm"
               on:click={saveCurrentTeam}
               disabled={isSaving || !newTeamName.trim()}
             >
@@ -237,13 +237,13 @@
                   </div>
                   <div class="flex space-x-3">
                     <button
-                      class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg shadow-md transition-colors flex-1 sm:flex-none"
+                      class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md shadow-md transition-colors flex-1 sm:flex-none text-sm"
                       on:click={() => loadTeam(team)}
                     >
                       Load
                     </button>
                     <button
-                      class="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-md transition-colors flex items-center flex-1 sm:flex-none justify-center"
+                      class="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-md transition-colors flex items-center flex-1 sm:flex-none justify-center text-sm"
                       on:click={() => removeTeam(team.id)}
                       disabled={deletingTeamId === team.id}
                     >

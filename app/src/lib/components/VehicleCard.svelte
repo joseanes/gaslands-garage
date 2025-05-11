@@ -252,7 +252,7 @@
         <div class="flex items-center gap-2 self-start mt-2">
             <!-- Clone Vehicle Button -->
             <button
-                class="p-2 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-full transition-colors"
+                class="p-1.5 h-7 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-md transition-colors text-sm"
                 on:click={cloneVehicle}
                 aria-label="Clone vehicle"
                 disabled={playMode}
@@ -264,7 +264,7 @@
             </button>
 
             <button
-                class="p-2 h-8 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors"
+                class="p-1.5 h-7 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors text-sm"
                 on:click={toggleCollapse}
                 aria-label={collapsed ? "Expand vehicle" : "Collapse vehicle"}
             >
@@ -273,7 +273,7 @@
 
             <!-- Delete / Remove Vehicle Button-->
             <button
-                class="p-2 h-8 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-md transition-colors"
+                class="p-1.5 h-7 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-md transition-colors text-sm"
                 on:click={removeVehicle}
                 aria-label="Remove vehicle"
             >
@@ -368,12 +368,12 @@
                         <div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Hazard Tokens</div>
                         <div class="hazard-counter flex items-center justify-center gap-3">
                             <button 
-                                class="counter-btn counter-minus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
+                                class="counter-btn counter-minus w-7 h-7 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-lg"
                                 on:click={decrementHazard}
                             >-</button>
                             <span class="counter-value text-2xl font-bold">{localHazardCount}</span>
                             <button 
-                                class="counter-btn counter-plus w-8 h-8 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-xl"
+                                class="counter-btn counter-plus w-7 h-7 bg-stone-200 dark:bg-gray-600 hover:bg-stone-300 dark:hover:bg-gray-500 rounded-full flex items-center justify-center font-bold text-lg"
                                 on:click={incrementHazard}
                             >+</button>
                         </div>
