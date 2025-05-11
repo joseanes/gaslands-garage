@@ -86,6 +86,41 @@
     // Helper functions
     // We now use the usedBuildSlots prop from the parent component
 
+    function calculateVehicleCost(vehicle) {
+        // Get the base cost from the vehicle type
+        const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+        if (!vehicleType) return 0;
+
+        let totalCost = vehicleType.baseCost || 0;
+
+        // Add weapon costs
+        for (const weaponInstanceId of vehicle.weapons) {
+            const baseWeaponId = weaponInstanceId.split('_')[0];
+            const weaponObj = weapons.find(w => w.id === baseWeaponId);
+            if (weaponObj && weaponObj.cost) {
+                totalCost += weaponObj.cost;
+            }
+        }
+
+        // Add upgrade costs
+        for (const upgradeId of vehicle.upgrades) {
+            const upgradeObj = upgrades.find(u => u.id === upgradeId);
+            if (upgradeObj && upgradeObj.cost) {
+                totalCost += upgradeObj.cost;
+            }
+        }
+
+        // Add perk costs
+        for (const perkId of vehicle.perks) {
+            const perkObj = perks.find(p => p.id === perkId);
+            if (perkObj && perkObj.level) {
+                totalCost += perkObj.level; // Perk cost is its level
+            }
+        }
+
+        return totalCost;
+    }
+
     function calculateUsedBuildSlots(vehicle) {
         let totalSlots = 0;
 
@@ -201,7 +236,7 @@
         </div>
         <div class="mt-6">
             <BuildHeader
-                vehicleCost={validationReport?.cans || 0}
+                vehicleCost={validationReport?.cans ?? calculateVehicleCost(vehicle)}
                 usedBuildSlots={usedBuildSlots}
                 maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
             />
@@ -248,7 +283,7 @@
                     {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades
                 </div>
                 <BuildHeader
-                    vehicleCost={validationReport?.cans || 0}
+                    vehicleCost={validationReport?.cans ?? calculateVehicleCost(vehicle)}
                     usedBuildSlots={usedBuildSlots}
                     maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
                 />

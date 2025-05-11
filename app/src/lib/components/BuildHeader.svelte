@@ -10,7 +10,7 @@
 <div class="flex items-center gap-2 self-start">
     <!-- Vehicle cost badge -->
     <div class="bg-amber-600 text-white px-3 py-1 rounded-md mr-2 text-sm font-semibold shadow-sm">
-        {vehicleCost || '?'} cans
+        {typeof vehicleCost === 'number' ? vehicleCost : '?'} cans
     </div>
     
     <!-- Build slots badge -->

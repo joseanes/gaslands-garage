@@ -137,6 +137,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Add the cloned vehicle to the vehicles array
 		vehicles = [...vehicles, clonedVehicle];
+
+		// Force validation to run immediately
+		currentDraft = {
+			...currentDraft,
+			vehicles
+		};
 	}
 	
 	function toggleVehicleCollapse(id: string) {
