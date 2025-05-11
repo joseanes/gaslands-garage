@@ -2,20 +2,6 @@
 
 // app/src/lib/validate/checks.ts
 import type { Team, VehicleReport } from './model';
-
-/* ------------------------------------------------------------
-   NEW RULE A – weapon-slot limit
-   ------------------------------------------------------------ */
-export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
-  team.vehicles.forEach((v, i) => {
-    const max = v.class.weaponSlots ?? 0;    // Default to 0 if undefined
-    if (v.weapons.length > max) {
-      reports[i].errors.push(
-        `Too many weapons: ${v.weapons.length}/${max} slots`
-      );
-    }
-  });
-}
 /* ------------------------------------------------------------
    RULE B – no duplicate “unique” weapons per vehicle
    ------------------------------------------------------------ */
@@ -69,7 +55,6 @@ export function weaponSlotCheck(team: Team, reports: VehicleReport[]) {
    aggregate runner – call every rule function here
    ------------------------------------------------------------ */
    export function runAllChecks(team: Team, reports: VehicleReport[]) {
-    weaponSlotCheck(team, reports);
     uniqueWeaponCheck(team, reports);
     upgradeSlotCheck(team, reports);
     sponsorPerkCheck(team, reports);

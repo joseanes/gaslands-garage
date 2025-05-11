@@ -1427,14 +1427,25 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	<header class="mb-6 md:mb-8">
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
 			<div class="flex flex-col gap-4">
-				<div class="flex items-center gap-2">
-					<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>&nbsp;&nbsp;&nbsp;
-					<input
-						type="text"
-						bind:value={teamName}
-						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl"
-						aria-label="Team Name"
-					/>
+				<div class="flex items-center gap-2 justify-between">
+					<div class="flex items-center">
+						<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>&nbsp;&nbsp;&nbsp;
+						<input
+							type="text"
+							bind:value={teamName}
+							class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl"
+							aria-label="Team Name"
+						/>
+					</div>
+
+					<!-- Edit/Play Mode Toggle Button -->
+					<button
+						class="flex items-center px-3 py-1 bg-stone-300 dark:bg-gray-700 rounded-full transition-colors shadow-sm gap-2 hover:bg-stone-400 dark:hover:bg-gray-600 ml-4"
+						on:click={() => playMode = !playMode}
+					>
+						<span class="w-4 h-4 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
+						<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
+					</button>
 				</div>
 				<div class="flex items-center gap-2">
 					<b class="text-lg font-bold whitespace-nowrap">Total Cans:</b>&nbsp;&nbsp;&nbsp;
@@ -1463,16 +1474,16 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		</div>
 		<!-- <p class="text-stone-600 mt-2 text-sm md:text-base">Create a deadly team and dominate the wasteland</p> -->
 	</header>
-<hr>
+
 	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
 	{#if enableSponsorships}
 		<div class="bg-white p-5 rounded-lg shadow-md mb-6">
 			<div class="flex flex-wrap md:flex-nowrap items-start gap-4">
 				<div class="w-full md:w-1/3">
 					<div class="flex items-center gap-4">
-						<label for="sponsor-select" class="form-label text-lg whitespace-nowrap font-bold">
+						<b class="text-lg font-bold whitespace-nowrap">
 							Choose Your Sponsor: &nbsp;&nbsp;
-						</label>
+						</b>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
@@ -1540,14 +1551,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		<div class="flex items-center justify-between mb-4">
 			<div class="flex items-center gap-4">
 				<h2 class="text-2xl font-bold text-stone-800 dark:text-gray-100">Vehicles</h2>
-				<!-- Edit/Play Mode Toggle Button -->
-				<button
-					class="flex items-center px-3 py-1 bg-stone-300 dark:bg-gray-700 rounded-full transition-colors shadow-sm gap-2 hover:bg-stone-400 dark:hover:bg-gray-600"
-					on:click={() => playMode = !playMode}
-				>
-					<span class="w-4 h-4 rounded-full {playMode ? 'bg-amber-500' : 'bg-green-500'} transition-colors"></span>
-					<span class="text-sm font-medium">{playMode ? 'Play Mode' : 'Edit Team'}</span>
-				</button>
 			</div>
 			<button
 				class="py-2 px-4 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors"
@@ -1562,19 +1565,9 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		{#if vehicles.length === 0}
 			<div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
-				<p class="text-stone-600 dark:text-gray-300 text-lg font-bold mb-4">Your team has no vehicles yet</p>
-				<p class="text-stone-600 dark:text-gray-300 mb-4">Get started by adding a vehicle to your team.</p>
-				<button
-					class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-md transition-colors"
-					on:click={() => addVehicle()}
-				>
-					+ Add Vehicle
-				</button>
-				<div class="text-center mt-6">
-					<p class="italic text-stone-500 dark:text-gray-400">
-						To learn more about Gaslands, visit the <a href="https://gaslands.com" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">official Gaslands website</a>.
-					</p>
-				</div>
+				<p class="text-stone-600 dark:text-gray-300 text-lg font-bold mb-4">Your team has no vehicles yet. Get started by adding a vehicle to your team.</p>
+
+
 			</div>
 
 			<!-- About Gaslands Content when no vehicles -->
@@ -1620,6 +1613,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						perks={perks}
 						vehicleRules={vehicleRules}
 						collapsed={collapsedVehicles.has(v.id)}
+						usedBuildSlots={calculateUsedBuildSlots(v)}
 						playMode={playMode}
 						validationReport={validation.vehicleReports.find(r => r.vehicleId === v.id)}
 						hazardCount={getHazardCount(v.id)}
@@ -1644,7 +1638,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	</div>
 
 	<hr>
-<!-- Totals / legality -->	<hr>
+
 <!-- Totals / legality -->
 {#if showTeamSummary && vehicles.length > 0}
 <div class="bg-white p-5 rounded-lg shadow-md mb-6">

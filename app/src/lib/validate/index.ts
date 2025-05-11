@@ -54,6 +54,15 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
   }
 
   /* 3 — hydrate team */
+  // Debug the input draft
+  console.log("Processing draft with vehicles:", draft.vehicles.map(v => ({
+    id: v.id,
+    type: v.type,
+    weapons: v.weapons,
+    upgrades: v.upgrades,
+    perks: v.perks
+  })));
+
   const team: Team = {
     sponsor,
     vehicles: draft.vehicles
@@ -67,13 +76,32 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
           // This should never happen due to the filter above, but it's a safety check
           throw new Error(`Vehicle type ${v.type} not found`);
         }
-        
+
+        // Process weapons with careful error handling and logging
+        const processedWeapons = v.weapons.map(weaponInstanceId => {
+          try {
+            console.log(`Processing weapon: ${weaponInstanceId} for vehicle ${v.id}`);
+
+            // Extract base weapon ID from instance ID (format: baseId_instanceHash)
+            const parts = weaponInstanceId.split('_');
+            // If there's no underscore, use the whole ID
+            const baseWeaponId = parts.length > 1 ? parts[0] : weaponInstanceId;
+
+            const weaponObj = weapons.find(w => w.id === baseWeaponId);
+            if (!weaponObj) {
+              console.warn(`Weapon not found: ${baseWeaponId} (from ${weaponInstanceId})`);
+            }
+            return weaponObj;
+          } catch (err) {
+            console.error(`Error processing weapon ID: ${weaponInstanceId}`, err);
+            return undefined;
+          }
+        }).filter((w): w is NonNullable<typeof w> => w !== undefined);
+
         return {
           instance: v,
           class: vehicleClass,
-          weapons: v.weapons
-            .map(id => weapons.find(w => w.id === id))
-            .filter((w): w is NonNullable<typeof w> => w !== undefined),
+          weapons: processedWeapons,
           upgrades: (v.upgrades || [])  // Handle existing drafts without upgrades
             .map(id => upgrades.find(u => u.id === id))
             .filter((u): u is NonNullable<typeof u> => u !== undefined),
@@ -94,12 +122,38 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
         errors: ['Invalid vehicle data']
       };
     }
-    
+
     // Calculate total cans safely
     const baseCost = vehicleBaseCost(v.class);
-    const weaponsCost = v.weapons.reduce((s, w) => s + (w ? weaponCost(w) : 0), 0);
+
+    // Calculate weapon costs with detailed logging
+    const weaponDetails = v.weapons.map(w => {
+      if (!w) return { id: 'unknown', cost: 0 };
+      const cost = weaponCost(w);
+      return { id: w.id, name: w.name, cost };
+    });
+    const weaponsCost = weaponDetails.reduce((s, w) => s + w.cost, 0);
+
+    // Calculate upgrade costs
     const upgradesCost = (v.upgrades || []).reduce((s, u) => s + (u ? upgradeCost(u) : 0), 0);
+
+    // Calculate perk costs
     const perksCost = v.perks.reduce((s, p) => s + (p ? perkCost(p) : 0), 0);
+
+    // Calculate total vehicle cost
+    const totalVehicleCost = baseCost + weaponsCost + upgradesCost + perksCost;
+
+    // Debug vehicle cost breakdown
+    console.log(`Vehicle cost breakdown for ${v.instance.name} (${v.instance.id}):`, {
+      baseCost,
+      weaponsCost,
+      weaponDetails,
+      upgradesCost,
+      perksCost,
+      totalCost: totalVehicleCost,
+      weapons: v.instance.weapons,
+      processedWeapons: v.weapons.map(w => w.id)
+    });
     
     return {
       vehicleId: v.instance.id,
@@ -118,6 +172,15 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
   if (totalCans > TEAM_CAP) {
     errors.push(`Team exceeds ${TEAM_CAP} cans (currently ${totalCans})`);
   }
+
+  // Debug info
+  console.log("Validation completed:", {
+    totalCans,
+    vehicleReports: vehicleReports.map(vr => ({
+      vehicleId: vr.vehicleId,
+      cans: vr.cans
+    }))
+  });
 
   return { cans: totalCans, errors, vehicleReports };
 }

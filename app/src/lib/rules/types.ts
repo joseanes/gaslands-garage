@@ -18,7 +18,6 @@ export const Vehicle = z.object({
   maxGear: z.number().int().positive(),
   baseCost: z.number().int().nonnegative(),
   maxHull: z.number().int().positive(),
-  weaponSlots: z.number().int().nonnegative().optional().default(2),
   upgradeSlots: z.number().int().nonnegative().optional().default(2),
   buildSlots: z.number().int().positive().default(2),
   crew: z.number().int().nonnegative().default(1),

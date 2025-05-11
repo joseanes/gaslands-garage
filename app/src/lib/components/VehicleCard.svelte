@@ -1,7 +1,8 @@
 <script lang="ts">
     import { nanoid } from 'nanoid';
     import { createEventDispatcher } from 'svelte';
-    
+    import BuildHeader from './BuildHeader.svelte';
+
     const dispatch = createEventDispatcher();
     
     // Props
@@ -26,6 +27,7 @@
     export let filteredWeapons = [];
     export let filteredUpgrades = [];
     export let filteredPerks = [];
+    export let usedBuildSlots: number = 0;
 
     // Local state for hazard tokens that can be immediately updated
     let localHazardCount = hazardCount;
@@ -82,9 +84,11 @@
     }
     
     // Helper functions
+    // We now use the usedBuildSlots prop from the parent component
+
     function calculateUsedBuildSlots(vehicle) {
         let totalSlots = 0;
-        
+
         // Calculate slots used by weapons
         for (const weaponInstanceId of vehicle.weapons) {
             const baseWeaponId = weaponInstanceId.split('_')[0];
@@ -98,7 +102,7 @@
                 totalSlots += weaponObj.buildSlots || weaponObj.slots || 1;
             }
         }
-        
+
         // Calculate slots used by upgrades
         for (const upgradeId of vehicle.upgrades) {
             const upgradeObj = upgrades.find(u => u.id === upgradeId);
@@ -111,7 +115,7 @@
                 totalSlots += upgradeObj.buildSlots || upgradeObj.slots || 1;
             }
         }
-        
+
         return totalSlots;
     }
 
@@ -195,7 +199,14 @@
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-2 self-start mt-6">
+        <div class="mt-6">
+            <BuildHeader
+                vehicleCost={validationReport?.cans || 0}
+                usedBuildSlots={usedBuildSlots}
+                maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
+            />
+        </div>
+        <div class="flex items-center gap-2 self-start mt-2">
             <!-- Clone Vehicle Button -->
             <button
                 class="p-2 h-8 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-full transition-colors"
@@ -234,8 +245,13 @@
             <div class="flex items-center gap-4">
                 <div class="vehicle-type-icon vehicle-type-{vehicle.type}" title="{vehicleTypes.find(vt => vt.id === vehicle.type)?.name || 'Unknown'}"></div>
                 <div class="font-medium">
-                    {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades | Cost: {validationReport?.cans || '?'} cans
+                    {vehicle.weapons.length} weapons | {vehicle.upgrades.length} upgrades
                 </div>
+                <BuildHeader
+                    vehicleCost={validationReport?.cans || 0}
+                    usedBuildSlots={usedBuildSlots}
+                    maxBuildSlots={vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}
+                />
             </div>
             <div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
                 {vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 1 ? 'Light' : 
@@ -454,11 +470,11 @@
                             target.value = ""; // Reset selection
                         }
                     }}
-                    disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && calculateUsedBuildSlots(vehicle) >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                    disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add weapon</option>
                     {#each filteredWeapons as w}
-                        <option value={w.id} disabled={(w.buildSlots || 1) > 0 && calculateUsedBuildSlots(vehicle) + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
+                        <option value={w.id} disabled={(w.buildSlots || 1) > 0 && usedBuildSlots + (w.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
                             {w.name}
                             {(w.buildSlots || 1) === 0 ? " (Free)" : ""}
                         </option>
@@ -471,14 +487,7 @@
                 </div>
             </div>
             
-            <div class="mt-2 flex justify-between text-sm">
-                <span class="text-stone-500 dark:text-gray-400">
-                    Weapon slots: <span class="font-bold">{vehicle.weapons.length} / {vehicleTypes.find(vt => vt.id === vehicle.type)?.weaponSlots || 2}</span>
-                </span>
-                <span class="text-stone-500 dark:text-gray-400">
-                    Build slots: <span class="font-bold">{calculateUsedBuildSlots(vehicle)} / {vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2}</span>
-                </span>
-            </div>
+
         </div>
         
         <!-- Upgrades section - Hidden in Play Mode -->
@@ -528,11 +537,11 @@
                             target.value = ""; // Reset selection
                         }
                     }}
-                    disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && calculateUsedBuildSlots(vehicle) >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                    disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add upgrade</option>
                     {#each filteredUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
-                        <option value={u.id} disabled={(u.buildSlots || 1) > 0 && calculateUsedBuildSlots(vehicle) + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
+                        <option value={u.id} disabled={(u.buildSlots || 1) > 0 && usedBuildSlots + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
                             {u.name}
                             {(u.buildSlots || 1) === 0 ? " (Free)" : ""}
                         </option>
