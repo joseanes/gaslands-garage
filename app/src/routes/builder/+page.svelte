@@ -1618,7 +1618,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-2xl md:text-3xl"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-base dark-text-input"
+							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
 					</div>
@@ -1641,7 +1642,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 							bind:value={maxCans}
 							min="1"
 							max="1000"
-							class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-base dark-text-input"
+							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Maximum Cans"
 						/>
 					</div>
@@ -1741,7 +1743,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				<h2 class="text-2xl font-bold text-stone-800 dark:text-gray-100">Vehicles</h2>
 			</div>
 			<button
-				class="py-2 px-4 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors"
+				class="py-2 px-4 flex items-center justify-center rounded-md transition-colors amber-button"
 				on:click={() => addVehicle()}
 				disabled={playMode}
 				class:opacity-50={playMode}
@@ -1759,7 +1761,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			</div>
 
 			<!-- About Gaslands Content when no vehicles -->
-			<div class="mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border-2 border-amber-400">
+			<div class="mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
 				<div class="flex justify-between items-center mb-6">
 					<h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands</h3>
 				</div>
@@ -1800,6 +1802,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						{upgrades}
 						{perks}
 						{currentSponsor}
+						collapsed={collapsedVehicles.has(vehicle.id)}
 						{playMode}
 						{validation}
 						{showTeamSummary}
@@ -1969,20 +1972,21 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           on:keydown={e => e.key === 'Escape' && (qrDataUrl = null)}
           aria-label="Close modal background"
         ></button>
-        <div 
+        <div
           class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-10 border-2 border-amber-500 z-10 fixed left-1/2 top-1/2 w-auto max-w-md overflow-y-auto transform -translate-x-1/2 -translate-y-1/2 max-h-[90vh]"
           role="document"
-          style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
+          data-modal-content
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+              class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
               on:click={() => (qrDataUrl = null)}
               aria-label="Close QR code modal"
+              style="height: 32px !important; min-height: 32px !important;"
             >
-              <span class="text-2xl">×</span>
-              <span class="sr-only">Close</span>
+              <span>Close</span>
             </button>
           </div>
           <div class="bg-white dark:bg-gray-700 p-6 rounded-lg border-2 border-stone-200 dark:border-gray-600">
@@ -1993,13 +1997,15 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           </p>
           <div class="flex justify-end gap-4 mt-8 pt-4 border-t border-stone-200 dark:border-amber-900">
             <button
-              class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg transition-colors shadow-md"
+              class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
+              style="height: 32px !important; min-height: 32px !important;"
               on:click={() => (qrDataUrl = null)}
             >
               Close
             </button>
             <button
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-md"
+              class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm shadow-md"
+              style="height: 32px !important; min-height: 32px !important; background-color: #2563eb !important; color: white !important;"
               on:click={() => {
                 // Give the QR code another moment to ensure it's fully rendered
                 setTimeout(() => window.print(), 100);
@@ -2031,17 +2037,18 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
         <div
           class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
           role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
+          data-modal-content
         >
           <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Import Team Build</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+              class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
               on:click={() => (showImportModal = false)}
               aria-label="Close import modal"
+              style="height: 32px !important; min-height: 32px !important;"
             >
-              <span class="text-2xl">×</span>
-              <span class="sr-only">Close</span>
+              <span>Close</span>
             </button>
           </div>
           
@@ -2066,7 +2073,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                 Cancel
               </button>
               <button
-                class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
+                class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
+                style="height: 32px !important; min-height: 32px !important;"
                 on:click={importDraftString}
               >
                 Import
@@ -2101,12 +2109,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
             <button
-              class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+              class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
               on:click={() => (showSettingsModal = false)}
               aria-label="Close settings modal"
+              style="height: 32px !important; min-height: 32px !important;"
             >
-              <span class="text-2xl">×</span>
-              <span class="sr-only">Close</span>
+              <span>Close</span>
             </button>
           </div>
           
@@ -2123,7 +2131,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   Enable Sponsorships
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
             </div>
@@ -2140,7 +2148,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   Include Advanced
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
               </p>
             </div>
@@ -2157,7 +2165,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   Dark Mode
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Enable dark mode for better visibility in low-light conditions.
               </p>
             </div>
@@ -2174,7 +2182,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   Show Team Summary
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Show or hide the Team Summary section at the bottom of the page.
               </p>
             </div>
@@ -2191,7 +2199,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   Show Gaslands Math
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Show or hide the Gaslands Math section at the bottom of the page.
               </p>
             </div>
@@ -2252,14 +2260,15 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   </label>
                 </div>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 border-l-2 border-amber-200 dark:border-amber-700 pl-3">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Choose your preferred print layout style.
               </p>
             </div>
 
             <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
               <button
-                class="px-6 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium transition-colors shadow-md"
+                class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
+                style="height: 32px !important; min-height: 32px !important;"
                 on:click={() => {
                   if ($user) saveSettingsToFirebase();
                   showSettingsModal = false;

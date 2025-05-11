@@ -205,7 +205,7 @@
     }
 </script>
 
-<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 no-card-padding" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'}">
+<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-2 mb-4" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
     <div class="px-4 py-3 bg-stone-100 dark:bg-gray-800 flex flex-wrap justify-between items-center">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-4 flex-grow">
             <div class="form-group mb-0 flex-grow">
@@ -213,7 +213,7 @@
                 <div class="form-field">
                     <select
                         id="vehicle-type-{vehicle.id}"
-                        class="form-select"
+                        class="form-select compact-select"
                         bind:value={vehicle.type}
                         on:change={() => {
                             // Immediately dispatch event for parent to handle
@@ -233,12 +233,13 @@
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-name-{vehicle.id}" class="form-label uppercase">Vehicle Name</label>
                 <div class="form-field">
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         id="vehicle-name-{vehicle.id}"
                         bind:value={vehicle.name}
-                        class="form-input"
+                        class="form-input h-[2rem] dark-text-input"
                         placeholder="Vehicle name"
+                        style="height: 2rem !important; min-height: 2rem !important;"
                     />
                 </div>
             </div>
@@ -253,7 +254,7 @@
         <div class="flex items-center gap-2 self-start mt-2">
             <!-- Clone Vehicle Button -->
             <button
-                class="p-1.5 h-7 flex items-center justify-center bg-blue-500 text-white hover:bg-blue-600 rounded-md transition-colors text-sm"
+                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm h-[2rem] amber-button"
                 on:click={cloneVehicle}
                 aria-label="Clone vehicle"
                 disabled={playMode}
@@ -265,16 +266,17 @@
             </button>
 
             <button
-                class="p-1.5 h-7 flex items-center justify-center bg-amber-500 text-white hover:bg-amber-600 rounded-md transition-colors text-sm"
+                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
                 on:click={toggleCollapse}
                 aria-label={collapsed ? "Expand vehicle" : "Collapse vehicle"}
+                style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
             >
                 <span>{collapsed ? "+ Expand" : "- Collapse"}</span>
             </button>
 
             <!-- Delete / Remove Vehicle Button-->
             <button
-                class="p-1.5 h-7 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded-md transition-colors text-sm"
+                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm h-[2rem] red-button"
                 on:click={removeVehicle}
                 aria-label="Remove vehicle"
             >
@@ -478,9 +480,9 @@
                                         <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Dice:</span>
                                         <span class="text-stone-700 dark:text-gray-200 text-xs mr-4">{weaponObj?.attackDice || 0}</span>
                                         <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
-                                        <select 
-                                            bind:value={vehicle.weaponFacings[weaponId]} 
-                                            class="text-xs p-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
+                                        <select
+                                            bind:value={vehicle.weaponFacings[weaponId]}
+                                            class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
                                             disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || playMode}
                                         >
                                             <option value="front">Front</option>
@@ -490,7 +492,7 @@
                                         </select>
                                     </div>
                                     <button
-                                        class="p-1 h-6 px-2 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded transition-colors flex-shrink-0 text-xs"
+                                        class="py-0.25 px-2 flex items-center justify-center rounded transition-colors flex-shrink-0 text-xs h-[1.5rem] red-button"
                                         on:click={() => removeWeapon(i)}
                                         aria-label="Remove weapon"
                                     >
@@ -507,7 +509,7 @@
                 <label for="add-weapon-{vehicle.id}" class="sr-only">Add a weapon</label>
                 <select
                     id="add-weapon-{vehicle.id}"
-                    class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
                     on:change={e => {
                         const target = e.target as HTMLSelectElement;
                         const weaponId = target.value;
@@ -566,7 +568,7 @@
                                 <span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
                             </div>
                             <button
-                                class="p-1 h-6 px-2 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded transition-colors ml-2 flex-shrink-0 text-xs"
+                                class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"
                                 on:click={() => removeUpgrade(i)}
                                 aria-label="Remove upgrade"
                             >
@@ -581,7 +583,7 @@
                 <label for="add-upgrade-{vehicle.id}" class="sr-only">Add an upgrade</label>
                 <select
                     id="add-upgrade-{vehicle.id}"
-                    class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
                     on:change={e => {
                         const target = e.target as HTMLSelectElement;
                         const upgradeId = target.value;
@@ -621,7 +623,7 @@
                                 <span class="text-stone-500 dark:text-gray-400 text-xs">{perk?.text || ""}</span>
                             </div>
                             <button
-                                class="p-1 h-6 px-2 flex items-center justify-center bg-red-500 text-white hover:bg-red-600 rounded transition-colors ml-2 flex-shrink-0 text-xs"
+                                class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"
                                 on:click={() => removePerk(i)}
                                 aria-label="Remove perk"
                             >
@@ -667,7 +669,7 @@
                 <label for="add-perk-{vehicle.id}" class="sr-only">Add a perk</label>
                 <select
                     id="add-perk-{vehicle.id}"
-                    class="w-full p-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                    class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
                     on:change={e => {
                         const target = e.target as HTMLSelectElement;
                         const perkId = target.value;

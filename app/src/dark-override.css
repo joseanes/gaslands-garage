@@ -1,0 +1,217 @@
+/* Critical overrides - these need to take precedence over Tailwind */
+
+/* Force all input height standardization */
+input,
+select,
+button,
+.form-select,
+.form-input,
+input.form-input,
+select.form-select,
+[class*="form-input"],
+[class*="form-select"] {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+/* Menu specific overrides - force autopacing */
+.menu-bar button.menu-item,
+.menu-bar .menu-item,
+.menu-container button.menu-item,
+.menu-container .menu-item,
+button.menu-item,
+.menu-item {
+  height: auto !important;
+  min-height: auto !important;
+  max-height: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Force menu container layout */
+.menu-container {
+  justify-content: space-between !important;
+  display: flex !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+  flex-wrap: nowrap !important;
+}
+
+.menu-container > div:first-child {
+  justify-self: flex-start !important;
+  padding-left: 5px !important;
+}
+
+.menu-container > div:last-child {
+  justify-self: flex-end !important;
+  padding-right: 5px !important;
+  justify-content: flex-end !important;
+  display: flex !important;
+}
+
+/* Ensure dropdown menus appear at the correct positions */
+.share-menu-dropdown,
+.help-menu-dropdown {
+  position: absolute !important;
+  top: 40px !important;
+}
+
+.share-menu-dropdown {
+  left: 0 !important;
+}
+
+.help-menu-dropdown {
+  right: 0 !important;
+}
+
+/* Dark mode text input */
+.dark input[type="text"],
+.dark input[type="number"],
+.dark-mode input[type="text"],
+.dark-mode input[type="number"] {
+  color: white !important;
+}
+
+/* Modal background fix */
+.dark div[data-modal-content],
+.dark-mode div[data-modal-content],
+.dark [role="document"],
+.dark-mode [role="document"],
+.dark div[class*="bg-white dark:bg-gray"],
+.dark-mode div[class*="bg-white dark:bg-gray"] {
+  background-color: #1f2937 !important;
+}
+
+/* Special case for small buttons */
+button.h-[1.5rem],
+.h-[1.5rem],
+button[class*="h-[1.5rem]"],
+[class*="h-[1.5rem]"] {
+  height: 24px !important;
+  min-height: 24px !important;
+  max-height: 24px !important;
+}
+
+/* Team Name and Cans inputs - force consistent styling */
+input.dark-text-input,
+input[aria-label="Team Name"],
+input[aria-label="Maximum Cans"],
+input.modal-input,
+input[placeholder="Enter team name"] {
+  color: #a16207 !important; /* amber-700 */
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  font-size: 1rem !important;
+  box-sizing: border-box !important;
+}
+
+.dark input.dark-text-input,
+.dark input[aria-label="Team Name"],
+.dark input[aria-label="Maximum Cans"],
+.dark input.modal-input,
+.dark input[placeholder="Enter team name"],
+.dark-mode input.dark-text-input,
+.dark-mode input[aria-label="Team Name"],
+.dark-mode input[aria-label="Maximum Cans"],
+.dark-mode input.modal-input,
+.dark-mode input[placeholder="Enter team name"] {
+  color: white !important;
+}
+
+/* Button colors - ultra-specific selectors */
+button.amber-button,
+.amber-button,
+button[class*="amber-button"],
+[class*="amber-button"] {
+  background-color: #d97706 !important; /* amber-600 */
+  color: white !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+button.amber-button:hover,
+.amber-button:hover,
+button[class*="amber-button"]:hover,
+[class*="amber-button"]:hover {
+  background-color: #b45309 !important; /* amber-700 */
+}
+
+.dark button.amber-button,
+.dark .amber-button,
+.dark-mode button.amber-button,
+.dark-mode .amber-button,
+.dark button[class*="amber-button"],
+.dark [class*="amber-button"],
+.dark-mode button[class*="amber-button"],
+.dark-mode [class*="amber-button"] {
+  background-color: #d97706 !important; /* amber-600 */
+  color: white !important;
+}
+
+.dark button.amber-button:hover,
+.dark .amber-button:hover,
+.dark-mode button.amber-button:hover,
+.dark-mode .amber-button:hover,
+.dark button[class*="amber-button"]:hover,
+.dark [class*="amber-button"]:hover,
+.dark-mode button[class*="amber-button"]:hover,
+.dark-mode [class*="amber-button"]:hover {
+  background-color: #b45309 !important; /* amber-700 */
+}
+
+/* Red button styles - ultra-specific selectors */
+button.red-button,
+.red-button,
+button[class*="red-button"],
+[class*="red-button"] {
+  background-color: #dc2626 !important; /* red-600 */
+  color: white !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+button.red-button:hover,
+.red-button:hover,
+button[class*="red-button"]:hover,
+[class*="red-button"]:hover {
+  background-color: #b91c1c !important; /* red-700 */
+}
+
+.dark button.red-button,
+.dark .red-button,
+.dark-mode button.red-button,
+.dark-mode .red-button,
+.dark button[class*="red-button"],
+.dark [class*="red-button"],
+.dark-mode button[class*="red-button"],
+.dark-mode [class*="red-button"] {
+  background-color: #dc2626 !important; /* red-600 */
+  color: white !important;
+}
+
+.dark button.red-button:hover,
+.dark .red-button:hover,
+.dark-mode button.red-button:hover,
+.dark-mode .red-button:hover,
+.dark button[class*="red-button"]:hover,
+.dark [class*="red-button"]:hover,
+.dark-mode button[class*="red-button"]:hover,
+.dark-mode [class*="red-button"]:hover {
+  background-color: #b91c1c !important; /* red-700 */
+}

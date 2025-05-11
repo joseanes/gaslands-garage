@@ -138,9 +138,15 @@ html.dark-mode span:not(.logo-highlight) {
 }
 
 /* Target the specific modal content containers directly */
-.dark-mode [role="document"] div, 
+.dark-mode [role="document"] div,
 .dark [role="document"] div {
   color: #d1d5db !important;
+}
+
+/* Ensure modal padding */
+[role="dialog"] [role="document"],
+.fixed.inset-0 [role="document"] {
+  padding: 1.5rem !important;
 }
 
 /* Target modals by their style attributes - but exclude share menu */

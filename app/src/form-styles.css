@@ -3,7 +3,7 @@
 /* Base select styling */
 select.form-select {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.25rem 1rem; /* More compact padding */
   padding-right: 2.5rem;
   border: 2px solid #fde68a;
   border-radius: 0.5rem;
@@ -12,8 +12,13 @@ select.form-select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23f59e0b'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1.25rem;
+  background-position: right 0.5rem center;
+  background-size: 1rem;
+  min-height: 32px !important;
+  height: 32px !important; /* Fixed consistent height */
+  max-height: 32px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
 }
 
 .dark select.form-select {
@@ -30,11 +35,16 @@ select.form-select:focus {
 /* Input styles */
 input.form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.25rem 1rem; /* Match select element padding */
   border: 2px solid #fde68a;
   border-radius: 0.5rem;
   background-color: white;
   color: #1c1917;
+  min-height: 32px !important;
+  height: 32px !important; /* Fixed consistent height */
+  max-height: 32px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
 }
 
 .dark input.form-input {
@@ -77,12 +87,14 @@ label.form-label {
 
 /* Button styles */
 .form-button {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 1rem;
   background-color: #f59e0b;
   color: white;
   font-weight: 600;
   border-radius: 0.5rem;
   transition: background-color 150ms;
+  height: 2rem !important;
+  line-height: 1.2 !important;
 }
 
 .form-button:hover {
@@ -95,12 +107,14 @@ label.form-label {
 }
 
 .form-button-secondary {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 1rem;
   background-color: #d6d3d1;
   color: #1c1917;
   font-weight: 600;
   border-radius: 0.5rem;
   transition: background-color 150ms;
+  height: 2rem !important;
+  line-height: 1.2 !important;
 }
 
 .dark .form-button-secondary {
@@ -115,6 +129,8 @@ label.form-label {
 .dark .form-button-secondary:hover {
   background-color: #6b7280;
 }
+
+/* All select elements have consistent styling now, no need for compact-select class */
 
 /* Group styles */
 .form-group {

@@ -4,6 +4,8 @@
   import "../app.css";
   import "../dark-mode.css";
   import "../form-styles.css";
+  import "../dark-override.css"; /* This must be imported last to override other styles */
+  import "../inline-fixes.js"; /* JavaScript fixes for element heights */
   /* Print styles now included directly in this file */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
@@ -186,14 +188,15 @@
             by <a href="https://funboardgames.etsy.com/" target="_blank" rel="noopener noreferrer" class="etsy-link">Fun Board Games</a>
           </span>
         </div>
-        
-        <div class="flex flex-wrap items-center" style="gap: 10px;">
-          <button 
-            type="button" 
+
+        <div class="flex flex-wrap items-center justify-end" style="gap: 10px;">
+          <button
+            type="button"
             class="menu-item flex items-center share-menu-trigger"
             on:click={() => showShareMenu = !showShareMenu}
             aria-haspopup="true"
             aria-expanded={showShareMenu}
+            style="height: auto !important; min-height: auto !important;"
           >
             Teams
             <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -203,7 +206,7 @@
           
           {#if showShareMenu}
           <div
-            class="absolute left-0 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
+            class="absolute left-0 w-44 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
             style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
             transition:fade={{ duration: 150 }}
           >
@@ -227,7 +230,7 @@
             </button>
           </div>
           {/if}
-          <button type="button" class="menu-item" on:click={openSettings}>Settings</button>
+          <button type="button" class="menu-item" on:click={openSettings} style="height: auto !important; min-height: auto !important;">Settings</button>
           <div class="relative inline-block ml-1">
             <button
               type="button"
@@ -235,6 +238,7 @@
               on:click={() => showHelpMenu = !showHelpMenu}
               aria-haspopup="true"
               aria-expanded={showHelpMenu}
+              style="height: auto !important; min-height: auto !important;"
             >
               Help
               <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -244,7 +248,7 @@
 
             {#if showHelpMenu}
             <div
-              class="absolute right-0 w-48 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 help-menu-dropdown"
+              class="absolute right-0 w-56 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 help-menu-dropdown"
               style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
               transition:fade={{ duration: 150 }}
             >
@@ -303,19 +307,18 @@
     
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
-      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white);"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands Garage</h3>
         <button
-          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
           on:click={() => showAboutModal = false}
           aria-label="Close about modal"
         >
-          <span class="text-2xl">×</span>
-          <span class="sr-only">Close</span>
+          <span>Close</span>
         </button>
       </div>
       
@@ -414,19 +417,18 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
-      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white);"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Change Log</h3>
         <button
-          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
           on:click={() => showChangeLogModal = false}
           aria-label="Close change log modal"
         >
-          <span class="text-2xl">×</span>
-          <span class="sr-only">Close</span>
+          <span>Close</span>
         </button>
       </div>
 
@@ -463,19 +465,18 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
-      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white);"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Upcoming Features</h3>
         <button
-          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
           on:click={() => showUpcomingFeaturesModal = false}
           aria-label="Close upcoming features modal"
         >
-          <span class="text-2xl">×</span>
-          <span class="sr-only">Close</span>
+          <span>Close</span>
         </button>
       </div>
 
@@ -517,19 +518,18 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
-      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white);"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Contributors</h3>
         <button
-          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
           on:click={() => showContributorsModal = false}
           aria-label="Close contributors modal"
         >
-          <span class="text-2xl">×</span>
-          <span class="sr-only">Close</span>
+          <span>Close</span>
         </button>
       </div>
 
@@ -570,19 +570,18 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
-      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white);"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">About Gaslands</h3>
         <button
-          class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
           on:click={() => showAboutGaslandsModal = false}
           aria-label="Close about gaslands modal"
         >
-          <span class="text-2xl">×</span>
-          <span class="sr-only">Close</span>
+          <span>Close</span>
         </button>
       </div>
 
@@ -670,7 +669,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 6px 16px;
+  padding: 6px 0;
   justify-content: space-between;
   align-items: center;
 }

@@ -158,19 +158,19 @@
   
   <!-- Modal content -->
   <div
-    class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+    class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
     role="document"
-    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: white;"
+    style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
+    data-modal-content="true"
   >
     <div class="flex justify-between items-center mb-6">
       <h3 class="text-lg font-bold text-stone-800 dark:text-white modal-heading">My Teams</h3>
       <button
-        class="text-stone-400 hover:text-stone-600 dark:text-gray-300 dark:hover:text-white transition-colors"
+        class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
         on:click={closeModal}
         aria-label="Close teams modal"
       >
-        <span class="text-2xl">×</span>
-        <span class="sr-only">Close</span>
+        <span>Close</span>
       </button>
     </div>
     
@@ -193,12 +193,14 @@
               type="text"
               placeholder="Enter team name"
               bind:value={newTeamName}
-              class="flex-1 px-4 py-3 border-2 border-stone-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
+              class="flex-1 px-4 py-0.25 border-2 border-stone-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-stone-800 dark:text-white modal-input"
+              style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
             />
             <button
-              class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-md disabled:opacity-50 flex items-center shadow-md text-sm"
+              class="px-4 py-1.5 amber-button rounded-md disabled:opacity-50 flex items-center shadow-md text-sm"
               on:click={saveCurrentTeam}
               disabled={isSaving || !newTeamName.trim()}
+              style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
             >
               {#if isSaving}
                 <div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>
@@ -237,15 +239,17 @@
                   </div>
                   <div class="flex space-x-3">
                     <button
-                      class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md shadow-md transition-colors flex-1 sm:flex-none text-sm"
+                      class="px-4 py-1.5 amber-button rounded-md shadow-md transition-colors flex-1 sm:flex-none text-sm"
                       on:click={() => loadTeam(team)}
+                      style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
                     >
                       Load
                     </button>
                     <button
-                      class="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md shadow-md transition-colors flex items-center flex-1 sm:flex-none justify-center text-sm"
+                      class="px-4 py-1.5 red-button rounded-md shadow-md transition-colors flex items-center flex-1 sm:flex-none justify-center text-sm"
                       on:click={() => removeTeam(team.id)}
                       disabled={deletingTeamId === team.id}
+                      style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
                     >
                       {#if deletingTeamId === team.id}
                         <div class="animate-spin mr-2 h-4 w-4 border-b-2 border-white rounded-full"></div>

@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .dark-text-input {
+    @apply text-white;
+  }
+  
+  .amber-button {
+    @apply bg-amber-600 text-white hover:bg-amber-700;
+    @apply dark:bg-amber-600 dark:text-white dark:hover:bg-amber-700;
+  }
+  
+  .red-button {
+    @apply bg-red-600 text-white hover:bg-red-700;
+    @apply dark:bg-red-600 dark:text-white dark:hover:bg-red-700;
+  }
+}
+
+/* Ensure modal padding */
+[role="document"] {
+  padding: 1.5rem !important;
+}
+
+/* Make all form elements consistently compact */
+@layer base {
+  /* Base styles for all form elements */
+  select, input, button, .form-select, .form-input {
+    height: 2rem !important; /* Fixed consistent height */
+    line-height: 1.2 !important;
+    min-height: unset !important;
+    font-size: 0.95rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  
+  /* Smaller text for elements with the text-xs class */
+  .text-xs select, .text-xs input, .text-xs button {
+    font-size: 0.75rem !important;
+    height: 1.5rem !important;
+  }
+  
+  /* Consistent height for buttons */
+  button:not(.h-7):not(.h-6):not(.w-7):not(.counter-btn) {
+    height: 2rem !important;
+  }
+  
+  /* Ensure inputs in dark mode have white text */
+  .dark input[type="text"], 
+  .dark input[type="number"], 
+  .dark-mode input[type="text"], 
+  .dark-mode input[type="number"] {
+    color: white !important;
+  }
+}
