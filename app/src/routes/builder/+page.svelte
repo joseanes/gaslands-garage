@@ -1454,14 +1454,16 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					</button>
 				</div>
 				<div class="flex items-center gap-2">
-					<b class="text-lg font-bold whitespace-nowrap">Total Cans:</b>&nbsp;&nbsp;&nbsp;
+					<b class="text-lg font-bold whitespace-nowrap">Cans: </b>&nbsp;&nbsp;&nbsp;
+					<span class="font-extrabold text-amber-700 dark:text-amber-300 text-2xl md:text-3xl mr-2">{totalCans || 0}</span>
+					<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
 					<input
 						type="number"
 						bind:value={maxCans}
 						min="1"
 						max="1000"
 						class="bg-transparent border-b-2 border-amber-500 px-3 py-1 font-extrabold text-amber-700 dark:text-amber-300 focus:outline-none focus:border-amber-600 min-w-[100px] w-auto text-2xl md:text-3xl"
-						aria-label="Total Cans"
+						aria-label="Maximum Cans"
 					/>
 					<button
 						class="ml-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-medium rounded-lg text-sm transition-all shadow-md disabled:opacity-50 flex items-center"
