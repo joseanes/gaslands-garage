@@ -214,7 +214,7 @@
     }
 </script>
 
-<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-2" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
+<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-1" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
     <div class="px-4 py-3 bg-stone-100 dark:bg-gray-800 flex flex-wrap justify-between items-center">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-4 flex-grow">
             <div class="form-group mb-0 flex-grow">
@@ -296,7 +296,7 @@
     
     <!-- Collapsed view - Only shown when collapsed -->
     {#if collapsed}
-        <div class="p-4 flex items-center justify-between bg-stone-100 dark:bg-gray-800">
+        <div class="p-2 flex items-center justify-between bg-stone-100 dark:bg-gray-800">
             <div class="flex items-center gap-4">
                 <div class="vehicle-type-icon vehicle-type-{vehicle.type}" title="{vehicleTypes.find(vt => vt.id === vehicle.type)?.name || 'Unknown'}"></div>
                 <div class="font-medium">
@@ -329,10 +329,10 @@
     {/if}
     
     <!-- Vehicle details - Hidden when collapsed -->
-    <div class="px-4 py-3" class:hidden={collapsed}>
+    <div class="px-1 py-2" class:hidden={collapsed}>
         
         <!-- Interactive dashboard elements - Always visible in Play Mode -->
-        <div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6" class:hidden={!playMode}>
+        <div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-3 mb-3" class:hidden={!playMode}>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="hull-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600">
@@ -403,7 +403,7 @@
         
         <!-- Play Mode Loadout summary -->
         {#if playMode}
-            <div class="loadout-summary mt-4 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-3">
+            <div class="loadout-summary mt-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-2">
                 <!-- Add Handling and Weight pills at the top -->
                 <div class="flex flex-wrap gap-2 mb-3">
                     <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 font-medium px-3 py-1 rounded-full text-sm">

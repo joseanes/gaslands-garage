@@ -1679,7 +1679,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			<div class="flex flex-col gap-2 w-full">
 				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center gap-4">
-						<b class="text-base font-bold whitespace-nowrap">Team Name:</b>
+						<b class="text-base font-bold whitespace-nowrap">Name:</b>
 						<input
 							type="text"
 							bind:value={teamName}
