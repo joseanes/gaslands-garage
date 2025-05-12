@@ -180,8 +180,8 @@
   <header class="w-full print:hidden">
     <nav class="menu-bar print:hidden">
       <div class="menu-container">
-        <div class="flex flex-col">
-          <span class="logo">
+        <div class="flex flex-col justify-start">
+          <span class="logo text-left">
             <span class="logo-highlight">Gaslands</span> Garage
           </span>
           <span class="logo-sponsor">
@@ -349,7 +349,7 @@
           </p>
 
           <p class="text-stone-600 dark:text-gray-400 mt-2">
-            This project is open source! Check out the <a href="https://github.com/joseanes/gaslands-garage" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">GitHub repository</a> to contribute or report issues.
+            This project is open source! Check out the <a href="https://github.com/joseanes/gaslandsgarage" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">GitHub repository</a> to contribute or report issues.
           </p>
 
           <div class="mt-4">
@@ -664,7 +664,7 @@
 }
 
 :global(.menu-container) {
-  max-width: 896px;
+  max-width: 1024px;
   margin: 0 auto;
   display: flex;
   flex-wrap: wrap;
@@ -672,6 +672,7 @@
   padding: 6px 0;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
 }
 
 :global(.logo) {

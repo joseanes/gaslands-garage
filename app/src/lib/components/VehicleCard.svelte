@@ -90,7 +90,10 @@
     $: vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
     $: vehicleCost = calculateVehicleCost(vehicle, vehicleType);
     $: maxBuildSlots = vehicleType?.buildSlots || 2;
+    // Recalculate slots whenever weapons or upgrades change
     $: usedBuildSlots = calculateUsedBuildSlots(vehicle);
+    // Force reactivity for weapon/upgrade changes
+    $: { vehicle.weapons; vehicle.upgrades; usedBuildSlots = calculateUsedBuildSlots(vehicle); }
 
     function calculateVehicleCost(vehicle, vehicleType) {
         // Use the passed vehicleType to avoid redundant lookups
@@ -139,7 +142,8 @@
                     // These weapons don't consume build slots
                     continue;
                 }
-                totalSlots += weaponObj.buildSlots || weaponObj.slots || 1;
+                // Just use the slots field directly
+                totalSlots += weaponObj.slots;
             }
         }
 
@@ -152,7 +156,8 @@
                     // These upgrades don't consume build slots
                     continue;
                 }
-                totalSlots += upgradeObj.buildSlots || upgradeObj.slots || 1;
+                // Just use the slots field directly
+                totalSlots += upgradeObj.slots;
             }
         }
 
@@ -390,7 +395,7 @@
             <div class="loadout-summary mt-4 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-3">
                 <div class="mb-2">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const baseWeaponId = weaponId.split('_')[0]}
+                        {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
@@ -458,7 +463,7 @@
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const baseWeaponId = weaponId.split('_')[0]}
+                        {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
@@ -466,9 +471,6 @@
                                 <div class="flex-1">
                                     <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
                                         {weaponObj?.name || weaponId}
-                                        {#if weaponObj?.advanced}
-                                            <span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
-                                        {/if}
                                     </span></b>
                                     <div class="flex items-center gap-2">
                                         <span class="text-stone-500 dark:text-gray-400 text-xs">{weaponObj?.specialRules || ""}</span>
@@ -483,12 +485,18 @@
                                         <select
                                             bind:value={vehicle.weaponFacings[weaponId]}
                                             class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
-                                            disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || playMode}
+                                            disabled={weaponObj?.facing === 'fixed' || (weaponObj?.specialRules && weaponObj?.specialRules.toUpperCase().includes("CREW FIRED")) || playMode}
                                         >
-                                            <option value="front">Front</option>
-                                            <option value="side">Side</option>
-                                            <option value="rear">Rear</option>
-                                            <option value="any" disabled={!weaponObj?.crewFired}>360°</option>
+                                            {#if weaponObj?.dropped || (weaponObj?.range && weaponObj?.range.includes('Dropped'))}
+                                                <!-- Dropped weapons can only be side or rear -->
+                                                <option value="side">Side</option>
+                                                <option value="rear">Rear</option>
+                                            {:else}
+                                                <option value="front">Front</option>
+                                                <option value="side">Side</option>
+                                                <option value="rear">Rear</option>
+                                                <option value="any" disabled={!weaponObj?.crewFired}>360°</option>
+                                            {/if}
                                         </select>
                                     </div>
                                     <button
@@ -515,17 +523,23 @@
                         const weaponId = target.value;
                         if (weaponId) {
                             addWeapon(weaponId, 'front');
-                            target.value = ""; // Reset selection
+                            // Reset selection and blur to force UI refresh
+                            target.value = "";
+                            target.blur();
+                            setTimeout(() => {
+                                // Force reactivity by recalculating slots
+                                usedBuildSlots = calculateUsedBuildSlots(vehicle);
+                            }, 50);
                         }
                     }}
-                    disabled={!filteredWeapons.some(w => (w.buildSlots || 1) === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                    disabled={!filteredWeapons.some(w => w.slots === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add weapon</option>
                     {#each filteredWeapons.slice().sort((a, b) => a.name.localeCompare(b.name)) as w}
-                        {@const weaponSlots = w.buildSlots || 1}
+                        {@const weaponSlots = w.slots}
                         {@const canAddWeapon = weaponSlots === 0 || usedBuildSlots + weaponSlots <= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
-                        <option 
-                            value={w.id} 
+                        <option
+                            value={w.id}
                             disabled={!canAddWeapon}
                             class={!canAddWeapon ? 'text-gray-400' : ''}
                         >
@@ -561,9 +575,6 @@
                             <div class="flex-1">
                                 <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
                                     {upgrade?.name || upgradeId}
-                                    {#if upgrade?.advanced}
-                                        <span class="ml-1 text-xs text-amber-600 dark:text-amber-400 font-semibold">(Advanced)</span>
-                                    {/if}
                                 </span></b>
                                 <span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
                             </div>
@@ -589,16 +600,29 @@
                         const upgradeId = target.value;
                         if (upgradeId) {
                             addUpgrade(upgradeId);
-                            target.value = ""; // Reset selection
+                            // Reset selection and blur to force UI refresh
+                            target.value = "";
+                            target.blur();
+                            setTimeout(() => {
+                                // Force reactivity by recalculating slots
+                                usedBuildSlots = calculateUsedBuildSlots(vehicle);
+                            }, 50);
                         }
                     }}
-                    disabled={!filteredUpgrades.some(u => (u.buildSlots || 1) === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                    disabled={!filteredUpgrades.some(u => u.slots === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add upgrade</option>
                     {#each filteredUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
-                        <option value={u.id} disabled={(u.buildSlots || 1) > 0 && usedBuildSlots + (u.buildSlots || 1) > (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}>
+                        {@const upgradeSlots = u.slots}
+                        {@const canAddUpgrade = upgradeSlots === 0 || usedBuildSlots + upgradeSlots <= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                        <option
+                            value={u.id}
+                            disabled={!canAddUpgrade}
+                            class={!canAddUpgrade ? 'text-gray-400' : ''}
+                        >
                             {u.name}
-                            {(u.buildSlots || 1) === 0 ? " (Free)" : ""}
+                            {upgradeSlots === 0 ? " (Free)" : ` (${upgradeSlots} slot${upgradeSlots > 1 ? 's' : ''})`}
+                            {!canAddUpgrade ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
                 </select>
@@ -634,6 +658,27 @@
                 </ul>
             {/if}
 
+            <div class="relative">
+                <label for="add-perk-{vehicle.id}" class="sr-only">Add a perk</label>
+                <select
+                    id="add-perk-{vehicle.id}"
+                    class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                    on:change={e => {
+                        const target = e.target as HTMLSelectElement;
+                        const perkId = target.value;
+                        if (perkId) {
+                            addPerk(perkId);
+                            target.value = ""; // Reset selection
+                        }
+                    }}
+                >
+                    <option value="" disabled selected>+ Add perk</option>
+                    {#each filteredPerks.slice().sort((a, b) => a.name.localeCompare(b.name)) as p}
+                        <option value={p.id}>{p.name}</option>
+                    {/each}
+                </select>
+            </div>
+
             <!-- Special Rules Section - Only in Edit Mode -->
             {#if vehicleTypes.find(vt => vt.id === vehicle.type)?.specialRules}
                 {@const vType = vehicleTypes.find(vt => vt.id === vehicle.type)}
@@ -664,27 +709,6 @@
                     {/if}
                 </div>
             {/if}
-            
-            <div class="relative">
-                <label for="add-perk-{vehicle.id}" class="sr-only">Add a perk</label>
-                <select
-                    id="add-perk-{vehicle.id}"
-                    class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
-                    on:change={e => {
-                        const target = e.target as HTMLSelectElement;
-                        const perkId = target.value;
-                        if (perkId) {
-                            addPerk(perkId);
-                            target.value = ""; // Reset selection
-                        }
-                    }}
-                >
-                    <option value="" disabled selected>+ Add perk</option>
-                    {#each filteredPerks.slice().sort((a, b) => a.name.localeCompare(b.name)) as p}
-                        <option value={p.id}>{p.name}</option>
-                    {/each}
-                </select>
-            </div>
         </div>
         
         <!-- Validation errors section -->

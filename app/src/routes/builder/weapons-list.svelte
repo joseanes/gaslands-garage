@@ -3,7 +3,7 @@
 {:else}
 	<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
 		{#each v.weapons as weaponId, i}
-			{@const baseWeaponId = weaponId.split('_')[0]}
+			{@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
 			{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
 			{@const facing = v.weaponFacings?.[weaponId] || 'front'}
 			<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
