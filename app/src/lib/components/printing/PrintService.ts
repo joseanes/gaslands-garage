@@ -38,6 +38,9 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
   const printView = document.querySelector('#gaslands-print-view') as HTMLElement | null;
   const placeholder = document.querySelector('.qr-code-placeholder') as HTMLElement | null;
 
+  // For checking our component structure
+  const printViewComponent = document.querySelector('.print-view-content') as HTMLElement | null;
+
   if (hiddenQrImage) {
     // Set the QR code directly to this element
     hiddenQrImage.src = printQrCode;

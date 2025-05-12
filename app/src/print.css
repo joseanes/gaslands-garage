@@ -12,7 +12,7 @@
   }
 
   /* Then, selectively show ONLY the print view content */
-  #gaslands-print-view {
+  #gaslands-print-view, .print-view-content {
     display: block !important;
     position: static !important;
     left: auto !important;
@@ -24,7 +24,7 @@
   }
 
   /* Make sure all content in the print view is visible */
-  #gaslands-print-view * {
+  #gaslands-print-view *, .print-view-content * {
     display: revert !important;
     visibility: visible !important;
     color: black !important;
@@ -60,42 +60,46 @@
   }
 
   /* Badge specific colors - !important with higher specificity */
-  #gaslands-print-view .vehicle-type-badge {
+  #gaslands-print-view .vehicle-type-badge, .print-view-content .vehicle-type-badge {
     color: white !important;
     background-color: #333 !important;
   }
 
-  #gaslands-print-view .card-cost {
+  #gaslands-print-view .card-cost, .print-view-content .card-cost {
     background-color: black !important;
     color: white !important;
   }
 
-  #gaslands-print-view .cost-value {
+  #gaslands-print-view .cost-value, .print-view-content .cost-value {
     color: white !important;
   }
 
   /* Card layout adjustments */
-  #gaslands-print-view .print-card-grid {
+  #gaslands-print-view .print-card-grid, .print-view-content .print-card-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
     gap: 10mm !important;
   }
 
   /* Format-specific display rules with higher specificity */
-  body[data-print-format="classic"] #gaslands-print-view .vehicle-card-print {
+  body[data-print-format="classic"] #gaslands-print-view .vehicle-card-print,
+  body[data-print-format="classic"] .print-view-content .vehicle-card-print {
     padding: 8px !important;
   }
 
-  body[data-print-format="compact"] #gaslands-print-view .vehicle-card-print {
+  body[data-print-format="compact"] #gaslands-print-view .vehicle-card-print,
+  body[data-print-format="compact"] .print-view-content .vehicle-card-print {
     padding: 4px !important;
     font-size: 90% !important;
   }
 
-  body[data-print-format="dashboard"] #gaslands-print-view .vehicle-card-print {
+  body[data-print-format="dashboard"] #gaslands-print-view .vehicle-card-print,
+  body[data-print-format="dashboard"] .print-view-content .vehicle-card-print {
     padding: 10px !important;
   }
 
-  body[data-print-format="roster"] #gaslands-print-view .vehicle-card-print {
+  body[data-print-format="roster"] #gaslands-print-view .vehicle-card-print,
+  body[data-print-format="roster"] .print-view-content .vehicle-card-print {
     display: table-row !important;
   }
 

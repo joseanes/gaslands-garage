@@ -40,7 +40,7 @@
 </script>
 
 <!-- Print-only view with vehicle cards -->
-<div id="gaslands-print-view">
+<div class="print-view-content">
   <div class="sponsor-print-header">
     <h1>Gaslands: {teamName}</h1>
     <p>
