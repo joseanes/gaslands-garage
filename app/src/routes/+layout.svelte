@@ -13,6 +13,7 @@
   import Auth from '$lib/components/Auth.svelte';
   import TeamsModal from '$lib/components/TeamsModal.svelte';
   import { user } from '$lib/firebase';
+  import { sendContactMessage } from '$lib/services/messages';
   
   // Ad configuration variables
   let showAds = false; // Removed ads for now
@@ -27,6 +28,13 @@
   let showUpcomingFeaturesModal = false;
   let showContributorsModal = false;
   let showContactUsModal = false;
+
+  // Contact form state
+  let contactSubject = '';
+  let contactMessage = '';
+  let contactSubmitting = false;
+  let contactSuccess = false;
+  let contactError = '';
   
   // Hook for My Teams functionality
   function openTeamsModal() {
@@ -176,6 +184,70 @@
 
   function openContactUs() {
     showContactUsModal = true;
+  }
+
+  // Handle contact form submission
+  async function handleContactFormSubmit() {
+    if (!$user) {
+      contactError = 'You must be logged in to send a message.';
+      return;
+    }
+
+    if (!contactSubject.trim() || !contactMessage.trim()) {
+      contactError = 'Please fill out all required fields.';
+      return;
+    }
+
+    contactSubmitting = true;
+    contactError = '';
+    contactSuccess = false;
+
+    try {
+      // Add debug logging to understand user information
+      console.log("User information:", $user);
+
+      // Make sure we have valid user information before proceeding
+      if (!$user || !$user.uid) {
+        contactError = 'User information not available. Please sign out and sign in again.';
+        contactSubmitting = false;
+        return;
+      }
+
+      const result = await sendContactMessage(
+        $user.uid,
+        $user.email || '',
+        contactSubject.trim(),
+        contactMessage.trim()
+      );
+
+      if (result.success) {
+        contactSuccess = true;
+        contactSubject = '';
+        contactMessage = '';
+
+        // Automatically close the modal after 3 seconds
+        setTimeout(() => {
+          if (contactSuccess) {
+            showContactUsModal = false;
+          }
+        }, 3000);
+      } else {
+        // Display a more specific error message if available
+        if (result.error) {
+          contactError = `Error: ${result.error}`;
+        } else {
+          contactError = 'There was an error sending your message. Please try again.';
+        }
+
+        console.error('Message sending error:', result.error);
+      }
+    } catch (error) {
+      console.error('Error sending contact message:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      contactError = `An unexpected error occurred: ${errorMessage}. Please try again later.`;
+    } finally {
+      contactSubmitting = false;
+    }
   }
 </script>
 
@@ -770,7 +842,96 @@
       </div>
 
       <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
-        <!-- Empty content as requested -->
+        {#if $user}
+          <!-- Contact form for authenticated users -->
+          <div class="max-w-2xl mx-auto">
+            <p class="mb-4">We'd love to hear from you! Please fill out the form below and we'll get back to you as soon as possible.</p>
+
+            <form class="space-y-4" on:submit|preventDefault={handleContactFormSubmit}>
+              <div>
+                <label for="contact-subject" class="block text-sm font-medium mb-1">Subject</label>
+                <input
+                  type="text"
+                  id="contact-subject"
+                  bind:value={contactSubject}
+                  required
+                  class="w-full px-3 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
+                  placeholder="How can we help you?"
+                />
+              </div>
+
+              <div>
+                <label for="contact-message" class="block text-sm font-medium mb-1">Message</label>
+                <textarea
+                  id="contact-message"
+                  bind:value={contactMessage}
+                  required
+                  rows="5"
+                  class="w-full px-3 py-2 border border-stone-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white dark:bg-gray-700 text-stone-800 dark:text-white"
+                  placeholder="Please provide details about your question or feedback..."
+                ></textarea>
+              </div>
+
+              <div class="flex justify-end gap-3">
+                <button
+                  type="button"
+                  class="px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-lg text-stone-700 dark:text-gray-300 hover:bg-stone-100 dark:hover:bg-gray-700 transition-colors"
+                  on:click={() => {
+                    contactSubject = '';
+                    contactMessage = '';
+                    showContactUsModal = false;
+                  }}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  class="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                  disabled={contactSubmitting}
+                >
+                  {#if contactSubmitting}
+                    Sending...
+                  {:else}
+                    Send Message
+                  {/if}
+                </button>
+              </div>
+
+              {#if contactError}
+                <div class="p-3 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 rounded-lg">
+                  {contactError}
+                </div>
+              {/if}
+
+              {#if contactSuccess}
+                <div class="p-3 bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 rounded-lg">
+                  Your message has been sent successfully! We'll get back to you soon.
+                </div>
+              {/if}
+            </form>
+          </div>
+        {:else}
+          <!-- Message for unauthenticated users -->
+          <div class="p-6 bg-stone-100 dark:bg-gray-700 rounded-lg text-center">
+            <div class="text-amber-600 dark:text-amber-400 text-5xl mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <h4 class="text-lg font-bold mb-2">Authentication Required</h4>
+            <p class="mb-4">You need to be logged in to contact us. This helps us prevent spam and provide better support.</p>
+            <button
+              class="py-2 px-4 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
+              on:click={() => {
+                showContactUsModal = false;
+                // Add logic here to open sign-in dialog if needed
+              }}
+            >
+              Sign In to Continue
+            </button>
+          </div>
+        {/if}
       </div>
     </div>
   </div>

@@ -122,4 +122,4 @@ export const signOutUser = async () => {
   }
 };
 
-export { auth, db, user };
+export { auth, db, user, initializeFirebase };

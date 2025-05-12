@@ -28,9 +28,19 @@ service cloud.firestore {
     match /userSettings/{userId} {
       // Allow read if user is authenticated and accessing their own settings
       allow read: if request.auth != null && userId == request.auth.uid;
-      
+
       // Allow write if user is authenticated and writing to their own settings
       allow write: if request.auth != null && userId == request.auth.uid;
+    }
+
+    // Messages collection rules
+    match /messages/{messageId} {
+      // Only allow creation if user is authenticated
+      allow create: if request.auth != null &&
+                      request.resource.data.userId == request.auth.uid;
+
+      // Prevent users from reading or modifying messages
+      allow read, update, delete: if false;
     }
   }
 }
