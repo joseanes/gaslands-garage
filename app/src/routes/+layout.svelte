@@ -7,6 +7,7 @@
   import "../print.css"; /* Print styles moved to separate file */
   import "../dark-override.css"; /* This must be imported last to override other styles */
   import "../inline-fixes.js"; /* JavaScript fixes for element heights */
+  import "../print-fix.js"; /* Fix for print functionality */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';

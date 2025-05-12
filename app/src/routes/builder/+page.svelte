@@ -2702,7 +2702,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 {/if}
 
 <!-- Print-only view with vehicle cards -->
-<div id="gaslands-print-view">
+<div id="gaslands-print-view" style="display: none;">
   <PrintView
     teamName={teamName}
     totalCans={totalCans}

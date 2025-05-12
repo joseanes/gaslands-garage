@@ -55,6 +55,9 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
   // Make sure the print view is visible
   if (printView) {
     printView.style.display = "block";
+    console.log('Print view element made visible');
+  } else {
+    console.error('Print view element not found!');
   }
 
   // Apply the correct print format to the body element

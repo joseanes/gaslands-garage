@@ -6,8 +6,8 @@
     margin: 10mm;
   }
 
-  /* First, hide EVERYTHING */
-  body * {
+  /* First, hide most things except the print view */
+  body > *:not(#gaslands-print-view) {
     display: none !important;
   }
 
