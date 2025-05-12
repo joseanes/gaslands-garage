@@ -2239,7 +2239,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
             </div>
           </div>
           
-          <div class="space-y-8 px-4">
+          <div class="space-y-3 px-4">
             <!-- Gaslands Refueled Book Acknowledgment - At the top -->
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
