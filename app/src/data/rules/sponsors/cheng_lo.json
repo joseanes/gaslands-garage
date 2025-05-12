@@ -1,9 +1,0 @@
-{
-  "id": "che",
-  "name": "Cheng & Lo",
-  "starterCans": 50,
-  "perks": ["luxury", "mechanical", "modified"],
-  "perksClasses": ["combat", "defense", "speed"],
-  "color": "#7c2d12",
-  "source": "Gaslands"
-}

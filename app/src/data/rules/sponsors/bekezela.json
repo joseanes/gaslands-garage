@@ -1,9 +1,0 @@
-{
-  "id": "bek",
-  "name": "Bekezela",
-  "starterCans": 50,
-  "perks": ["jury_rigged", "road_warriors", "scavengers"],
-  "perksClasses": ["tech", "defense", "audience"],
-  "color": "#a16207",
-  "source": "Gaslands"
-}

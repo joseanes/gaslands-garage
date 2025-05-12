@@ -1,9 +1,0 @@
-{
-  "id": "ber",
-  "name": "Berkmann",
-  "starterCans": 50,
-  "perks": ["covert", "sophisticated", "surgical"],
-  "perksClasses": ["defense", "handling", "weapons"],
-  "color": "#1e40af",
-  "source": "Gaslands"
-}
