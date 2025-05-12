@@ -1,15 +1,11 @@
 /* Critical overrides - these need to take precedence over Tailwind */
 
 /* Force all input height standardization */
-input,
+input:not([type="checkbox"]),
 select,
-button,
+button:not(.menu-item),
 .form-select,
-.form-input,
-input.form-input,
-select.form-select,
-[class*="form-input"],
-[class*="form-select"] {
+.form-input {
   height: 32px !important;
   min-height: 32px !important;
   max-height: 32px !important;
@@ -98,11 +94,10 @@ button[class*="h-[1.5rem]"],
 }
 
 /* Team Name and Cans inputs - force consistent styling */
-input.dark-text-input,
+.dark-text-input,
 input[aria-label="Team Name"],
 input[aria-label="Maximum Cans"],
-input.modal-input,
-input[placeholder="Enter team name"] {
+.modal-input {
   color: #a16207 !important; /* amber-700 */
   height: 32px !important;
   min-height: 32px !important;
@@ -113,24 +108,19 @@ input[placeholder="Enter team name"] {
   box-sizing: border-box !important;
 }
 
-.dark input.dark-text-input,
+.dark .dark-text-input,
 .dark input[aria-label="Team Name"],
 .dark input[aria-label="Maximum Cans"],
-.dark input.modal-input,
-.dark input[placeholder="Enter team name"],
-.dark-mode input.dark-text-input,
+.dark .modal-input,
+.dark-mode .dark-text-input,
 .dark-mode input[aria-label="Team Name"],
 .dark-mode input[aria-label="Maximum Cans"],
-.dark-mode input.modal-input,
-.dark-mode input[placeholder="Enter team name"] {
+.dark-mode .modal-input {
   color: white !important;
 }
 
-/* Button colors - ultra-specific selectors */
-button.amber-button,
-.amber-button,
-button[class*="amber-button"],
-[class*="amber-button"] {
+/* Button colors */
+.amber-button {
   background-color: #d97706 !important; /* amber-600 */
   color: white !important;
   height: 32px !important;
@@ -141,41 +131,23 @@ button[class*="amber-button"],
   justify-content: center !important;
 }
 
-button.amber-button:hover,
-.amber-button:hover,
-button[class*="amber-button"]:hover,
-[class*="amber-button"]:hover {
+.amber-button:hover {
   background-color: #b45309 !important; /* amber-700 */
 }
 
-.dark button.amber-button,
 .dark .amber-button,
-.dark-mode button.amber-button,
-.dark-mode .amber-button,
-.dark button[class*="amber-button"],
-.dark [class*="amber-button"],
-.dark-mode button[class*="amber-button"],
-.dark-mode [class*="amber-button"] {
+.dark-mode .amber-button {
   background-color: #d97706 !important; /* amber-600 */
   color: white !important;
 }
 
-.dark button.amber-button:hover,
 .dark .amber-button:hover,
-.dark-mode button.amber-button:hover,
-.dark-mode .amber-button:hover,
-.dark button[class*="amber-button"]:hover,
-.dark [class*="amber-button"]:hover,
-.dark-mode button[class*="amber-button"]:hover,
-.dark-mode [class*="amber-button"]:hover {
+.dark-mode .amber-button:hover {
   background-color: #b45309 !important; /* amber-700 */
 }
 
-/* Red button styles - ultra-specific selectors */
-button.red-button,
-.red-button,
-button[class*="red-button"],
-[class*="red-button"] {
+/* Red button styles */
+.red-button {
   background-color: #dc2626 !important; /* red-600 */
   color: white !important;
   height: 32px !important;
@@ -186,32 +158,17 @@ button[class*="red-button"],
   justify-content: center !important;
 }
 
-button.red-button:hover,
-.red-button:hover,
-button[class*="red-button"]:hover,
-[class*="red-button"]:hover {
+.red-button:hover {
   background-color: #b91c1c !important; /* red-700 */
 }
 
-.dark button.red-button,
 .dark .red-button,
-.dark-mode button.red-button,
-.dark-mode .red-button,
-.dark button[class*="red-button"],
-.dark [class*="red-button"],
-.dark-mode button[class*="red-button"],
-.dark-mode [class*="red-button"] {
+.dark-mode .red-button {
   background-color: #dc2626 !important; /* red-600 */
   color: white !important;
 }
 
-.dark button.red-button:hover,
 .dark .red-button:hover,
-.dark-mode button.red-button:hover,
-.dark-mode .red-button:hover,
-.dark button[class*="red-button"]:hover,
-.dark [class*="red-button"]:hover,
-.dark-mode button[class*="red-button"]:hover,
-.dark-mode [class*="red-button"]:hover {
+.dark-mode .red-button:hover {
   background-color: #b91c1c !important; /* red-700 */
 }

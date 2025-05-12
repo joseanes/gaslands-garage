@@ -1,7 +1,7 @@
 /* Form styles for consistent look and feel */
 
 /* Base select styling */
-select.form-select {
+.form-select {
   width: 100%;
   padding: 0.25rem 1rem; /* More compact padding */
   padding-right: 2.5rem;
@@ -14,52 +14,42 @@ select.form-select {
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1rem;
-  min-height: 32px !important;
-  height: 32px !important; /* Fixed consistent height */
-  max-height: 32px !important;
-  line-height: 1.2 !important;
-  box-sizing: border-box !important;
 }
 
-.dark select.form-select {
+.dark .form-select {
   background-color: #374151;
   border-color: #fbbf24;
   color: #e5e7eb;
 }
 
-select.form-select:focus {
+.form-select:focus {
   outline: none;
   border-color: #f59e0b;
 }
 
 /* Input styles */
-input.form-input {
+.form-input {
   width: 100%;
   padding: 0.25rem 1rem; /* Match select element padding */
   border: 2px solid #fde68a;
   border-radius: 0.5rem;
   background-color: white;
   color: #1c1917;
-  min-height: 32px !important;
-  height: 32px !important; /* Fixed consistent height */
-  max-height: 32px !important;
-  line-height: 1.2 !important;
-  box-sizing: border-box !important;
 }
 
-.dark input.form-input {
+.dark .form-input {
   background-color: #374151;
   border-color: #fbbf24;
   color: #e5e7eb;
 }
 
-input.form-input:focus {
+.form-input:focus {
   outline: none;
   border-color: #f59e0b;
 }
 
 /* Label styles */
-label.form-label {
+.form-label {
   display: block;
   margin-bottom: 0.25rem;
   font-size: 0.875rem;
@@ -67,7 +57,7 @@ label.form-label {
   color: #1c1917;
 }
 
-.dark label.form-label {
+.dark .form-label {
   color: #e5e7eb;
 }
 

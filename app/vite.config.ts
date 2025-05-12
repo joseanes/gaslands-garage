@@ -11,15 +11,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['firebase/app', 'firebase/auth', 'firebase/firestore']
-  },
-  css: {
-    // Make sure CSS specificity is preserved
-    postcss: {
-      plugins: [
-        require('tailwindcss'),
-        require('autoprefixer')
-      ]
-    }
   }
+  // CSS processing is configured in postcss.config.js
 });
 
