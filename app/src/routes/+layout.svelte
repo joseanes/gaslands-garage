@@ -206,7 +206,7 @@
           
           {#if showShareMenu}
           <div
-            class="absolute left-0 w-44 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
+            class="absolute right-0 w-44 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
             style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
             transition:fade={{ duration: 150 }}
           >

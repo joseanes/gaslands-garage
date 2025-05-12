@@ -647,6 +647,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			}
 		}
 
+		// Make sure the print view is visible
+		const printView = document.querySelector('#gaslands-print-view');
+		if (printView) {
+			printView.style.display = "block";
+		}
+
 		// Apply the correct print format to the body element
 		if (printStyle && typeof document !== 'undefined') {
 			document.body.setAttribute('data-print-format', printStyle);
@@ -654,7 +660,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Give the browser a moment to render the QR code into the DOM
 		setTimeout(() => {
-			window.print();
+			try {
+				window.print();
+			} catch (err) {
+				console.error("Error during printing:", err);
+			}
 
 			// After printing, reset the body attribute
 			if (typeof document !== 'undefined') {
@@ -670,7 +680,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					if (placeholder) placeholder.style.display = 'block';
 				}, 500);
 			}
-		}, 300);
+		}, 500); // Increased timeout to ensure proper rendering
 	}
 
 	function importBuild() {
