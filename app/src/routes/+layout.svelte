@@ -256,7 +256,7 @@
   <!-- Top Navigation Bar -->
   <header class="w-full print:hidden">
     <nav class="menu-bar print:hidden">
-      <div class="menu-container">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex justify-between items-center">
         <div class="flex flex-col justify-start">
           <span class="logo text-left">
             <span class="logo-highlight">Gaslands</span> Garage
@@ -267,24 +267,25 @@
         </div>
 
         <div class="flex flex-wrap items-center justify-end" style="gap: 10px;">
-          <button
-            type="button"
-            class="menu-item flex items-center share-menu-trigger"
-            on:click={() => showShareMenu = !showShareMenu}
-            aria-haspopup="true"
-            aria-expanded={showShareMenu}
-            style="height: auto !important; min-height: auto !important;"
-          >
+          <div class="relative">
+            <button
+              type="button"
+              class="menu-item flex items-center share-menu-trigger"
+              on:click={() => showShareMenu = !showShareMenu}
+              aria-haspopup="true"
+              aria-expanded={showShareMenu}
+              style="height: auto !important; min-height: auto !important;"
+            >
             Teams
             <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
             </svg>
           </button>
-          
-          {#if showShareMenu}
+
+            {#if showShareMenu}
           <div
-            class="absolute right-0 w-44 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
-            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
+            class="absolute w-44 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 share-menu-dropdown"
+            style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px; left: 0;"
             transition:fade={{ duration: 150 }}
           >
             <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openTeamsModal(); showShareMenu = false; }}>
@@ -306,9 +307,10 @@
               Import Build
             </button>
           </div>
-          {/if}
+            {/if}
+          </div>
           <button type="button" class="menu-item" on:click={openSettings} style="height: auto !important; min-height: auto !important;">Settings</button>
-          <div class="relative inline-block ml-1">
+          <div class="relative">
             <button
               type="button"
               class="menu-item flex items-center help-menu-trigger"
@@ -325,8 +327,8 @@
 
             {#if showHelpMenu}
             <div
-              class="absolute right-0 w-56 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 help-menu-dropdown"
-              style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px;"
+              class="absolute w-56 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 help-menu-dropdown"
+              style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px; left: 0;"
               transition:fade={{ duration: 150 }}
             >
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openAbout(); showHelpMenu = false; }}>
@@ -361,7 +363,7 @@
   <!-- Content area without sidebar ad -->
   <div class="flex-1">
     <!-- Main content area (full width) -->
-    <main class="w-full max-w-7xl mx-auto">
+    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <slot />
     </main>
   </div>
@@ -743,17 +745,7 @@
   z-index: 10;
 }
 
-:global(.menu-container) {
-  max-width: 1024px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 6px 0;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
+/* Removed the menu-container class as we're using the max-w-7xl class directly in the HTML */
 
 :global(.logo) {
   font-weight: bold;

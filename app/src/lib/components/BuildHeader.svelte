@@ -16,6 +16,10 @@
     <!-- Build slots badge -->
     <div class="bg-blue-600 text-white px-3 py-1 rounded-md text-sm font-semibold shadow-sm flex items-center">
         <span class="mr-1">Slots:</span>
-        <span>{usedBuildSlots}/{maxBuildSlots}</span>
+        {#if maxBuildSlots === 0}
+            <span>N/A</span>
+        {:else}
+            <span>{usedBuildSlots}/{maxBuildSlots}</span>
+        {/if}
     </div>
 </div>

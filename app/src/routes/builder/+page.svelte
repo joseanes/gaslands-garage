@@ -32,6 +32,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let enableSponsorships = true;
 	let darkMode = false;
 	let printStyle = 'classic';
+	let hasRules = false; // Whether user has acknowledged having the Gaslands Refuelled rules
+
+	// Rules acknowledgment modal state
+	let showRulesAcknowledgmentModal = false;
+	let rulesModalAction = ''; // To track which action triggered the rules modal
 
 	// Load settings on mount
 	onMount(async () => {
@@ -43,6 +48,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				enableSponsorships = settings.enableSponsorships;
 				darkMode = settings.darkMode;
 				printStyle = settings.printStyle || 'classic';
+				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
 			}
 		} else {
 			// Use default settings when not authenticated
@@ -50,6 +56,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
 			darkMode = DEFAULT_SETTINGS.darkMode;
 			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
+			hasRules = DEFAULT_SETTINGS.hasRules;
 		}
 	});
 
@@ -118,14 +125,22 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		return totalSlots;
 	}
 
-	function addVehicle(type = filteredVehicleTypes[0]?.id) {
+	function addVehicle(type = 'car') {
 		console.log('addVehicle called');
 		// Make sure we have a valid vehicle type
 		const vt = vehicleTypes.find((v) => v.id === type);
 		if (!vt) {
 			console.error("No valid vehicle type found", type, vehicleTypes);
-			
-			// Try to use the first available vehicle type
+
+			// Car type not found, look for a fallback
+			const carType = vehicleTypes.find(v => v.id === 'car');
+
+			// If car type is available, use it
+			if (carType) {
+				return addVehicle('car');
+			}
+
+			// Otherwise, try to use the first available vehicle type
 			if (vehicleTypes.length > 0) {
 				return addVehicle(vehicleTypes[0].id);
 			}
@@ -265,8 +280,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// Skip buildSlot validation for free weapons
 		const isSpecialFreeWeapon = ['handgun', 'molotov', 'grenades', 'ram', 'oil_slick', 'smokescreen'].includes(weaponObj.id) || weaponSlots === 0;
 		
-		// Validate build slots unless it's a free weapon
-		if (!isSpecialFreeWeapon && currentBuildSlots + weaponSlots > vehicleType.buildSlots) {
+		// Validate build slots unless it's a free weapon or the vehicle has 0 build slots (unlimited)
+		if (!isSpecialFreeWeapon && vehicleType.buildSlots > 0 && currentBuildSlots + weaponSlots > vehicleType.buildSlots) {
 			console.warn(`Cannot add weapon ${weaponObj.name} - exceeds build slot limit`);
 			return; // Do not add the weapon if it would exceed build slots
 		}
@@ -343,8 +358,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// Skip buildSlot validation for free upgrades
 		const isSpecialFreeUpgrade = ['grenades'].includes(upgradeObj.id) || upgradeSlots === 0;
 		
-		// Validate build slots unless it's a free upgrade
-		if (!isSpecialFreeUpgrade && currentBuildSlots + upgradeSlots > vehicleType.buildSlots) {
+		// Validate build slots unless it's a free upgrade or the vehicle has 0 build slots (unlimited)
+		if (!isSpecialFreeUpgrade && vehicleType.buildSlots > 0 && currentBuildSlots + upgradeSlots > vehicleType.buildSlots) {
 			console.warn(`Cannot add upgrade ${upgradeObj.name} - exceeds build slot limit`);
 			return; // Do not add the upgrade if it would exceed build slots
 		}
@@ -528,6 +543,31 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// Mode toggle for Edit/Play mode
 	let playMode = false;
 
+	// Function to check if user has acknowledged owning the rules
+	function checkRulesAcknowledgment(action) {
+		if (hasRules) {
+			return true;
+		} else {
+			showRulesAcknowledgmentModal = true;
+			rulesModalAction = action;
+			return false;
+		}
+	}
+
+	// Wrapper function for toggling play mode with rules check
+	function togglePlayMode() {
+		if (checkRulesAcknowledgment('playMode')) {
+			playMode = !playMode;
+		}
+	}
+
+	// Wrapper function for printing with rules check
+	function printWithRulesCheck() {
+		if (checkRulesAcknowledgment('printTeam')) {
+			printTeam();
+		}
+	}
+
 	// Display settings
 	let showTeamSummary = true;
 	let showGaslandsMath = true;
@@ -546,7 +586,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					darkMode,
 					showTeamSummary,
 					showGaslandsMath,
-					printStyle
+					printStyle,
+					hasRules
 				});
 
 				// Also save printStyle to localStorage for persistence
@@ -704,7 +745,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			window.shareLinkFn = shareLink;
 			window.generateQRCodeFn = generateQRCode;
 			window.importBuildFn = importBuild;
-			window.printTeamFn = printTeam;
+			window.printTeamFn = printWithRulesCheck;
 			window.openSettingsFn = openSettings;
 			window.openTeamsModalFn = () => { showTeamsModal = true; };
 
@@ -1019,6 +1060,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				enableSponsorships = settings.enableSponsorships;
 				darkMode = settings.darkMode;
 				printStyle = settings.printStyle || 'classic';
+				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
 			}
 		} else {
 			// Use default settings when not authenticated
@@ -1026,6 +1068,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
 			darkMode = DEFAULT_SETTINGS.darkMode;
 			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
+			hasRules = DEFAULT_SETTINGS.hasRules;
 		}
 	});
 
@@ -1175,6 +1218,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 .weight-4 {
   background-color: #c7d2fe;
   color: #312e81;
+}
+
+.weight-custom, .weight-0 {
+  background-color: #e5e7eb;
+  color: #1f2937;
 }
 
 /* Interactive dashboard styles */
@@ -1626,12 +1674,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 </style>
 
 <section id="builder-ui" class="p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
-	<header class="mb-6 md:mb-8">
+	<header class="mb-3 md:mb-4">
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
-			<div class="flex flex-col gap-4 w-full">
+			<div class="flex flex-col gap-2 w-full">
 				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center gap-4">
-						<b class="text-lg font-bold whitespace-nowrap">Team Name:</b>
+						<b class="text-base font-bold whitespace-nowrap">Team Name:</b>
 						<input
 							type="text"
 							bind:value={teamName}
@@ -1642,16 +1690,16 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					</div>
 					<!-- Edit/Play Mode Toggle Button -->
 					<button
-						class="form-button flex items-center gap-2 h-8"
-						on:click={() => playMode = !playMode}
+						class="py-2 px-4 w-32 flex items-center justify-center rounded-md transition-colors amber-button"
+						on:click={togglePlayMode}
 					>
-						<span class="w-3 h-3 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors"></span>
+						<span class="w-3 h-3 rounded-full {playMode ? 'bg-green-500' : 'bg-amber-500'} transition-colors mr-2"></span>
 						<span class="text-sm font-medium">{playMode ? 'Edit Team' : 'Play Mode'}</span>
 					</button>
 				</div>
 				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center gap-4">
-						<b class="text-lg font-bold whitespace-nowrap">Cans: </b>
+						<b class="text-base font-bold whitespace-nowrap">Cans: </b>
 						<span class="font-extrabold text-amber-700 dark:text-amber-300 text-lg md:text-xl">{totalCans || 0}</span>
 						<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
 						<input
@@ -1666,31 +1714,23 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					</div>
 					<!-- Quick Save Button -->
 					<button
-						class="form-button flex items-center h-8"
+						class="py-2 px-4 w-32 flex items-center justify-center rounded-md transition-colors amber-button"
 						on:click={quickSaveTeam}
 						disabled={quickSaving}
 					>
 						{#if quickSaving}
 							<div class="animate-spin mr-2 h-3 w-3 border-b-2 border-white rounded-full"></div>
-							Saving...
+							<span class="text-sm font-medium">Saving...</span>
 						{:else}
-							Quick Save
+							<span class="text-sm font-medium">Quick Save</span>
 						{/if}
 					</button>
 				</div>
-			</div>
-		</div>
-	</header>
 
-	<!-- Sponsor selector (only shown if enableSponsorships is true) -->
-	{#if enableSponsorships}
-		<div class="bg-white p-5 rounded-lg shadow-md mb-6">
-			<div class="flex flex-wrap md:flex-nowrap items-start gap-4">
-				<div class="w-full md:w-1/3">
+				{#if enableSponsorships}
+				<div class="flex flex-col w-full mt-1">
 					<div class="flex items-center gap-4">
-						<b class="text-lg font-bold whitespace-nowrap">
-							Choose Your Sponsor: &nbsp;&nbsp;
-						</b>
+						<b class="text-base font-bold whitespace-nowrap">Choose Your Sponsor:</b>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
@@ -1708,30 +1748,29 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 								{/each}
 							</select>
 						</div>
-
 					</div>
-				</div>
-				<div class="w-full md:w-2/3 md:pt-8">
+
 					{#if currentSponsor?.perks?.length}
-						<div class="mt-2 text-sm text-stone-700 dark:text-gray-300 text-left">
-							<span class="font-medium">Available Perks:</span>
-							<span class="inline ml-2">
-								{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
-								&nbsp;<span
-										class="tooltip inline mr-1"
-										title="{perk.name} (Level {perk.level}): {perk.text}"
-									>
-										{perk.name}{i < perks.filter(p => currentSponsor?.perks.includes(p.id)).length - 1 ? ', ' : ''}
-									</span>
-								{/each}
-							</span>
+						<div class="text-sm text-stone-700 dark:text-gray-300 text-left mt-1 flex flex-wrap items-center">
+							<span class="font-medium mr-2">Available Perks:</span>
+							{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
+								<span
+									class="tooltip inline-block mr-3"
+									title="{perk.name} (Level {perk.level}): {perk.text}"
+								>
+									{perk.name}
+								</span>
+							{/each}
 						</div>
 					{/if}
 				</div>
+				{/if}
 			</div>
 		</div>
-	{:else}
-		<!-- Show info message when sponsorships are disabled -->
+	</header>
+
+	<!-- Info message when sponsorships are disabled -->
+	{#if !enableSponsorships}
 		<div class="bg-blue-50 p-5 rounded-lg shadow-md mb-6">
 			<div class="flex items-start">
 				<div class="flex-shrink-0">
@@ -1746,8 +1785,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						Enable sponsorships in Settings to access sponsor-specific perks and abilities.</p>
 					</div>
 					<div class="mt-3">
-						<button 
-							type="button" 
+						<button
+							type="button"
 							class="text-sm text-blue-600 hover:text-blue-800 font-medium underline"
 							on:click={openSettings}
 						>
@@ -1758,21 +1797,20 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			</div>
 		</div>
 	{/if}
-<hr>
 	<!-- Vehicle list - Current count: {vehicles.length} -->
-	<div class="mb-8">
-		<div class="flex items-center justify-between mb-4">
+	<div class="mb-3">
+		<div class="flex items-center justify-between mb-2">
 			<div class="flex items-center gap-4">
 				<h2 class="text-2xl font-bold text-stone-800 dark:text-gray-100">Vehicles</h2>
 			</div>
 			<button
-				class="py-2 px-4 flex items-center justify-center rounded-md transition-colors amber-button"
+				class="py-2 px-4 w-32 flex items-center justify-center rounded-md transition-colors amber-button"
 				on:click={() => addVehicle()}
 				disabled={playMode}
 				class:opacity-50={playMode}
 				class:cursor-not-allowed={playMode}
 			>
-				<span>+ Add Vehicle</span>
+				<span class="text-sm font-medium">+ Add Vehicle</span>
 			</button>
 		</div>
 
@@ -2128,20 +2166,33 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
           style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
-            <button
-              class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
-              on:click={() => (showSettingsModal = false)}
-              aria-label="Close settings modal"
-              style="height: 32px !important; min-height: 32px !important;"
-            >
-              <span>Close</span>
-            </button>
+            <div class="flex gap-2">
+              <button
+                class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
+                style="height: 32px !important; min-height: 32px !important;"
+                on:click={() => {
+                  if ($user) saveSettingsToFirebase();
+                  showSettingsModal = false;
+                }}
+                aria-label="Save and close settings"
+              >
+                <span>Save & Close</span>
+              </button>
+              <button
+                class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
+                on:click={() => (showSettingsModal = false)}
+                aria-label="Close settings modal without saving"
+                style="height: 32px !important; min-height: 32px !important;"
+              >
+                <span>Cancel</span>
+              </button>
+            </div>
           </div>
           
           <div class="space-y-8 px-4">
@@ -2231,6 +2282,23 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
             </div>
 
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="has-rules-setting"
+                  bind:checked={hasRules}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="has-rules-setting" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  I have the Gaslands Refuelled rulebook
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                Acknowledge that you own a copy of the Gaslands Refuelled rules. This is required to use Play Mode and Print features.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <h4 class="font-medium text-stone-800 dark:text-white mb-3">Print Style</h4>
               <div class="space-y-2">
                 <div class="flex items-center">
@@ -2291,18 +2359,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               </p>
             </div>
 
-            <div class="flex justify-end pt-4 mt-4 border-t border-stone-200 dark:border-amber-900">
-              <button
-                class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
-                style="height: 32px !important; min-height: 32px !important;"
-                on:click={() => {
-                  if ($user) saveSettingsToFirebase();
-                  showSettingsModal = false;
-                }}
-              >
-                Save & Close
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -2311,6 +2367,112 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 
 </section>
+
+{#if showRulesAcknowledgmentModal}
+  <div
+    class="fixed inset-0 bg-black/90 z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Gaslands Rules Acknowledgment"
+    tabindex="-1"
+  >
+    <button
+      class="absolute inset-0 w-full h-full border-0 bg-transparent cursor-pointer"
+      on:click={() => (showRulesAcknowledgmentModal = false)}
+      on:keydown={e => e.key === 'Escape' && (showRulesAcknowledgmentModal = false)}
+      aria-label="Close modal background"
+    ></button>
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
+    >
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-stone-800 dark:text-white">Gaslands Rules Required</h3>
+        <button
+          class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
+          on:click={() => (showRulesAcknowledgmentModal = false)}
+          aria-label="Close rules acknowledgment modal"
+          style="height: 32px !important; min-height: 32px !important;"
+        >
+          <span>Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30">
+          <p class="text-stone-800 dark:text-white mb-4">
+            To use the Play Mode or Print features of Gaslands Garage, you need to acknowledge that you own a copy of the <strong>Gaslands Refuelled</strong> rulebook.
+          </p>
+
+          <p class="text-stone-700 dark:text-gray-300 mb-4">
+            This app is a companion to the tabletop game and is designed to be used alongside the official rules, not as a replacement.
+          </p>
+
+          <div class="flex items-center mb-4">
+            <input
+              type="checkbox"
+              id="rules-acknowledgment"
+              bind:checked={hasRules}
+              class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+            />
+            <label for="rules-acknowledgment" class="ml-3 text-stone-800 dark:text-white font-medium">
+              I confirm that I own the Gaslands Refuelled rulebook
+            </label>
+          </div>
+
+          <p class="text-stone-600 dark:text-gray-400 text-sm italic">
+            You can purchase the rulebook from <a href="https://ospreypublishing.com/uk/gaslands-refuelled-9781472838445/" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Osprey Publishing</a> or other game retailers.
+          </p>
+        </div>
+
+        {#if !$user}
+          <div class="p-4 rounded-lg bg-stone-100 dark:bg-gray-700">
+            <h4 class="font-medium text-stone-800 dark:text-white mb-2">Save your preferences</h4>
+            <p class="text-stone-700 dark:text-gray-300 mb-3">
+              Log in to save this preference so you won't be asked again.
+            </p>
+
+            <div class="flex justify-end">
+              <button
+                class="py-2 px-4 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+                on:click={() => {
+                  showRulesAcknowledgmentModal = false;
+                  if (rulesModalAction === 'playMode' && hasRules) {
+                    playMode = !playMode;
+                  }
+                  else if (rulesModalAction === 'printTeam' && hasRules) {
+                    printTeam();
+                  }
+                }}
+              >
+                Continue without logging in
+              </button>
+            </div>
+          </div>
+        {:else}
+          <div class="flex justify-end">
+            <button
+              class="py-2 px-4 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
+              on:click={() => {
+                saveSettingsToFirebase();
+                showRulesAcknowledgmentModal = false;
+                if (rulesModalAction === 'playMode' && hasRules) {
+                  playMode = !playMode;
+                }
+                else if (rulesModalAction === 'printTeam' && hasRules) {
+                  printTeam();
+                }
+              }}
+            >
+              Save & Continue
+            </button>
+          </div>
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
 
 <!-- Print-only view with vehicle cards -->
 <div id="gaslands-print-view">

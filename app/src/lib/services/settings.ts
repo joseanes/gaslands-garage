@@ -12,6 +12,7 @@ export interface UserSettings {
   printStyle?: string;
   showTeamSummary?: boolean;
   showGaslandsMath?: boolean;
+  hasRules?: boolean; // Indicates if the user has acknowledged owning the rules
 }
 
 // Default settings
@@ -21,7 +22,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   darkMode: false,
   printStyle: 'classic',
   showTeamSummary: true,
-  showGaslandsMath: true
+  showGaslandsMath: true,
+  hasRules: false // Default to false until acknowledged
 };
 
 /**

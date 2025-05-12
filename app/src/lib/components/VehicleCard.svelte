@@ -214,7 +214,7 @@
     }
 </script>
 
-<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-2 mb-4" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
+<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-2" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
     <div class="px-4 py-3 bg-stone-100 dark:bg-gray-800 flex flex-wrap justify-between items-center">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-4 flex-grow">
             <div class="form-group mb-0 flex-grow">
@@ -313,16 +313,23 @@
                     maxBuildSlots={maxBuildSlots}
                 />
             </div>
-            <div class="weight-class-indicator weight-{vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
-                {vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 1 ? 'Light' : 
-                vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 2 ? 'Medium' : 
-                vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 3 ? 'Heavy' : 'Massive'}
+            <div class="weight-class-indicator weight-{typeof vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 'string' ? 'custom' : vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
+                {(() => {
+                    const weight = vehicleTypes.find(vt => vt.id === vehicle.type)?.weight;
+                    if (typeof weight === 'string') {
+                        return weight;
+                    } else {
+                        return weight === 1 ? 'Light' :
+                               weight === 2 ? 'Medium' :
+                               weight === 3 ? 'Heavy' : 'Massive';
+                    }
+                })()}
             </div>
         </div>
     {/if}
     
     <!-- Vehicle details - Hidden when collapsed -->
-    <div class="p-8" class:hidden={collapsed}>
+    <div class="px-4 py-3" class:hidden={collapsed}>
         
         <!-- Interactive dashboard elements - Always visible in Play Mode -->
         <div class="interactive-dashboard bg-stone-50 dark:bg-gray-700 border border-stone-300 dark:border-gray-600 rounded-lg p-4 mb-6" class:hidden={!playMode}>
@@ -397,6 +404,26 @@
         <!-- Play Mode Loadout summary -->
         {#if playMode}
             <div class="loadout-summary mt-4 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 p-3">
+                <!-- Add Handling and Weight pills at the top -->
+                <div class="flex flex-wrap gap-2 mb-3">
+                    <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 font-medium px-3 py-1 rounded-full text-sm">
+                        Handling: {vehicleTypes.find(vt => vt.id === vehicle.type)?.handling || '0'}
+                    </div>
+                    <div class="bg-stone-100 dark:bg-gray-700 text-stone-800 dark:text-gray-200 font-medium px-3 py-1 rounded-full text-sm">
+                        Weight: {
+                            (() => {
+                                const weight = vehicleTypes.find(vt => vt.id === vehicle.type)?.weight;
+                                if (typeof weight === 'string') {
+                                    return weight;
+                                } else {
+                                    return weight === 1 ? 'Light' :
+                                           weight === 2 ? 'Medium' :
+                                           weight === 3 ? 'Heavy' : 'Massive';
+                                }
+                            })()
+                        }
+                    </div>
+                </div>
                 <div class="mb-2">
                     {#each vehicle.weapons as weaponId, i}
                         {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
