@@ -4,9 +4,9 @@
   import "../app.css";
   import "../dark-mode.css";
   import "../form-styles.css";
+  import "../print.css"; /* Print styles moved to separate file */
   import "../dark-override.css"; /* This must be imported last to override other styles */
   import "../inline-fixes.js"; /* JavaScript fixes for element heights */
-  /* Print styles now included directly in this file */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';
@@ -648,12 +648,12 @@
   --modal-bg-color: white;
 }
 
-.dark, :global(.dark-mode) {
+:global(.dark), :global(.dark-mode) {
   --modal-bg-color: #1f2937; /* Matches dark:bg-gray-800 */
 }
 
 /* Menu styles */
-.menu-bar {
+:global(.menu-bar) {
   background-color: #000000;
   color: white;
   padding: 8px 0;
@@ -663,7 +663,7 @@
   z-index: 10;
 }
 
-.menu-container {
+:global(.menu-container) {
   max-width: 896px;
   margin: 0 auto;
   display: flex;
@@ -674,18 +674,18 @@
   align-items: center;
 }
 
-.logo {
+:global(.logo) {
   font-weight: bold;
   font-size: 1.25rem;
   line-height: 1.2;
   letter-spacing: 0.02em;
 }
 
-.logo-highlight {
+:global(.logo-highlight) {
   color: #f59e0b;
 }
 
-.logo-sponsor {
+:global(.logo-sponsor) {
   font-size: 0.65rem;
   color: #cccccc;
   letter-spacing: 0.02em;
@@ -693,19 +693,19 @@
   margin-top: -2px;
 }
 
-.etsy-link {
+:global(.etsy-link) {
   color: #f59e0b;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
-.etsy-link:hover {
+:global(.etsy-link:hover) {
   color: #fcd34d;
   text-decoration: underline;
 }
 
-.menu-item {
+:global(.menu-item) {
   color: white;
   background: transparent;
   border: none;
@@ -717,85 +717,10 @@
   border-radius: 4px;
 }
 
-.menu-item:hover {
+:global(.menu-item:hover) {
   color: #fcd34d;
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Print Styles */
-@media print {
-  /* Important overrides to ensure content is visible */
-  @page {
-    size: auto;
-    margin: 10mm;
-  }
-
-  /* Reset all elements to default display */
-  body * {
-    display: none !important;
-  }
-
-  /* Show only the selected format */
-  .print-views {
-    display: block !important;
-    position: static !important;
-    left: auto !important;
-    visibility: visible !important;
-  }
-
-  .print-view {
-    display: none !important;
-  }
-
-  /* Only show the selected format */
-  .print-view[data-format=classic] {
-    display: block !important;
-  }
-
-  /* Format-specific display rules */
-  body[data-print-format=classic] .print-view[data-format=classic],
-  body[data-print-format=compact] .print-view[data-format=compact],
-  body[data-print-format=dashboard] .print-view[data-format=dashboard],
-  body[data-print-format=roster] .print-view[data-format=roster] {
-    display: block !important;
-  }
-
-  /* Make all content inside the selected view visible */
-  body[data-print-format=classic] .print-view[data-format=classic] *,
-  body[data-print-format=compact] .print-view[data-format=compact] *,
-  body[data-print-format=dashboard] .print-view[data-format=dashboard] *,
-  body[data-print-format=roster] .print-view[data-format=roster] * {
-    display: revert !important;
-    visibility: visible !important;
-    color: black !important;
-    background-color: white !important;
-    opacity: 1 !important;
-  }
-
-  /* Exception for backgrounds and colors */
-  .card, .vehicle-card {
-    background-color: white !important;
-    border: 1px solid black !important;
-    box-shadow: none !important;
-    page-break-inside: avoid !important;
-  }
-
-  /* Badge specific colors */
-  .vehicle-type-badge {
-    color: white !important;
-    background-color: #333 !important;
-  }
-
-  .card-cost {
-    background-color: black !important;
-    color: white !important;
-  }
-
-  /* Reset dark mode for printing - ALWAYS use light mode */
-  html,
-  body {
-    background-color: white !important;
-    color: black !important;
-  }
-}
+/* Print styles moved to separate print.css file */
 </style>
