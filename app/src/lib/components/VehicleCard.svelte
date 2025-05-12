@@ -172,11 +172,15 @@
 
         // Add hull points from upgrades
         for (const upgradeId of vehicle.upgrades) {
+            const upgradeObj = upgrades.find(u => u.id === upgradeId);
             // Check for Armor Plating, which adds +1 hull
             if (upgradeId === 'armor') {
                 maxHull += 1;
             }
-            // Add any other upgrades that affect hull here
+            // Add hull modifications from upgrade modifiers
+            if (upgradeObj?.hullModifier) {
+                maxHull += upgradeObj.hullModifier;
+            }
         }
 
         // Add hull points from perks (if any)
@@ -414,6 +418,14 @@
                             {#if upgrade?.specialRules}
                                 <div class="text-xs text-stone-500 dark:text-gray-400">{upgrade.specialRules}</div>
                             {/if}
+                            {#if upgrade?.hullModifier || upgrade?.crewModifier || upgrade?.gearModifier || upgrade?.handlingModifier}
+                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                    {upgrade.hullModifier ? `Hull: ${upgrade.hullModifier > 0 ? '+' : ''}${upgrade.hullModifier} ` : ''}
+                                    {upgrade.crewModifier ? `Crew: ${upgrade.crewModifier > 0 ? '+' : ''}${upgrade.crewModifier} ` : ''}
+                                    {upgrade.gearModifier ? `Gear: ${upgrade.gearModifier > 0 ? '+' : ''}${upgrade.gearModifier} ` : ''}
+                                    {upgrade.handlingModifier ? `Handling: ${upgrade.handlingModifier > 0 ? '+' : ''}${upgrade.handlingModifier}` : ''}
+                                </div>
+                            {/if}
                         </div>
                     {/each}
                     
@@ -577,6 +589,14 @@
                                     {upgrade?.name || upgradeId}
                                 </span></b>
                                 <span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
+                                {#if upgrade?.hullModifier || upgrade?.crewModifier || upgrade?.gearModifier || upgrade?.handlingModifier}
+                                    <div class="text-xs text-stone-500 dark:text-gray-400 mt-1">
+                                        {upgrade.hullModifier ? `Hull: ${upgrade.hullModifier > 0 ? '+' : ''}${upgrade.hullModifier} ` : ''}
+                                        {upgrade.crewModifier ? `Crew: ${upgrade.crewModifier > 0 ? '+' : ''}${upgrade.crewModifier} ` : ''}
+                                        {upgrade.gearModifier ? `Gear: ${upgrade.gearModifier > 0 ? '+' : ''}${upgrade.gearModifier} ` : ''}
+                                        {upgrade.handlingModifier ? `Handling: ${upgrade.handlingModifier > 0 ? '+' : ''}${upgrade.handlingModifier}` : ''}
+                                    </div>
+                                {/if}
                             </div>
                             <button
                                 class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"

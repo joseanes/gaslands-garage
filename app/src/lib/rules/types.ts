@@ -54,12 +54,17 @@ export const Upgrade = z.object({
   id: z.string(),
   name: z.string(),
   cost: z.number().int().nonnegative(),
-  slots: z.number().int().positive(),
-  buildSlots: z.number().int().positive().default(1),
+  slots: z.number().int().nonnegative(), // Changed from positive() to nonnegative() to allow 0
+  buildSlots: z.number().int().nonnegative().default(1), // Changed to match slots
   specialRules: z.string(),
   type: z.literal('upgrade'),
   advanced: z.boolean().optional().default(false),
-  source: z.string().optional()
+  source: z.string().optional(),
+  // New optional numerical fields that can be positive, negative, or zero
+  hullModifier: z.number().int().optional(),
+  crewModifier: z.number().int().optional(),
+  gearModifier: z.number().int().optional(),
+  handlingModifier: z.number().int().optional()
 });
 
 export type Upgrade = z.infer<typeof Upgrade>;
