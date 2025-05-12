@@ -83,9 +83,11 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
             console.log(`Processing weapon: ${weaponInstanceId} for vehicle ${v.id}`);
 
             // Extract base weapon ID from instance ID (format: baseId_instanceHash)
-            const parts = weaponInstanceId.split('_');
-            // If there's no underscore, use the whole ID
-            const baseWeaponId = parts.length > 1 ? parts[0] : weaponInstanceId;
+            // For weapons with underscores in their base ID (like combat_laser_oYHC),
+            // we need to keep all parts except the last one (which is the unique instance identifier)
+            const baseWeaponId = weaponInstanceId.includes('_')
+              ? weaponInstanceId.split('_').slice(0, -1).join('_')
+              : weaponInstanceId;
 
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (!weaponObj) {

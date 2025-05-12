@@ -190,8 +190,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Clone the weapons with new instance IDs
 		const clonedWeapons = sourceVehicle.weapons.map(weaponId => {
-			const baseParts = weaponId.split('_');
-			const baseWeaponId = baseParts[0];
+			// Extract the base weapon ID - keeping all parts except the last one (the unique identifier)
+			const baseWeaponId = weaponId.includes('_')
+              ? weaponId.split('_').slice(0, -1).join('_')
+              : weaponId;
 			const newWeaponId = `${baseWeaponId}_${nanoid(4)}`;
 
 			// Copy the facing for this weapon
