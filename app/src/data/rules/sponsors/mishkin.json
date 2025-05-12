@@ -2,7 +2,8 @@
   "id": "mis",
   "name": "Mishkin",
   "starterCans": 50,
-  "perks": ["crowd_pleaser", "finesse", "showboat"],
+  "perks": [],
+  "perksClasses": ["military","technology"],
   "color": "#ec4899",
   "source": "Gaslands"
 }

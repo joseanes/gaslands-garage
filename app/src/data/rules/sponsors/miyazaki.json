@@ -2,7 +2,8 @@
   "id": "miy",
   "name": "Miyazaki",
   "starterCans": 50,
-  "perks": ["aggressive", "efficient", "technophiles"],
+  "perks": [],
+  "perksClasses": ["daring","precision"],
   "color": "#3b82f6",
   "source": "Gaslands"
 }

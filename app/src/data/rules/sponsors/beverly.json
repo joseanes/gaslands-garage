@@ -1,0 +1,9 @@
+{
+    "id": "beverly",
+    "name": "Beverly, The Devil on the Highway",
+    "starterCans": 50,
+    "perks": [],
+    "perksClasses": ["horror","built"],
+    "color": "#b45309",
+    "source": "Gaslands Refueled"
+  }

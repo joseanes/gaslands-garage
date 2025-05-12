@@ -2,7 +2,8 @@
   "id": "sca",
   "name": "Scarlett Annie",
   "starterCans": 50,
-  "perks": ["battle_ready", "combustible", "improvised_weapons"],
+  "perks": [],
+  "perksClasses": ["tuning","aggressive"],
   "color": "#c2410c",
   "source": "Gaslands"
 }

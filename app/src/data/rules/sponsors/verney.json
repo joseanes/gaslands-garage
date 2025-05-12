@@ -2,7 +2,8 @@
   "id": "ver",
   "name": "Verney",
   "starterCans": 50,
-  "perks": ["fireproof", "lightweight", "tuned"],
+  "perks": [],
+  "perksClasses": ["technology","built"],
   "color": "#facc15",
   "source": "Gaslands"
 }

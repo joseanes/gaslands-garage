@@ -4,8 +4,9 @@ import { z } from "zod";
 export const Sponsor = z.object({
   id: z.string(),
   name: z.string(),
-  starterCans: z.number().int().nonnegative(),
-  perks: z.string().array(),
+  starterCans: z.number().int().nonnegative().optional(), // Made optional as it will be deprecated
+  perks: z.string().array().optional(), // Made optional as it will be deprecated
+  perksClasses: z.string().array().optional(), // New field for perk classes
   color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i),
   source: z.string().optional()
 });
@@ -72,8 +73,9 @@ export type Upgrade = z.infer<typeof Upgrade>;
 export const Perk = z.object({
   id: z.string(),
   name: z.string(),
-  line: z.string(),
-  level: z.number().int().positive(),
+  sponsor: z.string(), // Renamed from 'line'
+  cost: z.number().int().nonnegative().optional(), // Cost in cans
+  class: z.string().optional(), // Class field for categorization
   text: z.string()
 });
 export type Perk = z.infer<typeof Perk>;

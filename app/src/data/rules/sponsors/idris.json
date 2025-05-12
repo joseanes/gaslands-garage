@@ -3,6 +3,7 @@
   "name": "Idris",
   "starterCans": 50,
   "perks": ["daring", "slippery", "teamwork"],
+  "perksClasses": ["speed", "precision"],
   "color": "#f97316",
   "source": "Gaslands"
 }

@@ -3,6 +3,7 @@
   "name": "Rutherford",
   "starterCans": 50,
   "perks": ["experimental", "military_surplus", "sturdy"],
+  "perksClasses": ["BADASS","MILITARY"],
   "color": "#16a34a",
   "source": "Gaslands"
 }

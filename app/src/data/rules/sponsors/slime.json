@@ -2,7 +2,8 @@
   "id": "sli",
   "name": "SLIME",
   "starterCans": 50,
-  "perks": ["evasive", "rugged", "stunt_drivers"],
+  "perks": [],
+  "perksClasses": ["tuning","reckless"],
   "color": "#84cc16",
   "source": "Gaslands"
 }

@@ -3,6 +3,7 @@
   "name": "Al Dhabi",
   "starterCans": 50,
   "perks": ["customized", "resourceful", "well_prepared"],
+  "perksClasses": ["handling", "defense"],
   "color": "#ca8a04",
   "source": "Gaslands"
 }

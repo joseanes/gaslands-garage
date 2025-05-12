@@ -3,6 +3,7 @@
   "name": "Maxxine",
   "starterCans": 50,
   "perks": ["agile", "chrome", "trick_driving"],
+  "perksClasses": ["tuning","pursuit"],
   "color": "#9333ea",
   "source": "Gaslands"
 }

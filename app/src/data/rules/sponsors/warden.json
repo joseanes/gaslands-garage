@@ -1,8 +1,9 @@
 {
   "id": "war",
-  "name": "Warden",
+  "name": "The Warden",
   "starterCans": 50,
-  "perks": ["bulky", "prison_rules", "weaponized"],
+  "perks": [],
+  "perksClasses": ["aggressive","badass"],
   "color": "#9f1239",
   "source": "Gaslands"
 }

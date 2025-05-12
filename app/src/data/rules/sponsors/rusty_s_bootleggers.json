@@ -2,7 +2,8 @@
   "id": "rus",
   "name": "Rusty's Bootleggers",
   "starterCans": 50,
-  "perks": ["booze_cruise", "moonshine", "smugglers"],
+  "perks": [],
+  "perksClasses": ["RECKLESS","built"],
   "color": "#b45309",
   "source": "Gaslands"
 }

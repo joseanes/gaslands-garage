@@ -121,8 +121,9 @@
         // Add perk costs
         for (const perkId of vehicle.perks) {
             const perkObj = perks.find(p => p.id === perkId);
-            if (perkObj && perkObj.level) {
-                totalCost += perkObj.level; // Perk cost is its level
+            if (perkObj) {
+                // Perk cost is its cost value (default to 1 if cost is not specified)
+                totalCost += perkObj.cost || 1;
             }
         }
 

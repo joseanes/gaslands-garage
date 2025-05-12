@@ -1,0 +1,9 @@
+{
+    "id": "inferno",
+    "name": "The Order of the Inferno",
+    "starterCans": 50,
+    "perks": [],
+    "perksClasses": ["horror","speed"],
+    "color": "#9333ea",
+    "source": "Gaslands"
+  }

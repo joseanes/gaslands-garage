@@ -1,64 +1,590 @@
 [
-  { "id": "daring", "name": "Daring", "line": "Idris", "level": 1, "text": "Once per activation, this vehicle may ignore the 'heavy' handling modifier when Sideswiping." },
-  { "id": "slippery", "name": "Slippery", "line": "Idris", "level": 2, "text": "When this vehicle evades a Collision hazard, add 1 to the number of Hazard tokens to discard." },
-  { "id": "teamwork", "name": "Teamwork", "line": "Idris", "level": 3, "text": "This vehicle may give 1 Hazard token to a friendly vehicle at Short range." },
-
-  { "id": "crowd_pleaser", "name": "Crowd Pleaser", "line": "Mishkin", "level": 1, "text": "When this vehicle causes an enemy to Wreck, gain D6 bonus Audience Votes." },
-  { "id": "finesse", "name": "Finesse", "line": "Mishkin", "level": 2, "text": "Declare before attempting a Flip maneuver. If the Flip is successfully completed, gain D6 bonus Audience Votes." },
-  { "id": "showboat", "name": "Showboat", "line": "Mishkin", "level": 3, "text": "This vehicle gains +2 bonus Audience Votes after successfully completing a Jump." },
-
-  { "id": "aggressive", "name": "Aggressive", "line": "Miyazaki", "level": 1, "text": "This vehicle gains 1 Audience Vote when it causes a Collision." },
-  { "id": "efficient", "name": "Efficient", "line": "Miyazaki", "level": 2, "text": "This vehicle may reroll 1 Attack die when making a Smash attack." },
-  { "id": "technophiles", "name": "Technophiles", "line": "Miyazaki", "level": 3, "text": "This vehicle gains +1 Attack die with all Electrical weapons." },
-
-  { "id": "experimental", "name": "Experimental", "line": "Rutherford", "level": 1, "text": "Once per game, this vehicle may discard 2 Hazard tokens to immediately remove a Damage template." },
-  { "id": "military_surplus", "name": "Military Surplus", "line": "Rutherford", "level": 2, "text": "When using a Rocket weapon, this vehicle may reroll any Attack dice showing 1 or 2." },
-  { "id": "sturdy", "name": "Sturdy", "line": "Rutherford", "level": 3, "text": "This vehicle's maximum Hull Points are increased by 1." },
-
-  { "id": "evasive", "name": "Evasive", "line": "SLIME", "level": 1, "text": "This vehicle may declare an Evade against Bullets, Rockets and Grenades." },
-  { "id": "rugged", "name": "Rugged", "line": "SLIME", "level": 2, "text": "When this vehicle's Hull Points are reduced to 0, it does not suffer a Collision during its Wipeout." },
-  { "id": "stunt_drivers", "name": "Stunt Drivers", "line": "SLIME", "level": 3, "text": "This vehicle passes a Flip test on a 5+ rather than a 6." },
-
-  { "id": "fireproof", "name": "Fireproof", "line": "Verney", "level": 1, "text": "This vehicle may discard a Hazard token to immediately remove a Fire template." },
-  { "id": "lightweight", "name": "Lightweight", "line": "Verney", "level": 2, "text": "This vehicle may ignore the 'heavy' handling modifier when making a slide maneuver." },
-  { "id": "tuned", "name": "Tuned", "line": "Verney", "level": 3, "text": "This vehicle's maximum Gear is increased by 1." },
-
-  { "id": "bulky", "name": "Bulky", "line": "Warden", "level": 1, "text": "During a Collision, this vehicle rolls 1 additional Attack dice." },
-  { "id": "prison_rules", "name": "Prison Rules", "line": "Warden", "level": 2, "text": "This vehicle may reroll 1 Attack die when making a Smash attack." },
-  { "id": "weaponized", "name": "Weaponized", "line": "Warden", "level": 3, "text": "This vehicle may carry 1 more weapon than normal." },
-
-  { "id": "agile", "name": "Agile", "line": "Maxxine", "level": 1, "text": "When performing a Slide maneuver, this vehicle may either gain +1 to one of the Skid dice or reroll 1 Skid die." },
-  { "id": "chrome", "name": "Chrome", "line": "Maxxine", "level": 2, "text": "This vehicle may be fired upon by enemy vehicles at Medium range as if they were at Long range." },
-  { "id": "trick_driving", "name": "Trick Driving", "line": "Maxxine", "level": 3, "text": "When this vehicle declares a Swerve, it may ignore the 'heavy' handling modifier." },
-
-  { "id": "battle_ready", "name": "Battle Ready", "line": "Scarlett Annie", "level": 1, "text": "This vehicle may reroll 1 Attack die when attacking during the first activation of the game." },
-  { "id": "combustible", "name": "Combustible", "line": "Scarlett Annie", "level": 2, "text": "When this vehicle is Wrecked, it creates a Medium Explosion template rather than a Small Explosion template." },
-  { "id": "improvised_weapons", "name": "Improvised Weapons", "line": "Scarlett Annie", "level": 3, "text": "The range of all non-Drop weapons on this vehicle is increased by one range band." },
-
-  { "id": "speed", "name": "Speed", "line": "The Highway Patrol", "level": 1, "text": "This vehicle adds 1 to its maximum Gear." },
-  { "id": "pursuit", "name": "Pursuit", "line": "The Highway Patrol", "level": 2, "text": "When this vehicle declares an Evade, it may use an evade token to reroll all Defense dice rather than just 1." },
-
-  { "id": "covert", "name": "Covert", "line": "Berkmann", "level": 1, "text": "This vehicle may not be targeted by enemy Attack dice outside of Medium range." },
-  { "id": "sophisticated", "name": "Sophisticated", "line": "Berkmann", "level": 2, "text": "Once per Step, this vehicle may discard a Hazard token to reduce the potential Skid dice of a maneuver by 1." },
-  { "id": "surgical", "name": "Surgical", "line": "Berkmann", "level": 3, "text": "Bullets weapons fired by this vehicle roll 1 additional Attack die." },
-
-  { "id": "jury_rigged", "name": "Jury Rigged", "line": "Bekezela", "level": 1, "text": "This vehicle counts as having 1 less weapon than it actually has for the purposes of working out the vehicle's total Cans cost." },
-  { "id": "road_warriors", "name": "Road Warriors", "line": "Bekezela", "level": 2, "text": "This vehicle may reroll any Defense dice showing 1 or 2." },
-  { "id": "scavengers", "name": "Scavengers", "line": "Bekezela", "level": 3, "text": "This vehicle gains 1 Audience Vote when it causes an enemy to Wreck." },
-
-  { "id": "luxury", "name": "Luxury", "line": "Cheng & Lo", "level": 1, "text": "While this vehicle has 3 or more Hull Points, all of its vehicles are treated as having +1 Attack die." },
-  { "id": "mechanical", "name": "Mechanical", "line": "Cheng & Lo", "level": 2, "text": "This vehicle ignores the effects of Gear and Crew damage templates." },
-  { "id": "modified", "name": "Modified", "line": "Cheng & Lo", "level": 3, "text": "When this vehicle uses a Hazard token to push the redline, it advances 2 Gears." },
-
-  { "id": "booze_cruise", "name": "Booze Cruise", "line": "Rusty's Bootleggers", "level": 1, "text": "The first time this vehicle would Wipeout in a game, it does not; instead, place a Wrench and Gear template." },
-  { "id": "moonshine", "name": "Moonshine", "line": "Rusty's Bootleggers", "level": 2, "text": "When this vehicle causes a Collision, it may reroll 1 Attack die." },
-  { "id": "smugglers", "name": "Smugglers", "line": "Rusty's Bootleggers", "level": 3, "text": "This vehicle may reroll any Attack dice showing 1 or 2 when shooting." },
-
-  { "id": "customized", "name": "Customized", "line": "Al Dhabi", "level": 1, "text": "This vehicle may make a Shift maneuver after declaring a Collision." },
-  { "id": "resourceful", "name": "Resourceful", "line": "Al Dhabi", "level": 2, "text": "The first time this vehicle is shot at, it may make an Evade attempt even if it has already done so this Step." },
-  { "id": "well_prepared", "name": "Well Prepared", "line": "Al Dhabi", "level": 3, "text": "Before any shifts or skids, the player may roll an additional D6 and discard a die of their choice." },
-
-  { "id": "distracted", "name": "Distracted", "line": "Anarchy", "level": 1, "text": "The first time this vehicle fails to put any Damage on an enemy, it gains an immediate free Attack against a different target." },
-  { "id": "lucky", "name": "Lucky", "line": "Anarchy", "level": 2, "text": "This vehicle's attacks hit on Attack dice of 4+." },
-  { "id": "unpredictable", "name": "Unpredictable", "line": "Anarchy", "level": 3, "text": "Once per game, you may place this vehicle touching another vehicle to cause a Collision hazard." }
-]
+  {
+    "id": "double_barreled",
+    "name": "Double-Barreled",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 2,
+    "text": "During this vehicle’s Attack Step, up to three weapons with the Crew Fired special rule may gain a +1 bonus to hit."
+  },
+  {
+    "id": "boarding_party",
+    "name": "Boarding Party",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 2,
+    "text": "This vehicle ignores the Distracted rule, meaning this vehicle may attack during the Attack Step even if the vehicle is touching an obstacle."
+  },
+  {
+    "id": "battlehammer",
+    "name": "Battlehammer",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 4,
+    "text": "When making a Smash Attack, this vehicle gains +1 attack die for each Hazard Token it currently has."
+  },
+  {
+    "id": "terrifying_lunatic",
+    "name": "Terrifying Lunatic",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 5,
+    "text": "Whenever a vehicle controlled by another player ends its Movement Step within Short range of this vehicle, the active vehicle gains a Hazard Token."
+  },
+  {
+    "id": "grinderman",
+    "name": "Grinderman",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 5,
+    "text": "Before this vehicle rolls its attack dice in a Smash Attack, it may choose to add 1 Hazard Token to the target vehicle for each point of damage it inflicts, instead of removing Hull Points."
+  },
+  {
+    "id": "murder_tractor",
+    "name": "Murder Tractor",
+    "sponsor": "",
+    "class": "aggression",
+    "cost": 5,
+    "text": "This vehicle may make piledriver attacks, like a War Rig."
+  },
+  {
+    "id": "powder_keg",
+    "name": "Powder Keg",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 1,
+    "text": "This vehicle may add 1 to its explosion check. Treat this vehicle as one weight-class heavier when it explodes. This bonus does apply during resolution of the Fireworks perk."
+  },
+  {
+    "id": "crowd_pleaser",
+    "name": "Crowd Pleaser",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 1,
+    "text": "If this vehicle wipes out, gain 1 Audience Vote."
+  },
+  {
+    "id": "road_warrior",
+    "name": "Road Warrior",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 2,
+    "text": "Once per activation, if this vehicle has successfully caused one or more hits on an enemy vehicle at any point during this activation, this vehicle may remove a single Hazard Token at the end of its Attack Step."
+  },
+  {
+    "id": "cover_me",
+    "name": "Cover Me",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 2,
+    "text": "Once during its activation, this vehicle may remove a Hazard Token and place it on another friendly vehicle within Double range."
+  },
+  {
+    "id": "madman",
+    "name": "Madman",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 3,
+    "text": "At the end of this vehicle’s Movement Step, if it has 4 or more Hazard Tokens, it may remove a Hazard Token and place it on another vehicle within Medium range."
+  },
+  {
+    "id": "bullet_time",
+    "name": "Bullet-Time",
+    "sponsor": "",
+    "class": "badass",
+    "cost": 3,
+    "text": "If this vehicle resolves a Slide result during its Movement Step, it may select one of its weapons to count as Turret-mounted for the rest of the activation."
+  },
+  {
+    "id": "dead_weight",
+    "name": "Dead Weight",
+    "sponsor": "",
+    "class": "built",
+    "cost": 2,
+    "text": "During this vehicle’s Attack Step, this vehicle may gain 2 Hazard Tokens to count as one weight-class heavier (unless already Heavyweight) until the start of its next activation."
+  },
+  {
+    "id": "barrel_roll",
+    "name": "Barrel Roll",
+    "sponsor": "",
+    "class": "built",
+    "cost": 2,
+    "text": "When this vehicle suffers a Flip, it may choose to place the Flip template touching the centre of either side edge or the rear edge of this vehicle, and perpendicular to that edge, instead of touching the front edge as normal."
+  },
+  {
+    "id": "bruiser",
+    "name": "Bruiser",
+    "sponsor": "",
+    "class": "built",
+    "cost": 4,
+    "text": "In a Collision involving this vehicle, if this vehicle declares a reaction other than Evade against an enemy vehicle, the enemy vehicle immediately gains one Hazard Token."
+  },
+  {
+    "id": "splashback",
+    "name": "Splashback",
+    "sponsor": "",
+    "class": "built",
+    "cost": 5,
+    "text": "Once per step, when this vehicle loses one or more Hull Points, make a 1D6 attack against each vehicle within Medium range at the end of that step."
+  },
+  {
+    "id": "crusher",
+    "name": "Crusher",
+    "sponsor": "",
+    "class": "built",
+    "cost": 7,
+    "text": "This vehicle gains the Up and Over special rule (see the Monster Truck rules)."
+  },
+  {
+    "id": "feel_no_pain",
+    "name": "Feel No Pain",
+    "sponsor": "",
+    "class": "built",
+    "cost": 8,
+    "text": "During an enemy vehicle’s Attack Step, after an attacker has rolled all their attack dice against this vehicle, if the attacks caused a total of 2 or fewer uncancelled hits, cancel all remaining hits."
+  },
+  {
+    "id": "chrome_whisperer",
+    "name": "Chrome-Whisperer",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 2,
+    "text": "This vehicle may Push It any number of times during a single Movement Step, gaining 1 Hazard Token each time."
+  },
+  {
+    "id": "slippery",
+    "name": "Slippery",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 3,
+    "text": "Vehicles making a Smash Attack targeting this vehicle suffer a penalty of -2 attack dice."
+  },
+  {
+    "id": "handbrake_artist",
+    "name": "Handbrake Artist",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 3,
+    "text": "When applying a Spin result, this vehicle may choose to face any direction."
+  },
+  {
+    "id": "evasive",
+    "name": "Evasive",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 5,
+    "text": "Before making an Evade roll, this vehicle may gain any number of Hazard Tokens to add +1 to each of its Evade dice for each Hazard Token gained. A roll of “1” on an Evade die always counts as a failure."
+  },
+  {
+    "id": "powerslide",
+    "name": "Powerslide",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 5,
+    "text": "This vehicle may use any template except the long straight template instead of the slide template when applying a Slide result. (As in step 1.1 of the Movement Step, you must use the first movement template you touch. Treat the selected movement template as a slide template for purposes of finding the vehicle’s Final Position."
+  },
+  {
+    "id": "stunt_driver",
+    "name": "Stunt Driver",
+    "sponsor": "",
+    "class": "daring",
+    "cost": 7,
+    "text": "This perk may only be taken on a lightweight or middleweight vehicle type with a base Handling Value of 3 or more. This vehicle may choose to ignore any number of obstructions during its Movement Step. After any Movement Step in which this vehicle chose to ignore any obstruction using this ability, this vehicle immediately gains 3 Hazard Tokens."
+  },
+  {
+    "id": "purifying_flames",
+    "name": "Purifying Flames",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 1,
+    "text": "Once per activation, at the start of this vehicle’s activation, this vehicle may suffer up to three damage to select any friendly vehicle. For each point of damage suffered via this effect, repair that number of Hull Points on the target vehicle. This damage may not be reduced and counts as having the Fire rule. This effect may not raise the target above its starting Hull value."
+  },
+  {
+    "id": "ecstatic_visions",
+    "name": "Ecstatic Visions",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 1,
+    "text": "Once per activation, at the start of this vehicle’s activation, this vehicle may gain up to 3 Hazard Tokens to discard 1 Hazard Token from a friendly vehicle for each Hazard Token gained."
+  },
+  {
+    "id": "sympathy_for_the_devil",
+    "name": "Sympathy for the Devil",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 1,
+    "text": "When this vehicle makes an Evade check, its controller may select a friendly vehicle within Medium range. Add the current Gear of the selected vehicle to this vehicle’s current Gear for this Evade check. Both the selected vehicle and this vehicle suffer any unsaved damage from the attack, including additional effects."
+  },
+  {
+    "id": "highway_to_hell",
+    "name": "Highway to Hell",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 2,
+    "text": "At the end of its Movement Step, if this vehicle selected a straight template, it may suffer 2 damage. This damage counts as having the Fire rule. If any Hull Points are removed by this effect, leave this vehicle’s movement template (ignoring any slide template) in play as a Napalm dropped-weapon template until the start of this vehicle’s next activation."
+  },
+  {
+    "id": "violent_manifestation",
+    "name": "Violent Manifestation",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 3,
+    "text": "When this vehicle is respawned, make an immediate attack (with attack dice based on the weight of the respawned vehicle) against every other vehicle within Medium range as if this vehicle were an exploding wreck. This explosion has both the Blast and Fire rules."
+  },
+  {
+    "id": "angel_of_death",
+    "name": "Angel of Death",
+    "sponsor": "",
+    "class": "horror",
+    "cost": 4,
+    "text": "Before making an attack, this vehicle may suffer up to three damage to add that many attack dice to a single weapon used in that attack."
+  },
+  {
+    "id": "dead_eye",
+    "name": "Dead-Eye",
+    "sponsor": "",
+    "class": "military",
+    "cost": 2,
+    "text": "During this vehicle’s Attack Step, this vehicle gains a +1 bonus to hit when making a shooting attack at a target within Double range and not within Medium range. Critical Hits still occur only on the natural roll of a 6."
+  },
+  {
+    "id": "loader",
+    "name": "Loader",
+    "sponsor": "",
+    "class": "military",
+    "cost": 2,
+    "text": "At the start of its Attack Step, this vehicle may temporarily reduce its Crew value by 1 (once, until the end of the Attack Step) to gain a +1 bonus to hit with a single weapon. Critical Hits still occur only on the natural roll of a 6."
+  },
+  {
+    "id": "fully_loaded",
+    "name": "Fully Loaded",
+    "sponsor": "",
+    "class": "military",
+    "cost": 2,
+    "text": "If a shooting weapon on this vehicle has 3 or more Ammo Tokens remaining before discarding one to attack, that weapon gains +1 attack die."
+  },
+  {
+    "id": "rapid_fire",
+    "name": "Rapid Fire",
+    "sponsor": "",
+    "class": "military",
+    "cost": 2,
+    "text": "Once per round, after attacking with a weapon, this vehicle may immediately resolve an additional Attack Step in which it may only attack with that same weapon."
+  },
+  {
+    "id": "headshot",
+    "name": "Headshot",
+    "sponsor": "",
+    "class": "military",
+    "cost": 4,
+    "text": "When making a shooting attack, this vehicle’s Critical Hits inflict 3 hits instead of the normal 2 hits."
+  },
+  {
+    "id": "return_fire",
+    "name": "Return Fire",
+    "sponsor": "",
+    "class": "military",
+    "cost": 5,
+    "text": "Once per Gear Phase, if this vehicle is the target of a shooting attack, this vehicle may take 2 Hazzard Tokens to immediately attack, as if it was this vehicle's Attack Step"
+    },
+      {
+        "id": "mister_fahrenheit",
+        "name": "Mister Fahrenheit",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 2,
+        "text": "This vehicle cannot gain more than 2 Hazard Tokens from Collisions during a single activation."
+      },
+      {
+        "id": "moment_of_glory",
+        "name": "Moment of Glory",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 2,
+        "text": "Once per game, after rolling the Skid Dice but before resolving the results, this vehicle may immediately change any number of Skid Dice to any results it chooses."
+      },
+      {
+        "id": "restraint",
+        "name": "Restraint",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 2,
+        "text": "When this vehicle would gain a Hazard Token for shifting down a Gear, it may remove one Hazard Token instead."
+      },
+      {
+        "id": "expertise",
+        "name": "Expertise",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 3,
+        "text": "This vehicle adds 1 to its Handling value."
+      },
+      {
+        "id": "trick_driving",
+        "name": "Trick Driving",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 3,
+        "text": "This vehicle may select a movement template as if its current Gear were one higher or one lower."
+      },
+      {
+        "id": "easy_rider",
+        "name": "Easy Rider",
+        "sponsor": "",
+        "class": "precision",
+        "cost": 5,
+        "text": "Once per round, this vehicle may discard one rolled Skid Dice result before applying the results."
+      }
+      ,
+        {
+          "id": "on_your_tail",
+          "name": "On Your Tail",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 2,
+          "text": "When an enemy vehicle resolves a Spin or Slide move that ends within Short range of this vehicle, that enemy vehicle gains 1 Hazard Token."
+        },
+        {
+          "id": "schadenfreude",
+          "name": "Schadenfreude",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 2,
+          "text": "If another vehicle wipes out within Short range of this vehicle (either before or after any Flip), remove all Hazard Tokens from this vehicle."
+        },
+        {
+          "id": "taunt",
+          "name": "Taunt",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 2,
+          "text": "At the start of this vehicle’s Attack Step, roll a Skid Die. If the result is not a Shift, you may place that Skid Die result onto the dashboard of a target vehicle within Short range. That result must be resolved during that vehicle’s next Movement Step and may not be re-rolled."
+        },
+        {
+          "id": "out_run",
+          "name": "Out Run",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 2,
+          "text": "At the start of this vehicle’s Attack Step, all vehicles within Short range of this vehicle and in a lower current Gear than this vehicle gain 1 Hazard Token."
+        },
+        {
+          "id": "pit",
+          "name": "PIT",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 4,
+          "text": "During this vehicle’s activation, if it is involved in a non-head-on Collision with an enemy vehicle, it may declare a Pursuit Intervention Technique (PIT) as its reaction instead of a Smash Attack or Evade. If it does, select any movement template the target considers Hazardous in its current Gear. Immediately after the Collision is resolved, the target must make a forced move directly forward using the selected template."
+        },
+        {
+          "id": "unnerving_eye_contact",
+          "name": "Unnerving Eye Contact",
+          "sponsor": "",
+          "class": "pursuit",
+          "cost": 5,
+          "text": "Enemy vehicles within Short range of this vehicle may not use Shift results to remove Hazard Tokens from their dashboard."
+        },
+        
+          {
+            "id": "drive_angry",
+            "name": "Drive Angry",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 1,
+            "text": "At the start of this vehicle’s activation, this vehicle gains 1 Hazard Token."
+          },
+          {
+            "id": "hog_wild",
+            "name": "Hog Wild",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 2,
+            "text": "During a Collision resolved during a Wipeout Step, this vehicle gains +2 Smash Attack dice."
+          },
+          {
+            "id": "in_for_a_penny",
+            "name": "In for a Penny",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 2,
+            "text": "If this vehicle has gained six or more Hazard Tokens during this activation, it may double the attack dice of any Smash Attack it makes for the remainder of this activation."
+          },
+          {
+            "id": "dont_come_knocking",
+            "name": "Don’t Come Knocking",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 4,
+            "text": "At the start of this vehicle’s activation, it may gain 4 Hazard Tokens. If it does, this vehicle cannot gain or lose any Hazard Tokens by any means until the start of its next activation."
+          },
+          {
+            "id": "bigger_n_you",
+            "name": "Bigger’n You",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 4,
+            "text": "If this vehicle is involved in a Collision, double any Smash Attack bonuses or penalties resulting from weight differences during that Collision."
+          },
+          {
+            "id": "beerserker",
+            "name": "Beerserker",
+            "sponsor": "",
+            "class": "reckless",
+            "cost": 5,
+            "text": "When this vehicle would suffer damage outside of its activation, reduce that damage by 1, to a minimum of 1."
+          }
+        ,
+        
+          {
+            "id": "hot_start",
+            "name": "Hot Start",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 1,
+            "text": "Roll a D6 at the start of the game. This vehicle starts the game in that Gear. Reroll if this would put the current Gear of the vehicle above its max Gear."
+          },
+          {
+            "id": "slipstream",
+            "name": "Slipstream",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 2,
+            "text": "If this vehicle is involved in a tailgate Collision during its activation, it may declare a Slipstream reaction. If it does, the other vehicle may not declare a reaction. This vehicle may then change up or down one Gear and gains a Hazard Token. Neither vehicle gains Hazard Tokens as a result of this Collision."
+          },
+          {
+            "id": "overload",
+            "name": "Overload",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 2,
+            "text": "When resolving Skid Dice during the Movement Step, this vehicle may roll one additional Skid Die. If it does, it must either change up at least one Gear or gain a Hazard Token."
+          },
+          {
+            "id": "downshift",
+            "name": "Downshift",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 3,
+            "text": "At the end of a Movement Step in which this vehicle changed down one or more Gears, this vehicle may make a forced move Short Straight forward."
+          },
+          {
+            "id": "time_extended",
+            "name": "Time Extended!",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 3,
+            "text": "At the end of a Movement Step in which this vehicle passes a race gate, this vehicle may remove any number of Hazard Tokens."
+          },
+          {
+            "id": "hell_for_leather",
+            "name": "Hell for Leather",
+            "sponsor": "",
+            "class": "speed",
+            "cost": 5,
+            "text": "This vehicle considers the Long Straight template to be permitted in any Gear. The Long Straight is not considered either Hazardous or Trivial in any Gear."
+          }
+  ,
+    {
+      "id": "rocket_thrusters",
+      "name": "Rocket Thrusters",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 1,
+      "text": "When this vehicle is moved as part of a Flip, it may choose to use the Long Straight, Veer, or Gentle templates instead of the Medium Straight template."
+    },
+    {
+      "id": "whizbang",
+      "name": "Whizbang",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 1,
+      "text": "At the start of each game, this vehicle gains a random Speed perk. This perk is lost at the end of the game."
+    },
+    {
+      "id": "gyroscope",
+      "name": "Gyroscope",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 1,
+      "text": "At the start of each game, this vehicle gains a random Daring perk. This perk is lost at the end of the game."
+    },
+    {
+      "id": "satellite_navigation",
+      "name": "Satellite Navigation",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 2,
+      "text": "When this vehicle resolves its Skid Dice, its controller may set aside one Shift result. This vehicle may have any number of Shift results set aside. Any vehicle on this team may use these set-aside Shift results during a later Movement Step as if they had rolled them in that Movement Step."
+    },
+    {
+      "id": "mobile_mechanic",
+      "name": "Mobile Mechanic",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 3,
+      "text": "Once per activation, at the start of its Attack Step, this vehicle may temporarily reduce its Crew value by 1 until the end of the Attack Step to perform a field repair. If it does, this vehicle gains 1 Hull Point, which may not raise its Hull Points above the vehicle’s starting Hull value."
+    },
+    {
+      "id": "eureka",
+      "name": "Eureka!",
+      "sponsor": "",
+      "class": "technology",
+      "cost": 4,
+      "text": "Once per game, at the start of its Attack Step, this vehicle’s controller may declare any weapon that this vehicle has not attacked with yet this game. This vehicle counts as being armed with the declared weapon, on a facing of their choice, for that attack only."
+    }
+  ,
+    {
+      "id": "fenderkiss",
+      "name": "Fenderkiss",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 2,
+      "text": "When this vehicle makes a Smash Attack, it suffers a penalty of –2 attack dice. Vehicles making a Smash Attack targeting this vehicle also suffer a penalty of –2 attack dice."
+    },
+    {
+      "id": "rear_drive",
+      "name": "Rear Drive",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 2,
+      "text": "This vehicle may pivot about the centre of its front edge, rather than the centre of the vehicle, when resolving Spin results."
+    },
+    {
+      "id": "delicate_touch",
+      "name": "Delicate Touch",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 3,
+      "text": "This vehicle ignores the hazard icons on movement templates."
+    },
+    {
+      "id": "momentum",
+      "name": "Momentum",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 3,
+      "text": "When resolving Skid Dice, this vehicle may set aside a Slide or Spin result to reroll a Skid Die. This effect may be used multiple times. Skid Dice that are set aside must still be resolved."
+    },
+    {
+      "id": "purring",
+      "name": "Purring",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 6,
+      "text": "This vehicle does not gain more than 1 Hazard Token from Spin results each activation, more than 1 from Slide results each activation, or more than 1 from Hazard results each activation."
+    },
+    {
+      "id": "skiing",
+      "name": "Skiing",
+      "sponsor": "",
+      "class": "tuning",
+      "cost": 6,
+      "text": "If this vehicle has Handling 3 or higher, it may take 3 Hazard Tokens at the end of its Movement Step to be ignored by other vehicles during their Movement Steps until the start of this vehicle’s next activation. If, by ignoring this vehicle, another vehicle’s Final Position would overlap it, move that vehicle backwards along its movement template by the minimum amount required to avoid overlapping any obstruction."
+    }
+  ]
+  
+  
+        
+        
+      
+    

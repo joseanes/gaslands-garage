@@ -33,6 +33,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let darkMode = false;
 	let printStyle = 'classic';
 	let hasRules = false; // Whether user has acknowledged having the Gaslands Refuelled rules
+		let showExperimentalFeatures = false; // Whether to show experimental features
+		let receiveUpdates = false; // Whether user wants to receive updates and marketing emails
+	let showOnPlayersMap = false; // Whether to show on the Gaslands Players map
+	let allowContactFromPlayers = false; // Whether other players can contact for game setup
+	let location = ''; // User's location for the players map
 
 	// Rules acknowledgment modal state
 	let showRulesAcknowledgmentModal = false;
@@ -512,6 +517,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						enableSponsorships = result.settings.enableSponsorships;
 						includeAdvanced = result.settings.includeAdvanced;
 						darkMode = result.settings.darkMode;
+						hasRules = result.settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
 
 						// Initialize new settings with defaults if not present
 						showTeamSummary = result.settings.showTeamSummary !== undefined
@@ -521,6 +527,28 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						showGaslandsMath = result.settings.showGaslandsMath !== undefined
 							? result.settings.showGaslandsMath
 							: DEFAULT_SETTINGS.showGaslandsMath;
+
+						// Initialize player map settings
+						showOnPlayersMap = result.settings.showOnPlayersMap !== undefined
+							? result.settings.showOnPlayersMap
+							: DEFAULT_SETTINGS.showOnPlayersMap;
+
+						allowContactFromPlayers = result.settings.allowContactFromPlayers !== undefined
+							? result.settings.allowContactFromPlayers
+							: DEFAULT_SETTINGS.allowContactFromPlayers;
+
+						location = result.settings.location !== undefined
+							? result.settings.location
+							: DEFAULT_SETTINGS.location;
+
+							// Initialize experimental features and updates settings
+							showExperimentalFeatures = result.settings.showExperimentalFeatures !== undefined
+								? result.settings.showExperimentalFeatures
+								: DEFAULT_SETTINGS.showExperimentalFeatures;
+
+							receiveUpdates = result.settings.receiveUpdates !== undefined
+								? result.settings.receiveUpdates
+								: DEFAULT_SETTINGS.receiveUpdates;
 					}
 				} catch (error) {
 					console.error("Error loading settings:", error);
@@ -587,7 +615,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					showTeamSummary,
 					showGaslandsMath,
 					printStyle,
-					hasRules
+					hasRules,
+					showExperimentalFeatures,
+					receiveUpdates,
+					showOnPlayersMap,
+					allowContactFromPlayers,
+					location
 				});
 
 				// Also save printStyle to localStorage for persistence
@@ -749,6 +782,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			window.openSettingsFn = openSettings;
 			window.openTeamsModalFn = () => { showTeamsModal = true; };
 
+			// Expose showExperimentalFeatures for the menu visibility
+			Object.defineProperty(window, 'showExperimentalFeatures', {
+				get: () => showExperimentalFeatures
+			});
+
 			// Add functions for the Teams Modal in the layout
 			window.currentDraftFn = () => currentDraft;
 			window.importDraftFn = (draft) => {
@@ -786,6 +824,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				window.openTeamsModalFn = undefined;
 				window.currentDraftFn = undefined;
 				window.importDraftFn = undefined;
+				delete window.showExperimentalFeatures;
 			}
 		};
 	});
@@ -1039,7 +1078,14 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// Get available perks for the current sponsor
 	$: currentSponsor = sponsors.find(s => s.id === sponsorId);
 	$: availablePerks = enableSponsorships
-		? perks.filter(p => currentSponsor?.perks.includes(p.id))
+		? perks.filter(p =>
+			// Include perks with matching id (legacy)
+			(currentSponsor?.perks && currentSponsor.perks.includes(p.id)) ||
+			// OR include perks with matching class (new approach)
+			(currentSponsor?.perksClasses && p.class && currentSponsor.perksClasses.some(
+					sponsorClass => sponsorClass.toLowerCase() === p.class.toLowerCase()
+				))
+		)
 		: [];
 
 	/* ---------- import box ---------- */
@@ -1683,7 +1729,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[200px] w-auto text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[140px] w-auto max-w-[200px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
@@ -1750,13 +1796,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						</div>
 					</div>
 
-					{#if currentSponsor?.perks?.length}
+					{#if (currentSponsor?.perks?.length || currentSponsor?.perksClasses?.length)}
 						<div class="text-sm text-stone-700 dark:text-gray-300 text-left mt-1 flex flex-wrap items-center">
 							<span class="font-medium mr-2">Available Perks:</span>
-							{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
+							{#each availablePerks as perk, i}
 								<span
 									class="tooltip inline-block mr-3"
-									title="{perk.name} (Level {perk.level}): {perk.text}"
+									title="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
 								>
 									{perk.name}
 								</span>
@@ -1815,14 +1861,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		</div>
 
 		{#if vehicles.length === 0}
-			<div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md text-center">
-				<p class="text-stone-600 dark:text-gray-300 text-lg font-bold mb-4">Your team has no vehicles yet. Get started by adding a vehicle to your team.</p>
-
-
+			<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md text-center">
+				<p class="text-stone-600 dark:text-gray-300 text-lg font-bold py-4 px-8">Your team has no vehicles yet. Get started by adding a vehicle to your team.</p>
 			</div>
 
 			<!-- About Gaslands Content when no vehicles -->
-			<div class="mt-10 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+			<div class="mt-3 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
 				<div class="flex justify-between items-center mb-6">
 					<h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands</h3>
 				</div>
@@ -1872,7 +1916,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						{maxCans}
 						{filteredWeapons}
 						{filteredUpgrades}
-						filteredPerks={perks.filter(p => currentSponsor?.perks.includes(p.id))}
+						filteredPerks={availablePerks}
 						on:remove={e => removeVehicle(e.detail.id)}
 						on:clone={e => cloneVehicle(e.detail.id)}
 						on:toggleCollapse={e => toggleVehicleCollapse(e.detail.id)}
@@ -1916,13 +1960,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					<span class="font-bold text-amber-700 ml-2">{currentSponsor?.name || 'None'}</span>
 				</div>
 
-				{#if currentSponsor?.perks?.length}
+				{#if (currentSponsor?.perks?.length || currentSponsor?.perksClasses?.length)}
 					<div class="mt-1">
 						<span class="font-medium text-stone-800">Perks:</span>
 						<span class="text-stone-700 inline ml-2">
-							{#each perks.filter(p => currentSponsor?.perks.includes(p.id)) as perk, i}
-								<span class="tooltip inline" title="{perk.name} (Level {perk.level}): {perk.text}">
-									{perk.name}{i < perks.filter(p => currentSponsor?.perks.includes(p.id)).length - 1 ? ', ' : ''}
+							{#each availablePerks as perk, i}
+								<span class="tooltip inline" title="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}">
+									{perk.name}{i < availablePerks.length - 1 ? ', ' : ''}
 								</span>
 							{/each}
 						</span>
@@ -2196,11 +2240,35 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           </div>
           
           <div class="space-y-8 px-4">
+            <!-- Gaslands Refueled Book Acknowledgment - At the top -->
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <div class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="enable-sponsorships" 
+                <input
+                  type="checkbox"
+                  id="has-rules-setting"
+                  bind:checked={hasRules}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="has-rules-setting" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  I have the Gaslands Refuelled rulebook
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                Acknowledge that you own a copy of the Gaslands Refuelled rules. This is required to use Play Mode and Print features.
+                <a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline ml-1">
+                  Purchase the book here
+                </a>
+              </p>
+            </div>
+
+            <!-- Game Options Section -->
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Game Options</h4>
+
+              <div class="flex items-center mt-3">
+                <input
+                  type="checkbox"
+                  id="enable-sponsorships"
                   bind:checked={enableSponsorships}
                   class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
@@ -2211,13 +2279,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
               </p>
-            </div>
-            
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id="include-advanced" 
+
+              <div class="flex items-center mt-3">
+                <input
+                  type="checkbox"
+                  id="include-advanced"
                   bind:checked={includeAdvanced}
                   class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
                 />
@@ -2229,9 +2295,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                 Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
               </p>
             </div>
-            
+
+            <!-- Display Options Section -->
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
+              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Display Options</h4>
+
+              <div class="flex items-center mt-3">
                 <input
                   type="checkbox"
                   id="dark-mode"
@@ -2245,10 +2314,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Enable dark mode for better visibility in low-light conditions.
               </p>
-            </div>
 
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
+              <div class="flex items-center mt-3">
                 <input
                   type="checkbox"
                   id="show-team-summary"
@@ -2262,10 +2329,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Show or hide the Team Summary section at the bottom of the page.
               </p>
-            </div>
 
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
+              <div class="flex items-center mt-3">
                 <input
                   type="checkbox"
                   id="show-gaslands-math"
@@ -2281,22 +2346,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               </p>
             </div>
 
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="has-rules-setting"
-                  bind:checked={hasRules}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="has-rules-setting" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  I have the Gaslands Refuelled rulebook
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Acknowledge that you own a copy of the Gaslands Refuelled rules. This is required to use Play Mode and Print features.
-              </p>
-            </div>
 
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
               <h4 class="font-medium text-stone-800 dark:text-white mb-3">Print Style</h4>
@@ -2358,6 +2407,109 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                 Choose your preferred print layout style.
               </p>
             </div>
+
+            <!-- Players Map Section - Only shown when logged in -->
+            {#if $user && showExperimentalFeatures}
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Players Map</h4>
+
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="show-on-players-map"
+                  bind:checked={showOnPlayersMap}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="show-on-players-map" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Show me on the Gaslands Players map
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-4">
+                Appear on the global map of Gaslands players to connect with local players.
+              </p>
+
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="allow-contact-from-players"
+                  bind:checked={allowContactFromPlayers}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="allow-contact-from-players" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Allow other players to contact me to setup a game
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-4">
+                Let other players in your area reach out to organize games.
+              </p>
+
+              <div class="mt-2">
+                <label for="location-input" class="block text-stone-800 dark:text-white font-medium mb-1">
+                  Your location
+                </label>
+                <input
+                  type="text"
+                  id="location-input"
+                  bind:value={location}
+                  placeholder="Enter your town/city/county, province/state, country"
+                  list="location-suggestions"
+                  class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-md text-stone-800 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                />
+                <datalist id="location-suggestions">
+                  <option value="New York, NY, USA"></option>
+                  <option value="Los Angeles, CA, USA"></option>
+                  <option value="Chicago, IL, USA"></option>
+                  <option value="London, UK"></option>
+                  <option value="Sydney, NSW, Australia"></option>
+                  <option value="Toronto, ON, Canada"></option>
+                  <option value="Berlin, Germany"></option>
+                  <option value="Paris, France"></option>
+                  <option value="Tokyo, Japan"></option>
+                </datalist>
+                <p class="text-stone-600 dark:text-gray-200 text-sm mt-1">
+                  Provide your location to help find nearby players. We recommend including your town/city, state/province, and country.
+                </p>
+              </div>
+            </div>
+            {/if}
+
+            <!-- Experimental Features Option -->
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="show-experimental-features"
+                  bind:checked={showExperimentalFeatures}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="show-experimental-features" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Show Experimental Features
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                Enable this option to access features that are still under development.
+              </p>
+            </div>
+
+            <!-- Email Updates Option - Only shown when logged in -->
+            {#if $user}
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="receive-updates"
+                  bind:checked={receiveUpdates}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="receive-updates" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Keep me up to date
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                Receive emails with Gaslands and Gaslands Garage feature updates and marketing materials.
+              </p>
+            </div>
+            {/if}
 
           </div>
         </div>
