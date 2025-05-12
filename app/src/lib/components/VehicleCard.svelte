@@ -2,8 +2,12 @@
     import { nanoid } from 'nanoid';
     import { createEventDispatcher } from 'svelte';
     import BuildHeader from './BuildHeader.svelte';
+    import { loadWeaponSpecialRules } from '$lib/rules/loadRules';
 
     const dispatch = createEventDispatcher();
+
+    // Load weapon special rules
+    const weaponSpecialRules = loadWeaponSpecialRules();
     
     // Props
     export let vehicle: {
@@ -212,6 +216,15 @@
     
     function getVehicleRuleDetails(ruleName: string) {
         return vehicleRules.find(rule => rule.ruleName === ruleName);
+    }
+
+    function getWeaponSpecialRuleDetails(ruleId: string) {
+        return weaponSpecialRules.find(rule => rule.id.toLowerCase() === ruleId.toLowerCase());
+    }
+
+    function parseSpecialRules(specialRulesString: string) {
+        if (!specialRulesString) return [];
+        return specialRulesString.split(',').map(rule => rule.trim().toLowerCase());
     }
 </script>
 
@@ -434,7 +447,14 @@
                             <span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || weaponId}</span>
                             <span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
                             {#if weaponObj?.specialRules}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">{weaponObj.specialRules}</div>
+                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                    {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
+                                        {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
+                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
+                                            {ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
+                                        </span>
+                                    {/each}
+                                </div>
                             {/if}
                         </div>
                     {/each}
@@ -444,7 +464,14 @@
                         <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
                             <span class="font-bold text-stone-700 dark:text-gray-300">{upgrade?.name || upgradeId}</span>
                             {#if upgrade?.specialRules}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">{upgrade.specialRules}</div>
+                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                    {#each parseSpecialRules(upgrade.specialRules) as ruleId}
+                                        {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
+                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
+                                            {ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
+                                        </span>
+                                    {/each}
+                                </div>
                             {/if}
                             {#if upgrade?.hullModifier || upgrade?.crewModifier || upgrade?.gearModifier || upgrade?.handlingModifier}
                                 <div class="text-xs text-stone-500 dark:text-gray-400">
@@ -513,7 +540,16 @@
                                         {weaponObj?.name || weaponId}
                                     </span></b>
                                     <div class="flex items-center gap-2">
-                                        <span class="text-stone-500 dark:text-gray-400 text-xs">{weaponObj?.specialRules || ""}</span>
+                                        {#if weaponObj?.specialRules}
+                                        <div class="text-stone-500 dark:text-gray-400 text-xs">
+                                            {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
+                                                {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
+                                                <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
+                                                    {ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
+                                                </span>
+                                            {/each}
+                                        </div>
+                                    {/if}
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -525,7 +561,7 @@
                                         <select
                                             bind:value={vehicle.weaponFacings[weaponId]}
                                             class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
-                                            disabled={weaponObj?.facing === 'fixed' || (weaponObj?.specialRules && weaponObj?.specialRules.toUpperCase().includes("CREW FIRED")) || playMode}
+                                            disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || (weaponObj?.specialRules && (weaponObj?.specialRules.toUpperCase().includes("CREW FIRED") || parseSpecialRules(weaponObj.specialRules).includes("crew_fired"))) || playMode}
                                         >
                                             {#if weaponObj?.dropped || (weaponObj?.range && weaponObj?.range.includes('Dropped'))}
                                                 <!-- Dropped weapons can only be side or rear -->
@@ -616,7 +652,16 @@
                                 <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
                                     {upgrade?.name || upgradeId}
                                 </span></b>
-                                <span class="text-stone-500 dark:text-gray-400 text-xs">{upgrade?.specialRules || ""}</span>
+                                {#if upgrade?.specialRules}
+                                    <div class="text-stone-500 dark:text-gray-400 text-xs">
+                                        {#each parseSpecialRules(upgrade.specialRules) as ruleId}
+                                            {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
+                                            <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
+                                                {ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
+                                            </span>
+                                        {/each}
+                                    </div>
+                                {/if}
                                 {#if upgrade?.hullModifier || upgrade?.crewModifier || upgrade?.gearModifier || upgrade?.handlingModifier}
                                     <div class="text-xs text-stone-500 dark:text-gray-400 mt-1">
                                         {upgrade.hullModifier ? `Hull: ${upgrade.hullModifier > 0 ? '+' : ''}${upgrade.hullModifier} ` : ''}

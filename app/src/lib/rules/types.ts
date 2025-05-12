@@ -86,3 +86,10 @@ export const VehicleRule = z.object({
 });
 export type VehicleRule = z.infer<typeof VehicleRule>;
 
+export const WeaponSpecialRule = z.object({
+  id: z.string(),
+  ruleName: z.string(),
+  rule: z.string()
+});
+export type WeaponSpecialRule = z.infer<typeof WeaponSpecialRule>;
+

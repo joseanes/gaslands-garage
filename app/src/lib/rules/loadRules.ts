@@ -1,6 +1,6 @@
 
 // app/src/lib/rules/loadRules.ts
-import { Sponsor, Vehicle, Weapon, Upgrade, Perk, VehicleRule } from './types';
+import { Sponsor, Vehicle, Weapon, Upgrade, Perk, VehicleRule, WeaponSpecialRule } from './types';
 
 /* ── vehicle rules ─────────────────────────────────────────── */
 import vehicleRulesRaw from '../../data/rules/vehicleRules.json';
@@ -38,4 +38,10 @@ export function loadUpgrades() {
 import perksRaw from '../../data/rules/perks.json';
 export function loadPerks() {
   return Perk.array().parse(perksRaw);
+}
+
+/* ── weaponSpecialRules.json ────────────────────────────────── */
+import weaponSpecialRulesRaw from '../../data/rules/weaponSpecialRules.json';
+export function loadWeaponSpecialRules() {
+  return WeaponSpecialRule.array().parse(weaponSpecialRulesRaw);
 }

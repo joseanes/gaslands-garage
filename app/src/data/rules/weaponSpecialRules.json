@@ -1,0 +1,4 @@
+[ {"id" : "crew_fired",
+    "ruleName": "Crew Fired",
+    "rule": "<p>“A weapon that is Crew Fired benefits from a 360-degre Arc of Fire and does not need to declare a facing when purchased.”</p>"
+  }]
