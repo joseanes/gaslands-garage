@@ -28,6 +28,7 @@
   let showUpcomingFeaturesModal = false;
   let showContributorsModal = false;
   let showContactUsModal = false;
+  let showPlayersMapModal = false;
 
   // Contact form state
   let contactSubject = '';
@@ -186,6 +187,10 @@
     showContactUsModal = true;
   }
 
+  function openPlayersMap() {
+    showPlayersMapModal = true;
+  }
+
   // Handle contact form submission
   async function handleContactFormSubmit() {
     if (!$user) {
@@ -256,7 +261,7 @@
   <!-- Top Navigation Bar -->
   <header class="w-full print:hidden">
     <nav class="menu-bar print:hidden">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex justify-between items-center">
+      <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 w-full flex justify-between items-center">
         <div class="flex flex-col justify-start">
           <span class="logo text-left">
             <span class="logo-highlight">Gaslands</span> Garage
@@ -337,6 +342,11 @@
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openAboutGaslands(); showHelpMenu = false; }}>
                 About Gaslands
               </button>
+              {#if typeof window !== 'undefined' && window.showExperimentalFeatures}
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openPlayersMap(); showHelpMenu = false; }}>
+                Players Map
+              </button>
+              {/if}
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openChangeLog(); showHelpMenu = false; }}>
                 Change Log
               </button>
@@ -363,7 +373,7 @@
   <!-- Content area without sidebar ad -->
   <div class="flex-1">
     <!-- Main content area (full width) -->
-    <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main class="w-full max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
       <slot />
     </main>
   </div>
@@ -924,6 +934,75 @@
             </button>
           </div>
         {/if}
+      </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Players Map Modal -->
+{#if showPlayersMapModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Gaslands Players Map"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showPlayersMapModal = false}
+      on:keydown={e => e.key === 'Escape' && (showPlayersMapModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); height: 80vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Gaslands Players Map</h3>
+        <button
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
+          on:click={() => showPlayersMapModal = false}
+          aria-label="Close players map modal"
+        >
+          <span>Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-stone-700 dark:text-gray-200 modal-text">
+        <p>
+          Find Gaslands players in your area! This map shows players who have opted in to appear on the Players Map.
+        </p>
+
+        {#if !$user}
+          <div class="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-lg shadow my-4">
+            <p>
+              <strong>Want to appear on the map?</strong> Log in and enable "Show me on the Gaslands Players map" in your settings.
+            </p>
+          </div>
+        {/if}
+
+        <!-- Google Maps integration -->
+        <div class="h-[60vh] w-full rounded-lg overflow-hidden border-2 border-amber-600">
+          <!-- This div would typically be used with the Google Maps JavaScript API -->
+          <div id="players-map" class="w-full h-full bg-stone-300 dark:bg-gray-700 flex items-center justify-center">
+            <p class="text-center p-8">
+              Players Map will load here. The map displays all players who have opted in to share their location.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-4 text-sm text-stone-600 dark:text-gray-400">
+          <p>
+            This map only shows players who have opted in to appear on the Gaslands Players map in their settings.
+            Your location data is only used for this purpose and is not shared with third parties.
+          </p>
+        </div>
       </div>
     </div>
   </div>
