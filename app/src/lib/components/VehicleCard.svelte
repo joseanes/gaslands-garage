@@ -556,7 +556,7 @@
                             class={!canAddWeapon ? 'text-gray-400' : ''}
                         >
                             {w.name}
-                            {weaponSlots === 0 ? " (Free)" : ` (${weaponSlots} slot${weaponSlots > 1 ? 's' : ''})`}
+                            {weaponSlots === 0 ? " (0 Slots)" : ` (${weaponSlots} slot${weaponSlots > 1 ? 's' : ''})`}
                             {!canAddWeapon ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
@@ -641,7 +641,7 @@
                             class={!canAddUpgrade ? 'text-gray-400' : ''}
                         >
                             {u.name}
-                            {upgradeSlots === 0 ? " (Free)" : ` (${upgradeSlots} slot${upgradeSlots > 1 ? 's' : ''})`}
+                            {upgradeSlots === 0 ? " (0 Slots)" : ` (${upgradeSlots} slot${upgradeSlots > 1 ? 's' : ''})`}
                             {!canAddUpgrade ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
