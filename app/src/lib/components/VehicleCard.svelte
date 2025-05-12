@@ -103,7 +103,7 @@
 
         // Add weapon costs
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.split('_')[0];
+            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj && weaponObj.cost) {
                 totalCost += weaponObj.cost;
@@ -134,7 +134,7 @@
 
         // Calculate slots used by weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.split('_')[0];
+            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj) {
                 // Special case: Some weapons don't use build slots in Gaslands Refueled
@@ -199,7 +199,7 @@
 
         // Calculate total attack dice from all weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.split('_')[0];
+            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj && weaponObj.attackDice) {
                 totalAttackDice += weaponObj.attackDice;

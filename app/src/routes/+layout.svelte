@@ -26,6 +26,7 @@
   let showChangeLogModal = false;
   let showUpcomingFeaturesModal = false;
   let showContributorsModal = false;
+  let showContactUsModal = false;
   
   // Hook for My Teams functionality
   function openTeamsModal() {
@@ -172,6 +173,10 @@
   function openContributors() {
     showContributorsModal = true;
   }
+
+  function openContactUs() {
+    showContactUsModal = true;
+  }
 </script>
 
 <!-- Main layout with ad space -->
@@ -267,6 +272,9 @@
               <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openContributors(); showHelpMenu = false; }}>
                 Contributors
               </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openContactUs(); showHelpMenu = false; }}>
+                Contact Us
+              </button>
             </div>
             {/if}
           </div>
@@ -307,7 +315,7 @@
     
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
@@ -417,7 +425,7 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
@@ -465,7 +473,7 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
@@ -518,7 +526,7 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
@@ -570,7 +578,7 @@
 
     <!-- Modal content -->
     <div
-      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-2/5 lg:w-1/3 mx-auto relative z-10 border-2 border-amber-500"
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
       role="document"
       style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
     >
@@ -725,3 +733,45 @@
 
 /* Print styles moved to separate print.css file */
 </style>
+
+<!-- Contact Us Modal -->
+{#if showContactUsModal}
+  <div
+    class="fixed inset-0 bg-black z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Contact Us"
+    tabindex="-1"
+    transition:fade={{ duration: 150 }}
+  >
+    <!-- Background overlay -->
+    <button
+      class="absolute inset-0 w-full h-full border-0 cursor-pointer"
+      on:click={() => showContactUsModal = false}
+      on:keydown={e => e.key === 'Escape' && (showContactUsModal = false)}
+      aria-label="Close modal background"
+    ></button>
+
+    <!-- Modal content -->
+    <div
+      class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500"
+      role="document"
+      style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4); background-color: var(--modal-bg-color, white); padding: 1.5rem;"
+    >
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-bold text-stone-800 dark:text-white modal-heading">Contact Us</h3>
+        <button
+          class="py-0.25 px-2 h-[2rem] flex items-center justify-center rounded transition-colors text-sm amber-button"
+          on:click={() => showContactUsModal = false}
+          aria-label="Close contact us modal"
+        >
+          <span>Close</span>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-stone-700 dark:text-gray-200 modal-text">
+        <!-- Empty content as requested -->
+      </div>
+    </div>
+  </div>
+{/if}
