@@ -8,6 +8,7 @@
 	import { draftToDataURL } from '$lib/draft/qr';
 	import Auth from '$lib/components/Auth.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
+	import Tooltip from '$lib/components/Tooltip.svelte';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
@@ -195,9 +196,26 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	function removeVehicle(id: string) {
+		// Find vehicle report to subtract its cost from total
+		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === id);
+		const vehicleCost = vehicleReport ? vehicleReport.cans : 0;
+
+		// Remove the vehicle
 		vehicles = vehicles.filter((v) => v.id !== id);
+
+		// Update validation report
+		validation.vehicleReports = validation.vehicleReports.filter(r => r.vehicleId !== id);
+		validation.cans -= vehicleCost;
+
+		// Ensure validation object is reactive
+		validation = { ...validation };
+
+		// Handle collapse state
 		collapsedVehicles.delete(id);
 		collapsedVehicles = collapsedVehicles; // Trigger reactivity
+
+		// Force full validation to ensure consistency
+		forceValidation();
 	}
 
 	function cloneVehicle(id: string) {
@@ -271,13 +289,20 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	function addWeapon(vehicleId: string, weaponId: string, facing?: string) {
 		const weaponObj = weapons.find(w => w.id === weaponId);
 		if (!weaponObj) return; // Don't add if weapon not found
-		
+
 		// Check if adding this weapon would exceed the vehicle's build slots
 		const vehicle = vehicles.find(v => v.id === vehicleId);
 		if (!vehicle) return; // Don't add if vehicle not found
-		
+
 		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
 		if (!vehicleType) return; // Don't add if vehicle type not found
+
+		// Update vehicle report for immediate UI feedback
+		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicleId);
+		if (vehicleReport) {
+			// Subtract vehicle's current cost, then add it back after weapon is added
+			validation.cans -= vehicleReport.cans;
+		}
 		
 		const currentBuildSlots = calculateUsedBuildSlots(vehicle);
 		const weaponSlots = weaponObj.slots;
@@ -972,8 +997,53 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	// Function to force validation to run immediately
 	function forceValidation() {
-		// Force reactivity by creating a new currentDraft object
-		currentDraft = { ...currentDraft };
+		// Create a complete draft object to ensure validation runs correctly
+		const updatedDraft: Draft = {
+			sponsor: sponsorId,
+			vehicles: vehicles.map(v => ({
+				id: v.id,
+				type: v.type,
+				name: v.name,
+				weapons: v.weapons,
+				weaponFacings: v.weaponFacings || {},
+				upgrades: v.upgrades || [],
+				perks: v.perks || []
+			})),
+			maxCans: maxCans,
+			teamName: teamName,
+			darkMode: darkMode
+		};
+
+		// Update currentDraft to trigger the reactive validation
+		currentDraft = updatedDraft;
+
+		// Force immediate recalculation for UI responsiveness
+		let tempTotal = 0;
+		vehicles.forEach(vehicle => {
+			// Calculate vehicle cost
+			const vehicleCost = calculateVehicleCost(vehicle);
+
+			// Find or create vehicle report
+			let vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicle.id);
+			if (!vehicleReport) {
+				vehicleReport = {
+					vehicleId: vehicle.id,
+					cans: vehicleCost,
+					errors: []
+				};
+				validation.vehicleReports.push(vehicleReport);
+			} else {
+				vehicleReport.cans = vehicleCost;
+			}
+
+			tempTotal += vehicleCost;
+		});
+
+		// Update total cans in validation object
+		validation.cans = tempTotal;
+
+		// Ensure reactivity
+		validation = { ...validation };
 	}
 
 	// Function to handle vehicle type changes
@@ -1040,7 +1110,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	$: validateDraft(currentDraft).then((r) => {
 		// Create a copy of the validation result
 		const validationCopy = { ...r };
-		
+
 		// Replace the max cans error with custom max cans if it exists
 		if (validationCopy.errors.length > 0) {
 			validationCopy.errors = validationCopy.errors.map(err => {
@@ -1050,13 +1120,17 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				return err;
 			});
 		}
-		
+
 		// Check against custom max cans
 		if (validationCopy.cans > maxCans && !validationCopy.errors.some(e => e.includes("cans limit"))) {
 			validationCopy.errors.push(`Team exceeds ${maxCans} cans limit`);
 		}
-		
+
+		// Update the validation object
 		validation = validationCopy;
+
+		// Explicitly update the totalCans value for display and debug
+		console.log(`Team validation completed - Total cans: ${validationCopy.cans}`);
 	});
 	$: totalCans = validation.cans;
 	$: teamErrors = validation.errors;
@@ -1077,15 +1151,32 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	
 	// Get available perks for the current sponsor
 	$: currentSponsor = sponsors.find(s => s.id === sponsorId);
-	$: availablePerks = enableSponsorships
+
+	// Filter perks based on class match (perksClasses)
+	$: classPerksList = enableSponsorships
 		? perks.filter(p =>
-			// Include perks with matching id (legacy)
-			(currentSponsor?.perks && currentSponsor.perks.includes(p.id)) ||
-			// OR include perks with matching class (new approach)
+			// Include perks with matching class
 			(currentSponsor?.perksClasses && p.class && currentSponsor.perksClasses.some(
-					sponsorClass => sponsorClass.toLowerCase() === p.class.toLowerCase()
-				))
+				sponsorClass => sponsorClass.toLowerCase() === p.class.toLowerCase()
+			))
 		)
+		: [];
+
+	// Filter sponsor-specific perks (based on sponsor field)
+	$: sponsorPerksList = enableSponsorships && currentSponsor
+		? perks.filter(p => p.sponsor && (
+			// Match either by sponsor ID or sponsor name (case insensitive)
+			p.sponsor.toLowerCase() === currentSponsor.id.toLowerCase() ||
+			p.sponsor.toLowerCase() === currentSponsor.name.toLowerCase()
+		))
+		: [];
+
+	// All available perks (used for vehicles)
+	$: availablePerks = [...classPerksList, ...sponsorPerksList];
+
+	// For legacy support, also include perks with matching id
+	$: legacyPerks = enableSponsorships
+		? perks.filter(p => (currentSponsor?.perks && currentSponsor.perks.includes(p.id)))
 		: [];
 
 	/* ---------- import box ---------- */
@@ -1729,7 +1820,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[125px] w-auto max-w-[185px] text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[125px] w-auto max-w-[165px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
@@ -1796,17 +1887,31 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						</div>
 					</div>
 
-					{#if (currentSponsor?.perks?.length || currentSponsor?.perksClasses?.length)}
-						<div class="text-sm text-stone-700 dark:text-gray-300 text-left mt-1 flex flex-wrap items-center">
-							<span class="font-medium mr-2">Available Perks:</span>
-							{#each availablePerks as perk, i}
-								<span
-									class="tooltip inline-block mr-3"
-									title="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
-								>
-									{perk.name}
-								</span>
-							{/each}
+					{#if classPerksList.length > 0}
+						<div class="text-sm text-stone-700 dark:text-gray-300 text-left mt-1">
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="font-medium mr-2">Available Perks:</span>
+								{#each classPerksList as perk}
+									<Tooltip
+										text={perk.name}
+										content="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
+									/>
+								{/each}
+							</div>
+						</div>
+					{/if}
+
+					{#if sponsorPerksList.length > 0}
+						<div class="text-sm text-stone-700 dark:text-gray-300 text-left mt-2">
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="font-medium mr-2">Sponsor Perks:</span>
+								{#each sponsorPerksList as perk}
+									<Tooltip
+										text={perk.name}
+										content="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
+									/>
+								{/each}
+							</div>
 						</div>
 					{/if}
 				</div>
@@ -1960,16 +2065,35 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					<span class="font-bold text-amber-700 ml-2">{currentSponsor?.name || 'None'}</span>
 				</div>
 
-				{#if (currentSponsor?.perks?.length || currentSponsor?.perksClasses?.length)}
-					<div class="mt-1">
-						<span class="font-medium text-stone-800">Perks:</span>
-						<span class="text-stone-700 inline ml-2">
-							{#each availablePerks as perk, i}
-								<span class="tooltip inline" title="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}">
-									{perk.name}{i < availablePerks.length - 1 ? ', ' : ''}
-								</span>
+				{#if (currentSponsor?.perksClasses?.length) && classPerksList.length > 0}
+					<div class="mt-2">
+						<div>
+							<span class="font-medium text-stone-800">Perks:</span>
+						</div>
+						<div class="text-stone-700 flex flex-wrap mt-1 gap-2">
+							{#each classPerksList as perk, i}
+								<Tooltip
+									text="{perk.name}"
+									content="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
+								/>
 							{/each}
-						</span>
+						</div>
+					</div>
+				{/if}
+
+				{#if sponsorPerksList.length > 0}
+					<div class="mt-3">
+						<div>
+							<span class="font-medium text-stone-800">Sponsor Perks:</span>
+						</div>
+						<div class="text-stone-700 flex flex-wrap mt-1 gap-2">
+							{#each sponsorPerksList as perk, i}
+								<Tooltip
+									text="{perk.name}"
+									content="{perk.name}{perk.cost ? ` (${perk.cost} cans)` : ''}: {perk.text}"
+								/>
+							{/each}
+						</div>
 					</div>
 				{/if}
 			</div>
@@ -2210,7 +2334,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
           aria-label="Close modal background"
         ></button>
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] p-6 md:p-8 w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
+          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] px-3 py-6 md:py-8 w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
           role="document"
           style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
         >
@@ -2631,10 +2755,15 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
   <div class="sponsor-print-header">
     <h1>Gaslands: {teamName}</h1>
     <p>
-      Total: {totalCans}/{maxCans} cans 
-      {#if enableSponsorships && currentSponsor?.perks.length}
-        | Sponsor: {currentSponsor?.name || ''} 
-        | Perks: {perks.filter(p => currentSponsor?.perks.includes(p.id)).map(p => p.name).join(', ')}
+      Total: {totalCans}/{maxCans} cans
+      {#if enableSponsorships && currentSponsor}
+        | Sponsor: {currentSponsor?.name || ''}
+        {#if classPerksList.length > 0}
+          | Perks: {classPerksList.map(p => p.name).join(', ')}
+        {/if}
+        {#if sponsorPerksList.length > 0}
+          | Sponsor Perks: {sponsorPerksList.map(p => p.name).join(', ')}
+        {/if}
       {/if}
     </p>
   </div>
@@ -2735,7 +2864,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
         <!-- Perks at bottom -->
         {#if v.perks.length > 0}
           <div class="card-footer">
-            <span class="perk-label">Perks:</span> {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(', ')}
+            <span class="perk-label">Perks:</span> {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(' • ')}
           </div>
         {/if}
       </div>
