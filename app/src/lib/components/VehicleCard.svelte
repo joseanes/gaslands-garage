@@ -8,6 +8,8 @@
 
     // Load weapon special rules
     const weaponSpecialRules = loadWeaponSpecialRules();
+
+    // No need for custom tooltip initialization - using CSS-styled title attributes
     
     // Props
     export let vehicle: {
@@ -450,8 +452,8 @@
                                 <div class="text-xs text-stone-500 dark:text-gray-400">
                                     {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                         {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
-                                            {ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
+                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
+                                            <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
                                         </span>
                                     {/each}
                                 </div>
@@ -544,8 +546,8 @@
                                         <div class="text-stone-500 dark:text-gray-400 text-xs">
                                             {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                                 {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                                <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
-                                                    {ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
+                                                <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
+                                                    <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
                                                 </span>
                                             {/each}
                                         </div>
@@ -656,8 +658,8 @@
                                     <div class="text-stone-500 dark:text-gray-400 text-xs">
                                         {#each parseSpecialRules(upgrade.specialRules) as ruleId}
                                             {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                            <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
-                                                {ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
+                                            <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
+                                                <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
                                             </span>
                                         {/each}
                                     </div>
@@ -829,3 +831,61 @@
         {/if}
     </div>
 </div>
+
+<style>
+    /* Tooltip styles */
+    :global(.tooltip) {
+        position: relative;
+        display: inline-block;
+        cursor: help;
+        text-decoration: underline;
+        text-decoration-style: dotted;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+        color: #d97706; /* amber-600 - slightly darker to stand out */
+        font-weight: 500;
+    }
+
+    :global(.tooltip:hover) {
+        color: #f59e0b; /* amber-500 */
+    }
+
+    /* Hide default browser tooltip */
+    :global([title]) {
+        position: relative;
+    }
+
+    /* Custom tooltip appearance on hover */
+    :global(.tooltip:hover::after) {
+        content: attr(title);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #1f2937; /* dark gray-800 */
+        color: white;
+        text-align: left;
+        padding: 8px 12px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        z-index: 1000;
+        max-width: 300px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+        font-weight: normal;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #f59e0b; /* amber-500 */
+    }
+
+    /* Arrow pointing to the element */
+    :global(.tooltip:hover::before) {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: transparent transparent #f59e0b transparent; /* amber-500 */
+    }
+</style>
