@@ -6,19 +6,21 @@
     margin: 10mm;
   }
 
-  /* Hide everything that shouldn't be printed */
-  body > *:not(#gaslands-print-view),
-  .print-hide {
+  /* First, hide EVERYTHING */
+  body * {
     display: none !important;
   }
 
-  /* Show the print view */
+  /* Then, selectively show ONLY the print view content */
   #gaslands-print-view {
     display: block !important;
     position: static !important;
     left: auto !important;
     visibility: visible !important;
     width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Make sure all content in the print view is visible */
@@ -28,6 +30,18 @@
     color: black !important;
     background-color: white !important;
     opacity: 1 !important;
+  }
+
+  /* Remove any extraneous content */
+  body > *:not(#gaslands-print-view),
+  .print-hide {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
   }
 
   /* Specific formatting for the QR code section */
@@ -45,43 +59,43 @@
     box-shadow: none !important;
   }
 
-  /* Badge specific colors */
-  .vehicle-type-badge {
+  /* Badge specific colors - !important with higher specificity */
+  #gaslands-print-view .vehicle-type-badge {
     color: white !important;
     background-color: #333 !important;
   }
 
-  .card-cost {
+  #gaslands-print-view .card-cost {
     background-color: black !important;
     color: white !important;
   }
 
-  .cost-value {
+  #gaslands-print-view .cost-value {
     color: white !important;
   }
 
   /* Card layout adjustments */
-  .print-card-grid {
+  #gaslands-print-view .print-card-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)) !important;
     gap: 10mm !important;
   }
 
-  /* Format-specific display rules */
-  body[data-print-format="classic"] .vehicle-card-print {
+  /* Format-specific display rules with higher specificity */
+  body[data-print-format="classic"] #gaslands-print-view .vehicle-card-print {
     padding: 8px !important;
   }
 
-  body[data-print-format="compact"] .vehicle-card-print {
+  body[data-print-format="compact"] #gaslands-print-view .vehicle-card-print {
     padding: 4px !important;
     font-size: 90% !important;
   }
 
-  body[data-print-format="dashboard"] .vehicle-card-print {
+  body[data-print-format="dashboard"] #gaslands-print-view .vehicle-card-print {
     padding: 10px !important;
   }
 
-  body[data-print-format="roster"] .vehicle-card-print {
+  body[data-print-format="roster"] #gaslands-print-view .vehicle-card-print {
     display: table-row !important;
   }
 
