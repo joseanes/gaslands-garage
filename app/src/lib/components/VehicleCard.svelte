@@ -362,7 +362,7 @@
 
 <div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-1" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
     <div class="px-4 py-3 bg-stone-100 dark:bg-gray-800 flex flex-wrap justify-between items-center">
-        <div class="flex flex-col md:flex-row items-start md:items-center gap-4 flex-grow">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-2 flex-grow w-full">
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-type-{vehicle.id}" class="form-label uppercase">Vehicle Type</label>
                 <div class="form-field">
@@ -399,52 +399,56 @@
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-2 self-end">
-            <!-- Build header (cans and slots) -->
-            <BuildHeader
-                vehicleCost={vehicleCost}
-                usedBuildSlots={usedBuildSlots}
-                maxBuildSlots={maxBuildSlots}
-            />
+        <div class="flex flex-col md:flex-row gap-2 self-end mt-3 md:mt-0 w-full md:w-auto">
+            <!-- Build header (cans and slots) in top row on mobile -->
+            <div class="flex gap-2 justify-center md:justify-start w-full md:w-auto">
+                <BuildHeader
+                    vehicleCost={vehicleCost}
+                    usedBuildSlots={usedBuildSlots}
+                    maxBuildSlots={maxBuildSlots}
+                />
+            </div>
 
-            <!-- Action buttons with consistent sizing and styling -->
-            <button
-                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
-                on:click={cloneVehicle}
-                aria-label="Clone vehicle"
-                disabled={playMode}
-                class:opacity-50={playMode}
-                class:cursor-not-allowed={playMode}
-            >
-                <span>+ Clone</span>
-                <span class="sr-only">Clone vehicle</span>
-            </button>
+            <!-- Action buttons in second row on mobile -->
+            <div class="flex gap-2 justify-center md:justify-start w-full md:w-auto">
+                <button
+                    class="h-[32px] min-h-[32px] max-h-[32px] px-2 flex-1 md:flex-auto flex items-center justify-center rounded-md transition-colors text-xs md:text-sm amber-button"
+                    on:click={cloneVehicle}
+                    aria-label="Clone vehicle"
+                    disabled={playMode}
+                    class:opacity-50={playMode}
+                    class:cursor-not-allowed={playMode}
+                >
+                    <span>+ Clone</span>
+                    <span class="sr-only">Clone vehicle</span>
+                </button>
 
-            <button
-                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
-                on:click={toggleCollapse}
-                aria-label={collapsed ? "Expand vehicle" : "Collapse vehicle"}
-            >
-                <span>{collapsed ? "+ Expand" : "- Collapse"}</span>
-            </button>
+                <button
+                    class="h-[32px] min-h-[32px] max-h-[32px] px-2 flex-1 md:flex-auto flex items-center justify-center rounded-md transition-colors text-xs md:text-sm amber-button"
+                    on:click={toggleCollapse}
+                    aria-label={collapsed ? "Expand vehicle" : "Collapse vehicle"}
+                >
+                    <span>{collapsed ? "+ Expand" : "- Collapse"}</span>
+                </button>
 
-            <!-- Delete / Remove Vehicle Button-->
-            <button
-                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm red-button"
-                on:click={removeVehicle}
-                aria-label="Remove vehicle"
-            >
-                <span>× Remove</span>
-            </button>
+                <!-- Delete / Remove Vehicle Button-->
+                <button
+                    class="h-[32px] min-h-[32px] max-h-[32px] px-2 flex-1 md:flex-auto flex items-center justify-center rounded-md transition-colors text-xs md:text-sm red-button"
+                    on:click={removeVehicle}
+                    aria-label="Remove vehicle"
+                >
+                    <span>× Remove</span>
+                </button>
+            </div>
         </div>
     </div>
     
     <!-- Collapsed view - Only shown when collapsed -->
     {#if collapsed}
-        <div class="p-2 flex items-center justify-between bg-stone-100 dark:bg-gray-800">
-            <div class="flex items-center gap-4">
+        <div class="p-2 flex flex-col md:flex-row md:items-center md:justify-between bg-stone-100 dark:bg-gray-800">
+            <div class="flex items-center gap-2 mb-2 md:mb-0">
                 <div class="vehicle-type-icon vehicle-type-{vehicle.type}" title="{vehicleTypes.find(vt => vt.id === vehicle.type)?.name || 'Unknown'}"></div>
-                <div class="font-medium">
+                <div class="font-medium text-sm md:text-base">
                     {#if vehicle.weapons && vehicle.weapons.length > 0}
                         {vehicle.weapons.length} weapons
                     {/if}
@@ -457,14 +461,16 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-4">
-                <BuildHeader
-                    vehicleCost={vehicleCost}
-                    usedBuildSlots={usedBuildSlots}
-                    maxBuildSlots={maxBuildSlots}
-                />
+            <div class="flex flex-col md:flex-row gap-2 md:gap-4">
+                <div class="flex gap-2 justify-start">
+                    <BuildHeader
+                        vehicleCost={vehicleCost}
+                        usedBuildSlots={usedBuildSlots}
+                        maxBuildSlots={maxBuildSlots}
+                    />
+                </div>
 
-                <div class="weight-class-indicator weight-{typeof vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 'string' ? 'custom' : vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
+                <div class="weight-class-indicator weight-{typeof vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 'string' ? 'custom' : vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1} text-xs md:text-sm">
                     {(() => {
                         const weight = vehicleTypes.find(vt => vt.id === vehicle.type)?.weight;
                         if (typeof weight === 'string') {

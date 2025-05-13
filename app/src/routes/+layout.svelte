@@ -23,6 +23,7 @@
   // Menu state
   let showShareMenu = false;
   let showHelpMenu = false;
+  let showSettingsMenu = false;
   let showTeamsModal = false;
   let showAboutModal = false;
   let showAboutGaslandsModal = false;
@@ -86,6 +87,18 @@
         !helpMenu.contains(event.target)) {
         showHelpMenu = false;
       }
+
+      // Handle Settings menu clicks outside
+      const settingsMenuButton = document.querySelector('.settings-menu-trigger');
+      const settingsMenu = document.querySelector('.settings-menu-dropdown');
+
+      if (showSettingsMenu &&
+        settingsMenuButton &&
+        settingsMenu &&
+        !settingsMenuButton.contains(event.target) &&
+        !settingsMenu.contains(event.target)) {
+        showSettingsMenu = false;
+      }
     };
 
     document.addEventListener('click', handleClickOutside);
@@ -121,44 +134,199 @@
   }
   
   function generateQRCode() {
+    console.log('[Layout] Generating QR Code');
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
-      // Forward to builder's generateQRCode function
-      if (typeof window.generateQRCodeFn === 'function') {
-        window.generateQRCodeFn();
+      // Try all available methods to trigger QR code generation
+      // 1. First try using the custom event approach
+      try {
+        console.log('[Layout] Dispatching gaslands-menu-action event for generateQRCode');
+        window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+          detail: { action: 'generateQRCode' }
+        }));
+        return;
+      } catch (err) {
+        console.error('[Layout] Error dispatching custom event:', err);
       }
+      
+      // 2. Try the function approach as fallback
+      if (typeof window.generateQRCodeFn === 'function') {
+        console.log('[Layout] Calling window.generateQRCodeFn');
+        window.generateQRCodeFn();
+        return;
+      } else {
+        console.error('[Layout] window.generateQRCodeFn is not a function!', typeof window.generateQRCodeFn);
+      }
+      
+      // 3. Try direct function call as fallback
+      if (typeof window.generateQRCode === 'function') {
+        console.log('[Layout] Calling window.generateQRCode directly');
+        window.generateQRCode();
+        return;
+      }
+      
+      // 4. Last resort - alert user
+      console.error('[Layout] All methods to generate QR code failed');
+      alert('QR code generation is not available. Please try refreshing the page.');
     } else {
       alert('This feature requires team data. Please use on the builder page.');
     }
   }
   
   function importBuild() {
+    console.log('[Layout] Importing build');
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
-      // Forward to builder's importBuild function
-      if (typeof window.importBuildFn === 'function') {
-        window.importBuildFn();
+      // Try all available methods to trigger the import modal
+      // 1. First try using the custom event approach
+      try {
+        console.log('[Layout] Dispatching gaslands-menu-action event for importBuild');
+        window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+          detail: { action: 'importBuild' }
+        }));
+        return;
+      } catch (err) {
+        console.error('[Layout] Error dispatching custom event:', err);
       }
+      
+      // 2. Try the function approach as fallback
+      if (typeof window.importBuildFn === 'function') {
+        console.log('[Layout] Calling window.importBuildFn');
+        window.importBuildFn();
+        return;
+      } else {
+        console.error('[Layout] window.importBuildFn is not a function!', typeof window.importBuildFn);
+      }
+      
+      // 3. Try direct function call as fallback
+      if (typeof window.importBuild === 'function') {
+        console.log('[Layout] Calling window.importBuild directly');
+        window.importBuild();
+        return;
+      }
+      
+      // 4. Last resort - alert user
+      console.error('[Layout] All methods to trigger import modal failed');
+      alert('Import feature is not available. Please try refreshing the page.');
     } else {
       alert('This feature requires team data. Please use on the builder page.');
     }
   }
   
   function printTeam() {
+    console.log('[Layout] Printing team');
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
-      // Forward to builder's printTeam function
-      if (typeof window.printTeamFn === 'function') {
-        window.printTeamFn();
+      // Try all available methods to trigger print
+      // 1. First try using the custom event approach
+      try {
+        console.log('[Layout] Dispatching gaslands-menu-action event for printTeam');
+        window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+          detail: { action: 'printTeam' }
+        }));
+        return;
+      } catch (err) {
+        console.error('[Layout] Error dispatching custom event:', err);
       }
+      
+      // 2. Try the function approach as fallback
+      if (typeof window.printTeamFn === 'function') {
+        console.log('[Layout] Calling window.printTeamFn');
+        window.printTeamFn();
+        return;
+      } else {
+        console.error('[Layout] window.printTeamFn is not a function!', typeof window.printTeamFn);
+      }
+      
+      // 3. Try direct function calls as fallback
+      if (typeof window.printWithRulesCheck === 'function') {
+        console.log('[Layout] Calling window.printWithRulesCheck directly');
+        window.printWithRulesCheck();
+        return;
+      } else if (typeof window.printTeam === 'function') {
+        console.log('[Layout] Calling window.printTeam directly');
+        window.printTeam();
+        return;
+      }
+      
+      // 4. Last resort - alert user
+      console.error('[Layout] All methods to print team failed');
+      alert('Print functionality is not available. Please try refreshing the page.');
     } else {
       alert('This feature requires team data. Please use on the builder page.');
     }
   }
   
-  function openSettings() {
+  function openGeneralSettings() {
+    console.log('[Layout] Opening General Settings');
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
-      // Forward to builder's openSettings function
-      if (typeof window.openSettingsFn === 'function') {
-        window.openSettingsFn();
+      // Try all available methods to open general settings
+      // 1. First try using the custom event approach
+      try {
+        console.log('[Layout] Dispatching gaslands-menu-action event for openSettings with general tab');
+        window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+          detail: { action: 'openSettings', tab: 'general' }
+        }));
+        return;
+      } catch (err) {
+        console.error('[Layout] Error dispatching custom event:', err);
       }
+      
+      // 2. Try the function approach as fallback
+      if (typeof window.openSettingsFn === 'function') {
+        console.log('[Layout] Calling window.openSettingsFn with "general"');
+        window.openSettingsFn('general');
+        return;
+      } else {
+        console.error('[Layout] window.openSettingsFn is not a function!', typeof window.openSettingsFn);
+      }
+      
+      // 3. Try direct function call as fallback
+      if (typeof window.openSettings === 'function') {
+        console.log('[Layout] Calling window.openSettings directly with "general"');
+        window.openSettings('general');
+        return;
+      }
+      
+      // 4. Last resort - alert user
+      console.error('[Layout] All methods to open general settings failed');
+      alert('Settings functionality is not available. Please try refreshing the page.');
+    } else {
+      alert('This feature requires team data. Please use on the builder page.');
+    }
+  }
+
+  function openPrintSettings() {
+    console.log('[Layout] Opening Print Settings');
+    if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
+      // Try all available methods to open print settings
+      // 1. First try using the custom event approach
+      try {
+        console.log('[Layout] Dispatching gaslands-menu-action event for openSettings with print tab');
+        window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+          detail: { action: 'openSettings', tab: 'print' }
+        }));
+        return;
+      } catch (err) {
+        console.error('[Layout] Error dispatching custom event:', err);
+      }
+      
+      // 2. Try the function approach as fallback
+      if (typeof window.openSettingsFn === 'function') {
+        console.log('[Layout] Calling window.openSettingsFn with "print"');
+        window.openSettingsFn('print');
+        return;
+      } else {
+        console.error('[Layout] window.openSettingsFn is not a function!', typeof window.openSettingsFn);
+      }
+      
+      // 3. Try direct function call as fallback
+      if (typeof window.openSettings === 'function') {
+        console.log('[Layout] Calling window.openSettings directly with "print"');
+        window.openSettings('print');
+        return;
+      }
+      
+      // 4. Last resort - alert user
+      console.error('[Layout] All methods to open print settings failed');
+      alert('Settings functionality is not available. Please try refreshing the page.');
     } else {
       alert('This feature requires team data. Please use on the builder page.');
     }
@@ -316,7 +484,36 @@
           </div>
             {/if}
           </div>
-          <button type="button" class="menu-item" on:click={openSettings} style="height: auto !important; min-height: auto !important;">Settings</button>
+          <div class="relative">
+            <button
+              type="button"
+              class="menu-item flex items-center settings-menu-trigger"
+              on:click={() => showSettingsMenu = !showSettingsMenu}
+              aria-haspopup="true"
+              aria-expanded={showSettingsMenu}
+              style="height: auto !important; min-height: auto !important;"
+            >
+              Settings
+              <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+
+            {#if showSettingsMenu}
+            <div
+              class="absolute w-56 bg-black border-2 border-amber-500 shadow-xl rounded-lg overflow-hidden z-20 py-2 settings-menu-dropdown"
+              style="box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); background-color: #000000 !important; top: 40px; left: 0;"
+              transition:fade={{ duration: 150 }}
+            >
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openGeneralSettings(); showSettingsMenu = false; }}>
+                General Settings
+              </button>
+              <button type="button" class="menu-item w-full text-left px-4 py-2 text-white hover:bg-amber-600" on:click={() => { openPrintSettings(); showSettingsMenu = false; }}>
+                Print Settings
+              </button>
+            </div>
+            {/if}
+          </div>
           <div class="relative">
             <button
               type="button"
@@ -530,6 +727,7 @@
         <p>
           Below is a history of major updates and improvements to Gaslands Garage.
         </p>
+        <ul><li><b>May 13, 2025</b> - Initial Alpha release.</li></ul>
 
         <div class="space-y-4 px-4">
           <!-- Change log entries will go here -->
@@ -579,6 +777,7 @@
           Here's what we're working on for future updates to Gaslands Garage:
         </p>
         <ul class="px-4 space-y-2">
+          <li>Improved validation of upgrades, perks, and weapons.</li>
           <li>Printing Options</li>
           <li>Apple Login</li>
           <li>Where to purchase accessories</li>

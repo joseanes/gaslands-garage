@@ -10,13 +10,14 @@
 import SettingsMenu from '$lib/components/SettingsMenu.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
-	// Using new print approach
-	import { printTeam as printTeamService } from '$lib/components/printing/PrintService-new';
+	// Using new print approach - fixed import to avoid module collision with the function name
+	import { printTeam as printServiceFunc } from '$lib/components/printing/PrintService-new';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
+	import '../../print.css';
 
 	/* ---------- server data ---------- */
 	export let data: {
@@ -583,6 +584,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	/* ---------- modals & menu state ---------- */
 	// For settings and modals that need persistence
 	let qrDataUrl: string | null = null;
+	let showQRModal = false; // Whether to show the QR code modal
 	let showImportModal = false;
 	let showSettingsModal = false;
 	let activeSettingsTab = 'general'; // Which tab to show in settings: 'general' or 'print'
@@ -703,10 +705,45 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		}
 	}
 
+	// Single print flag to prevent multiple prints
+	let isPrinting = false;
+	
 	// Wrapper function for printing with rules check
 	function printWithRulesCheck() {
-		if (checkRulesAcknowledgment('printTeam')) {
-			printTeam();
+		console.log('[printWithRulesCheck] Called');
+		
+		// Check if we have vehicles before proceeding
+		if (!vehicles || vehicles.length === 0) {
+			console.log('[printWithRulesCheck] No vehicles to print');
+			alert('You need to add at least one vehicle before printing.');
+			return;
+		}
+		
+		// Check if we're already printing to prevent multiple prints
+		if (isPrinting) {
+			console.log('[printWithRulesCheck] Already printing, ignoring call');
+			return;
+		}
+		
+		// Check if user has acknowledged having rules
+		if (hasRules) {
+			// User has already acknowledged having the rules
+			console.log('[printWithRulesCheck] Rules acknowledged, printing team');
+			// Use the proper print service instead of window.print()
+			isPrinting = true;
+			printTeam()
+				.then(() => {
+					setTimeout(() => { isPrinting = false; }, 3000);
+				})
+				.catch(err => {
+					console.error('[printWithRulesCheck] Error printing:', err);
+					isPrinting = false;
+				});
+		} else {
+			// Show the rules acknowledgment modal
+			console.log('[printWithRulesCheck] Rules not acknowledged, showing modal');
+			showRulesAcknowledgmentModal = true;
+			rulesModalAction = 'printTeam';
 		}
 	}
 
@@ -819,11 +856,29 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	async function generateQRCode() {
-		// Generate QR code and show the modal
-		qrDataUrl = await draftToDataURL(currentDraft);
+		console.log('[generateQRCode] Generating QR code');
+		try {
+			// Generate QR code and show the modal
+			qrDataUrl = await draftToDataURL(currentDraft);
+			console.log('[generateQRCode] QR code generated');
+			// Make sure qrDataUrl is shown
+			showQRModal = true;
+		} catch (error) {
+			console.error('[generateQRCode] Error:', error);
+		}
 	}
 
 	async function printTeam() {
+		console.log("[printTeam] Print function called");
+		
+		// Check for vehicles again (defensive coding)
+		if (!vehicles || vehicles.length === 0) {
+			console.log("[printTeam] No vehicles to print");
+			isPrinting = false;
+			alert("You need to add at least one vehicle before printing.");
+			return;
+		}
+		
 		// First generate QR code for the team
 		let qrCode;
 		try {
@@ -918,23 +973,63 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			maxCans
 		});
 
-		await printTeamService(printStyle, enhancedDraft);
+		// Call the imported function with proper service name
+		try {
+			console.log("[printTeam] Calling printServiceFunc with style:", printStyle);
+			await printServiceFunc(printStyle, enhancedDraft);
+			console.log("[printTeam] Print completed successfully");
+			return true;
+		} catch (error) {
+			console.error("[printTeam] Error calling print service:", error);
+			isPrinting = false;
+			alert("There was an error while printing. Please try again.");
+			return false;
+		}
 	}
 
+	// Explicitly declare this at the top level of component scope
+	// to ensure it's available to be bound to the window object
 	function importBuild() {
+		console.log('[importBuild] Showing import modal');
+		// Make sure modal is visible
 		showImportModal = true;
+		console.log('[importBuild] Import modal shown:', showImportModal);
 	}
 
 	function openSettings(tab = 'general') {
+		console.log(`[openSettings] Opening settings modal with tab: ${tab}`);
 		activeSettingsTab = tab;
 		showSettingsModal = true;
+		console.log(`[openSettings] showSettingsModal set to: ${showSettingsModal}`);
 	}
 	
 	// Expose these functions to the global window object for use by the layout
 	onMount(() => {
 		if (typeof window !== 'undefined') {
+			// Set up a custom event listener for menu commands
+			window.addEventListener('gaslands-menu-action', (event) => {
+				console.log('[Event] Received gaslands-menu-action event:', event.detail);
+				const { action } = event.detail || {};
+				
+				if (action === 'importBuild') {
+					console.log('[Event] Showing import modal from event');
+					showImportModal = true;
+				} else if (action === 'generateQRCode') {
+					console.log('[Event] Showing QR modal from event');
+					generateQRCode();
+				} else if (action === 'printTeam') {
+					console.log('[Event] Printing team from event');
+					printWithRulesCheck();
+				} else if (action === 'openSettings') {
+					console.log('[Event] Opening settings from event with tab:', event.detail.tab || 'general');
+					openSettings(event.detail.tab || 'general');
+				}
+			});
+			
 			// Make openSettings function globally available
 			window.openSettings = openSettings;
+			window.openSettingsFn = openSettings;
+			console.log("[onMount] Defined window.openSettings and window.openSettingsFn");
 			
 			// Check localStorage for print settings request
 			const openPrintSettingsFlag = localStorage.getItem('openPrintSettings');
@@ -985,12 +1080,22 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				}
 			});
 			
+			// Directly assign functions from the component scope to the window
 			window.copyDraftFn = copyDraft;
 			window.shareLinkFn = shareLink;
 			window.generateQRCodeFn = generateQRCode;
 			window.importBuildFn = importBuild;
 			window.printTeamFn = printWithRulesCheck;
-			window.openSettingsFn = (tab = 'general') => openSettings(tab);
+			// Make sure we use the direct function reference, not a wrapper
+			window.openSettingsFn = openSettings;
+
+			// Also expose functions directly on the window object as a backup
+			window.copyDraft = copyDraft;
+			window.shareLink = shareLink;
+			window.generateQRCode = generateQRCode;
+			window.importBuild = importBuild;
+			window.printTeam = printTeam;
+			window.printWithRulesCheck = printWithRulesCheck;
 			window.openTeamsModalFn = () => { showTeamsModal = true; };
 
 			// Expose showExperimentalFeatures for the menu visibility
@@ -1026,15 +1131,26 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		return () => {
 			// Clean up when component is destroyed
 			if (typeof window !== 'undefined') {
+				console.log("[onUnmount] Cleaning up global functions");
+				// Clean up function references with Fn suffix
 				window.copyDraftFn = undefined;
 				window.shareLinkFn = undefined;
 				window.generateQRCodeFn = undefined;
 				window.importBuildFn = undefined;
 				window.printTeamFn = undefined;
+				window.openSettings = undefined;
 				window.openSettingsFn = undefined;
 				window.openTeamsModalFn = undefined;
 				window.currentDraftFn = undefined;
 				window.importDraftFn = undefined;
+				
+				// Clean up direct function references
+				window.copyDraft = undefined;
+				window.shareLink = undefined;
+				window.generateQRCode = undefined;
+				window.importBuild = undefined;
+				window.printTeam = undefined;
+				window.printWithRulesCheck = undefined;
 				delete window.showExperimentalFeatures;
 			}
 		};
@@ -1497,565 +1613,46 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 <style>
 /* Menu styles removed - now in layout.svelte */
 
-.no-card-padding {
-	padding: 0 !important;
-}
+/* Removed unused selector: no-card-padding */
 
-/* Tooltip styles */
-.tooltip {
-	position: relative;
-	display: inline-block;
-	cursor: help;
-	border-bottom: 1px dotted #666;
-}
+/* Tooltip styles removed */
 
-.tooltip:hover::after {
-	content: attr(title);
-	position: absolute;
-	bottom: 125%;
-	left: 50%;
-	transform: translateX(-50%);
-	background-color: rgba(0, 0, 0, 0.8);
-	color: white;
-	padding: 6px 10px;
-	border-radius: 4px;
-	font-size: 0.8rem;
-	white-space: nowrap;
-	z-index: 50;
-	text-align: center;
-	pointer-events: none;
-	min-width: 200px;
-	max-width: 300px;
-	white-space: normal;
-}
+/* Vehicle type icon styles removed */
 
-.tooltip:hover::before {
-	content: "";
-	position: absolute;
-	bottom: 100%;
-	left: 50%;
-	transform: translateX(-50%);
-	border-width: 5px;
-	border-style: solid;
-	border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
-	z-index: 50;
-	pointer-events: none;
-}
+/* Weight class indicators removed */
 
-/* Vehicle type icon styles */
-.vehicle-type-icon {
-  width: 20px;
-  height: 20px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  display: inline-block;
-}
+/* Interactive dashboard styles removed */
 
-.vehicle-type-car { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M5 13a2 2 0 0 1-2-2c0-1.1.9-2 2-2c1.1 0 2 .9 2 2c0 1.1-.9 2-2 2zm14 0a2 2 0 0 1-2-2c0-1.1.9-2 2-2c1.1 0 2 .9 2 2c0 1.1-.9 2-2 2zM19 11h-1l-1.71-7.67A2.5 2.5 0 0 0 13.92 1H10.08C8.77 1 7.66 1.94 7.29 3.33L5.6 11H5c-1.66 0-3 1.34-3 3v3h1.5v-1.5h17V17H22v-3c0-1.66-1.34-3-3-3zm-7-7.5h2.62l1.5 7.5H12V3.5zM8.38 3.5H11v7.5H6.9l1.48-7.5z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-buggy { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-performance_car { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M16 6l3 4h2c1.11 0 2 .89 2 2v3h-2c0 1.66-1.34 3-3 3s-3-1.34-3-3H9c0 1.66-1.34 3-3 3s-3-1.34-3-3H1v-3c0-1.11.89-2 2-2l3-4h10m-5.5 1.5H9V10H7.25V7.5H6v6h1.25V11.5H9v2.5h1.5v-6m7 0h-3v6H16v-2h1c.55 0 1-.45 1-1v-2c0-.55-.45-1-1-1m0 3H16v-1.5h1.5V10.5M6 13.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5m12 0c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-pickup { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M6 5H4v16c0 1.1.9 2 2 2h10v-2H6V5zm16 2h-8l-2-2H8v14h14V7zm-3 8H9v-2h10v2z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-van { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18 4v7h-6V4h6m1-2h-8c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h8c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-10 9H5c-.55 0-1 .45-1 1v5c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-5c0-.55-.45-1-1-1zM9 17H5v-3h4v3zm8-4v2h2v2h-5v-4h3z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-monster_truck { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 10c-1.1 0-2 .9-2 2h-1V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-4c0-1.1-.9-2-2-2h-3zm-9 7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm7-6h3.5c.28 0 .5.22.5.5V13h-4v-2zm-5 0v2h-4V9.48c1.68.5 2.8 1.94 2.95 3.52H15zm3 6c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-heavy_truck { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M18 18.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zm1.5-9l1.96 2.5H17V9.5h2.5zM6 18.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5-1.5.67-1.5 1.5.67 1.5 1.5 1.5zM20 8l-3-4H3c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h1c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1h-3z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-bus { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-war_rig { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z'/%3E%3C/svg%3E"); }
-
-.vehicle-type-tank { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z'/%3E%3C/svg%3E"); }
-
-/* Weight class indicators */
-.weight-class-indicator {
-  font-weight: bold;
-  padding: 2px 5px;
-  border-radius: 4px;
-  font-size: 0.9em;
-  text-align: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-.weight-1 {
-  background-color: #a7f3d0;
-  color: #065f46;
-}
-
-.weight-2 {
-  background-color: #fde68a;
-  color: #92400e;
-}
-
-.weight-3 {
-  background-color: #fca5a5;
-  color: #991b1b;
-}
-
-.weight-4 {
-  background-color: #c7d2fe;
-  color: #312e81;
-}
-
-.weight-custom, .weight-0 {
-  background-color: #e5e7eb;
-  color: #1f2937;
-}
-
-/* Interactive dashboard styles */
-.hull-checkbox, .crew-checkbox {
-  display: inline-block;
-  position: relative;
-  margin: 2px;
-}
-
-.hull-checkbox-input, .crew-checkbox-input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-}
-
-.hull-checkbox-label {
-  display: block;
-  width: 20px;
-  height: 20px;
-  background-color: #fff;
-  border: 2px solid #333;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.crew-checkbox-label {
-  display: block;
-  width: 20px;
-  height: 20px;
-  background-color: #fff;
-  border: 2px solid #333;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.hull-checkbox-input:checked + .hull-checkbox-label {
-  background-color: #ef4444;
-  border-color: #991b1b;
-}
-
-.crew-checkbox-input:checked + .crew-checkbox-label {
-  background-color: #f59e0b;
-  border-color: #b45309;
-}
-
-.gear-range {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 10px;
-  border-radius: 5px;
-  outline: none;
-}
-
-.gear-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #f59e0b;
-  border: 2px solid #b45309;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.gear-range::-moz-range-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #f59e0b;
-  border: 2px solid #b45309;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Hide print view by default */
-#gaslands-print-view {
-  display: none;
-}
-
-/* Print styles */
-@media print {
-  /* Hide elements that shouldn't be printed */
-  .menu-bar,
-  button[aria-label="Remove vehicle"],
-  button[aria-label="Remove weapon"],
-  button[aria-label="Remove upgrade"],
-  button[aria-label="Remove perk"],
-  .relative select,
-  #import-draft,
-  .bg-red-50,
-  .bg-green-50,
-  .print-hide {
-    display: none !important;
-  }
-  
-  /* Page formatting */
-  @page { 
-    size: 8.5in 11in portrait; 
-    margin: 0.5cm;
-  }
-  
-  section {
-    background-color: white !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  
-  /* Reset padding from header for print */
-  #builder-ui {
-    padding-top: 0 !important;
-  }
-  
-  /* Hide non-print components */
-  .bg-white, .bg-stone-100, #builder-ui, .p-4, .p-5, .p-6 {
-    display: none !important;
-  }
-  
-  /* General text formatting applied to print view container */
-  #gaslands-print-view { 
-    color: #000; 
-    font-family: Arial, sans-serif; 
-    display: block !important;
-  }
-  
-  /* Force background printing */
-  * { 
-    -webkit-print-color-adjust: exact !important; 
-    color-adjust: exact !important; 
-  }
-  
-  /* Print-specific styles */
-  @media print {
-    /* Print styles already covered in parent media query */
-  }
-  
-  /* Vehicle card styling */
-  .vehicle-card-print {
-    width: 320px;
-    height: 340px;
-    vertical-align: top;
-    padding: 16px;
-    border: 3px solid #000;
-    page-break-inside: avoid;
-    margin-bottom: 20px;
-    display: inline-block;
-    position: relative;
-    box-sizing: border-box;
-    background-color: #f8f8f8;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  }
-  
-  /* Text styling */
-  .uppercase { text-transform: uppercase; }
-  .bold { font-weight: bold; }
-  
-  /* Hull boxes */
-  .hull-box {
-    width: 14px;
-    height: 14px;
-    background-color: #fff;
-    border: 2px solid #000;
-    display: inline-block;
-    margin: 2px;
-    border-radius: 2px;
-  }
-  
-  /* Vehicle card sections */
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 16px;
-    border-bottom: 2px solid #222;
-    padding-bottom: 8px;
-  }
-  
-  .card-title {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  
-  .card-name {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
-  
-  .vehicle-type-badge {
-    display: inline-block;
-    padding: 3px 8px;
-    border-radius: 4px;
-    color: white;
-    font-size: 0.8em;
-    font-weight: bold;
-    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-  }
-  
-  .card-cost {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #000;
-    padding: 2px 12px;
-    border-radius: 6px;
-    background-color: #fff;
-    font-size: 0.8em;
-    font-weight: bold;
-  }
-  
-  .cost-value {
-    font-size: 2em;
-    font-weight: bold;
-    line-height: 1;
-  }
-  
-  /* Stats section */
-  .stats-grid {
-    margin-bottom: 16px;
-  }
-  
-  .stat-block {
-    margin-bottom: 8px;
-  }
-  
-  .stats-row {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid #ddd;
-  }
-  
-  .stat-label {
-    font-weight: bold;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-    color: #444;
-  }
-  
-  .stat-value {
-    font-size: 1.1em;
-    font-weight: bold;
-    text-align: center;
-    padding: 3px 8px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-  }
-  
-  .hull-tracker {
-    display: flex;
-    flex-wrap: wrap;
-    max-width: 100%;
-    padding: 3px;
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-  }
-  
-  /* Loadout sections */
-  .loadout {
-    font-size: 0.85em;
-  }
-  
-  .loadout-section {
-    margin-bottom: 10px;
-  }
-  
-  .section-header {
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    font-size: 0.9em;
-    padding: 2px 0;
-    border-bottom: 1px solid #aaa;
-  }
-  
-  .loadout-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .loadout-table tr:nth-child(odd) {
-    background-color: rgba(0,0,0,0.05);
-  }
-  
-  .item-name {
-    font-weight: bold;
-    padding: 2px 4px;
-  }
-  
-  .item-facing {
-    text-align: center;
-    font-style: italic;
-    padding: 2px 4px;
-    width: 60px;
-  }
-  
-  .item-attack {
-    text-align: right;
-    font-weight: bold;
-    padding: 2px 4px;
-    width: 40px;
-  }
-  
-  .upgrade-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .upgrade-list li {
-    padding: 3px 4px;
-  }
-  
-  .upgrade-list li:nth-child(odd) {
-    background-color: rgba(0,0,0,0.05);
-  }
-  
-  .card-footer {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    right: 16px;
-    font-weight: bold;
-    border-top: 1px solid #aaa;
-    padding-top: 8px;
-    font-size: 0.9em;
-  }
-  
-  .perk-label {
-    text-transform: uppercase;
-    font-weight: bold;
-  }
-  
-  /* Team summary styling */
-  .sponsor-print-header {
-    text-align: center;
-    margin-bottom: 20px;
-    border-bottom: 2px solid black;
-    padding-bottom: 10px;
-  }
-  
-  .sponsor-print-header h1 {
-    font-size: 24pt;
-    margin-bottom: 5px;
-  }
-  
-  .print-card-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
-    page-break-inside: auto;
-  }
-  
-  .print-section {
-    page-break-inside: avoid;
-    margin-bottom: 20px;
-  }
-  
-  
-  .rotate90 {
-    display: inline-block;
-    transform: rotate(-90deg);
-    margin-right: 10px;
-    font-weight: bold;
-  }
-  
-  .vehicle-type {
-    font-size: 0.9em;
-    font-weight: bold;
-  }
-  
-  /* Perk details section below cards */
-  #perk-details-print {
-    margin-top: 30px;
-    border-top: 2px solid #999;
-    padding-top: 15px;
-  }
-  
-  #perk-details-print h2 {
-    font-size: 14pt;
-    margin-bottom: 10px;
-  }
-  
-  .perk-list {
-    column-count: 2;
-    column-gap: 30px;
-  }
-  
-  .perk-item {
-    margin-bottom: 10px;
-    break-inside: avoid;
-  }
-  
-  /* QR Code and footer styling */
-  .print-footer {
-    width: 100%;
-    margin-top: 30px;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
-    page-break-inside: avoid;
-    display: flex;
-    align-items: flex-end;
-  }
-  
-  .qr-code-container {
-    width: 120px;
-    text-align: center;
-  }
-  
-  .qr-code-image {
-    width: 100px;
-    height: 100px;
-    border: 1px solid black;
-    background-color: white;
-    margin: 0 auto 5px auto;
-  }
-  
-  .qr-code-placeholder {
-    width: 100px;
-    height: 100px;
-    border: 1px solid black;
-    background-color: white;
-    margin: 0 auto 5px auto;
-    text-align: center;
-    line-height: 100px;
-  }
-  
-  .qr-code-caption {
-    font-size: 8pt;
-  }
-  
-  .print-footer-text {
-    flex: 1;
-    font-size: 10pt;
-    color: #666;
-    text-align: center;
-  }
-}
+/* Print styles have been moved to a separate file */
 </style>
 
 <section id="builder-ui" class="p-2 sm:p-4 md:p-6 bg-stone-100 min-h-screen w-full {darkMode ? 'dark' : ''}">
+    <!-- Debug controls - Only visible in experimental mode -->
+    {#if showExperimentalFeatures}
+      <div class="fixed bottom-4 right-4 z-50 bg-gray-800 p-2 rounded-lg shadow-lg text-white text-xs">
+        <div class="font-bold mb-1">Debug Controls</div>
+        <div class="flex flex-col gap-1">
+          <button
+            class="bg-purple-600 hover:bg-purple-800 px-2 py-1 rounded"
+            on:click={() => {
+              console.log('Import Modal Debug Button clicked');
+              showImportModal = true;
+            }}
+          >
+            Show Import Modal
+          </button>
+          <button
+            class="bg-blue-600 hover:bg-blue-800 px-2 py-1 rounded"
+            on:click={() => {
+              console.log('QR Modal Debug Button clicked');
+              showQRModal = true;
+            }}
+          >
+            Show QR Modal
+          </button>
+        </div>
+      </div>
+    {/if}
 	<header class="mb-3 md:mb-4">
 		<div class="text-3xl md:text-4xl font-extrabold text-stone-800 dark:text-gray-100 tracking-tight flex flex-wrap justify-between items-center">
 			<div class="flex flex-col gap-2 w-full">
@@ -2065,7 +1662,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[137px] w-auto max-w-[177px] text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[127px] w-auto max-w-[167px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
@@ -2112,12 +1709,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				{#if enableSponsorships}
 				<div class="flex flex-col w-full mt-1">
 					<div class="flex items-center gap-4">
-						<b class="text-base font-bold whitespace-nowrap" style="min-width: 147px;">Choose Your Sponsor:</b>
+						<b class="text-base font-bold whitespace-nowrap flex items-center" style="min-width: 147px;">Choose Your Sponsor:</b>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
 								bind:value={sponsorId}
-								class="form-select"
+								class="form-select h-[32px] flex items-center"
+								style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							>
 								{#each [...sponsors].sort((a, b) => {
 									// Always put "No Sponsor" first
@@ -2430,7 +2028,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 {/if}
 
 <!-- QR Modal -->
-    {#if qrDataUrl}
+    {#if qrDataUrl && showQRModal}
       <div
         class="fixed inset-0 bg-black/90 z-50"
         role="dialog"
@@ -2441,8 +2039,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
         <!-- Adding a button to make the whole backdrop clickable/accessible -->
         <button
           class="absolute inset-0 w-full h-full border-0 bg-transparent cursor-pointer"
-          on:click={() => (qrDataUrl = null)}
-          on:keydown={e => e.key === 'Escape' && (qrDataUrl = null)}
+          on:click={() => { showQRModal = false; }}
+          on:keydown={e => e.key === 'Escape' && (showQRModal = false)}
           aria-label="Close modal background"
         ></button>
         <div
@@ -2455,7 +2053,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
             <h3 class="text-lg font-bold text-stone-800 dark:text-white">Team QR Code</h3>
             <button
               class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
-              on:click={() => (qrDataUrl = null)}
+              on:click={() => { showQRModal = false; }}
               aria-label="Close QR code modal"
               style="height: 32px !important; min-height: 32px !important;"
             >
@@ -2560,7 +2158,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
     
     <!-- Settings Modal -->
     <SettingsMenu 
-      bind:showSettingsModal
+      bind:showSettingsModal={showSettingsModal}
+      bind:activeSettingsTab={activeSettingsTab}
       bind:hasRules
       bind:enableSponsorships
       bind:includeAdvanced
@@ -2575,7 +2174,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
       bind:allowContactFromPlayers
       bind:location
       bind:receiveUpdates
-      bind:activeSettingsTab
       saveSettingsToFirebase={saveSettingsToFirebase}
     />
     
@@ -2657,7 +2255,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                     playMode = !playMode;
                   }
                   else if (rulesModalAction === 'printTeam' && hasRules) {
-                    printTeam();
+                    // Use the same wrapper function as used elsewhere
+                    console.log('[Rules Modal] Printing after acknowledgment');
+                    // Just set the flag - printWithRulesCheck will handle checking
+                    isPrinting = false;
+                    printWithRulesCheck();
                   }
                 }}
               >
@@ -2676,7 +2278,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                   playMode = !playMode;
                 }
                 else if (rulesModalAction === 'printTeam' && hasRules) {
-                  printTeam();
+                  // Use the same wrapper function as used elsewhere
+                  console.log('[Rules Modal] Printing after saving acknowledgment');
+                  // Just set the flag - printWithRulesCheck will handle checking
+                  isPrinting = false;
+                  printWithRulesCheck();
                 }
               }}
             >
