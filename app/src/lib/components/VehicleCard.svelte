@@ -596,10 +596,12 @@
                                 <div class="text-xs text-stone-500 dark:text-gray-400 mt-1.5">
                                     {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                         {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                        <Tooltip
-                                            text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
-                                            content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
-                                        />
+                                        <span class="inline-block mr-1">
+                                            <Tooltip
+                                                text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
+                                                content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                            />
+                                        </span>
                                     {/each}
                                 </div>
                             {/if}
@@ -619,10 +621,12 @@
                                 <div class="text-xs text-stone-500 dark:text-gray-400 mt-1.5">
                                     {#each parseSpecialRules(upgrade.specialRules) as ruleId}
                                         {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                        <Tooltip
-                                            text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
-                                            content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
-                                        />
+                                        <span class="inline-block mr-1">
+                                            <Tooltip
+                                                text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
+                                                content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                            />
+                                        </span>
                                     {/each}
                                 </div>
                             {/if}
@@ -710,10 +714,12 @@
                                         <div class="text-stone-500 dark:text-gray-400 text-xs">
                                             {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                                 {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                                <Tooltip
-                                                    text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
-                                                    content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
-                                                />
+                                                <span class="inline-block mr-1">
+                                                    <Tooltip
+                                                        text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
+                                                        content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                                    />
+                                                </span>
                                             {/each}
                                         </div>
                                     {/if}
@@ -828,10 +834,12 @@
                                     <div class="text-stone-500 dark:text-gray-400 text-xs">
                                         {#each parseSpecialRules(upgrade.specialRules) as ruleId}
                                             {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                            <Tooltip
-                                                text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
-                                                content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
-                                            />
+                                            <span class="inline-block mr-1">
+                                                <Tooltip
+                                                    text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
+                                                    content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                                />
+                                            </span>
                                         {/each}
                                     </div>
                                 {/if}

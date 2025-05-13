@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import { draftToDataURL } from '$lib/draft/qr';
 	import Auth from '$lib/components/Auth.svelte';
+import SettingsMenu from '$lib/components/SettingsMenu.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	// Using new print approach
@@ -308,6 +309,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
 		if (!vehicleType) return; // Don't add if vehicle type not found
 
+		// Validate electrical weapons - only allow if sponsor supports them
+		if (weaponObj.electrical && !(currentSponsor?.electrical)) {
+			console.warn(`Cannot add electrical weapon ${weaponObj.name} - current sponsor doesn't support electrical weapons`);
+			return; // Do not add the weapon if it's electrical but sponsor doesn't support it
+		}
+
 		// Update vehicle report for immediate UI feedback
 		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicleId);
 		if (vehicleReport) {
@@ -385,13 +392,19 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	function addUpgrade(vehicleId: string, upgradeId: string) {
 		const upgradeObj = upgrades.find(u => u.id === upgradeId);
 		if (!upgradeObj) return; // Don't add if upgrade not found
-		
+
 		// Check if adding this upgrade would exceed the vehicle's build slots
 		const vehicle = vehicles.find(v => v.id === vehicleId);
 		if (!vehicle) return; // Don't add if vehicle not found
-		
+
 		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
 		if (!vehicleType) return; // Don't add if vehicle type not found
+
+		// Validate electrical upgrades - only allow if sponsor supports them
+		if (upgradeObj.electrical && !(currentSponsor?.electrical)) {
+			console.warn(`Cannot add electrical upgrade ${upgradeObj.name} - current sponsor doesn't support electrical upgrades`);
+			return; // Do not add the upgrade if it's electrical but sponsor doesn't support it
+		}
 		
 		const currentBuildSlots = calculateUsedBuildSlots(vehicle);
 		const upgradeSlots = upgradeObj.slots;
@@ -572,6 +585,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let qrDataUrl: string | null = null;
 	let showImportModal = false;
 	let showSettingsModal = false;
+	let activeSettingsTab = 'general'; // Which tab to show in settings: 'general' or 'print'
 	let quickSaving = false;
 	
 	// Update modal background color based on dark mode
@@ -810,6 +824,17 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	async function printTeam() {
+		// First generate QR code for the team
+		let qrCode;
+		try {
+			console.log("[printTeam] Generating QR code for team:", teamName);
+			qrCode = await draftToDataURL(currentDraft);
+			console.log("[printTeam] QR code generated, length:", qrCode?.length || 0);
+		} catch (e) {
+			console.error("[printTeam] Error generating QR code:", e);
+			qrCode = null;
+		}
+
 		// Use our new standalone print service
 		// This builds a modified draft with more information for printing
 		const enhancedDraft = {
@@ -826,6 +851,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				classPerksList: classPerksList || [],
 				sponsorPerksList: sponsorPerksList || []
 			},
+			// Add QR code explicitly - this should be a data URL string
+			qrCode: qrCode,
 			// Add vehicle data with more details including full objects
 			vehicles: vehicles.map(v => ({
 				...v,
@@ -898,19 +925,72 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		showImportModal = true;
 	}
 
-	function openSettings() {
+	function openSettings(tab = 'general') {
+		activeSettingsTab = tab;
 		showSettingsModal = true;
 	}
 	
 	// Expose these functions to the global window object for use by the layout
 	onMount(() => {
 		if (typeof window !== 'undefined') {
+			// Make openSettings function globally available
+			window.openSettings = openSettings;
+			
+			// Check localStorage for print settings request
+			const openPrintSettingsFlag = localStorage.getItem('openPrintSettings');
+			if (openPrintSettingsFlag) {
+				// Clear the flag immediately
+				localStorage.removeItem('openPrintSettings');
+				console.log("Detected openPrintSettings flag in localStorage");
+				
+				// Use setTimeout to ensure DOM is fully loaded
+				setTimeout(() => {
+					openSettings('print');
+				}, 200);
+			}
+			
+			// Set up interval to periodically check localStorage
+			const storageCheckInterval = setInterval(() => {
+				const newFlag = localStorage.getItem('openPrintSettings');
+				if (newFlag) {
+					// Clear the flag immediately
+					localStorage.removeItem('openPrintSettings');
+					console.log("Detected openPrintSettings flag in localStorage (interval check)");
+					openSettings('print');
+				}
+			}, 1000);
+			
+			// Clear interval when component is destroyed
+			return () => {
+				clearInterval(storageCheckInterval);
+			};
+			
+			// Check URL parameters for settings tab request
+			const urlParams = new URLSearchParams(window.location.search);
+			if (urlParams.has('openSettingsTab')) {
+				const tabToOpen = urlParams.get('openSettingsTab');
+				console.log("Opening settings tab from URL parameter:", tabToOpen);
+				// Use setTimeout to ensure DOM is fully loaded
+				setTimeout(() => {
+					openSettings(tabToOpen);
+					// Clean up URL to prevent reopening on refresh
+					window.history.replaceState({}, document.title, window.location.pathname);
+				}, 100);
+			}
+		
+			// Setup message listener for print window communication
+			window.addEventListener('message', (event) => {
+				if (event.data && event.data.type === 'openPrintSettings') {
+					openSettings('print');
+				}
+			});
+			
 			window.copyDraftFn = copyDraft;
 			window.shareLinkFn = shareLink;
 			window.generateQRCodeFn = generateQRCode;
 			window.importBuildFn = importBuild;
 			window.printTeamFn = printWithRulesCheck;
-			window.openSettingsFn = openSettings;
+			window.openSettingsFn = (tab = 'general') => openSettings(tab);
 			window.openTeamsModalFn = () => { showTeamsModal = true; };
 
 			// Expose showExperimentalFeatures for the menu visibility
@@ -1284,21 +1364,48 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	// Filter perks based on class match (perksClasses)
 	$: classPerksList = enableSponsorships
-		? perks.filter(p =>
-			// Include perks with matching class
-			(currentSponsor?.perksClasses && p.class && currentSponsor.perksClasses.some(
-				sponsorClass => sponsorClass.toLowerCase() === p.class.toLowerCase()
-			))
-		)
+		? perks.filter(p => {
+			// If sponsor has perksClasses and the perk has a class, do normal filtering
+			if (currentSponsor?.perksClasses?.length > 0 && p.class) {
+				return currentSponsor.perksClasses.some(
+					sponsorClass => sponsorClass.toLowerCase() === p.class.toLowerCase()
+				);
+			}
+			// If sponsor has perks directly specified, include perks matching those IDs
+			else if (currentSponsor?.perks?.length > 0) {
+				return currentSponsor.perks.includes(p.id);
+			}
+			// No matching criteria found
+			return false;
+		})
 		: [];
 
 	// Filter sponsor-specific perks (based on sponsor field)
+	// Map of sponsor ID aliases for backward compatibility with perks.json
+	const sponsorIdAliases = {
+		'rus': ['rusty'], // Rusty's Bootleggers
+		'thp': ['highway_patrol', 'highway patrol'], // The Highway Patrol
+		'war': ['warden'], // The Warden
+	};
+
 	$: sponsorPerksList = enableSponsorships && currentSponsor
-		? perks.filter(p => p.sponsor && (
-			// Match either by sponsor ID or sponsor name (case insensitive)
-			p.sponsor.toLowerCase() === currentSponsor.id.toLowerCase() ||
-			p.sponsor.toLowerCase() === currentSponsor.name.toLowerCase()
-		))
+		? perks.filter(p => {
+			// If the perk has a sponsor field, match it against the current sponsor
+			if (p.sponsor) {
+				const perkSponsorLower = p.sponsor.toLowerCase();
+				const sponsorIdLower = currentSponsor.id.toLowerCase();
+				const sponsorNameLower = currentSponsor.name.toLowerCase();
+
+				// Get any aliases for this sponsor
+				const aliases = sponsorIdAliases[sponsorIdLower] || [];
+
+				// Match by sponsor ID, sponsor name, or any of the aliases
+				return perkSponsorLower === sponsorIdLower ||
+				       perkSponsorLower === sponsorNameLower ||
+				       aliases.includes(perkSponsorLower);
+			}
+			return false;
+		})
 		: [];
 
 	// All available perks (used for vehicles), filtered by electrical restrictions
@@ -1954,11 +2061,11 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			<div class="flex flex-col gap-2 w-full">
 				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center gap-4">
-						<b class="text-base font-bold whitespace-nowrap">Name:</b>
+						<b class="text-base font-bold whitespace-nowrap" style="min-width: 50px;">Name:</b>
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[117px] w-auto max-w-[157px] text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[137px] w-auto max-w-[177px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
@@ -2005,7 +2112,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				{#if enableSponsorships}
 				<div class="flex flex-col w-full mt-1">
 					<div class="flex items-center gap-4">
-						<b class="text-base font-bold whitespace-nowrap">Choose Your Sponsor:</b>
+						<b class="text-base font-bold whitespace-nowrap" style="min-width: 147px;">Choose Your Sponsor:</b>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
@@ -2452,362 +2559,25 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
     {/if}
     
     <!-- Settings Modal -->
-    {#if showSettingsModal}
-      <div
-        class="fixed inset-0 bg-black/90 z-50"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Settings"
-        tabindex="-1"
-      >
-        <!-- Adding a button to make the whole backdrop clickable/accessible -->
-        <button
-          class="absolute inset-0 w-full h-full border-0 bg-transparent cursor-pointer"
-          on:click={() => (showSettingsModal = false)}
-          on:keydown={e => e.key === 'Escape' && (showSettingsModal = false)}
-          aria-label="Close modal background"
-        ></button>
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-[0_0_25px_rgba(0,0,0,0.3)] px-3 py-6 md:py-8 w-11/12 sm:w-4/5 md:w-4/5 lg:w-4/5 mx-auto relative z-10 border-2 border-amber-500 settings-modal-content"
-          role="document"
-          style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 0 4px rgba(245,158,11,0.4), 0 10px 25px -5px rgba(0,0,0,0.4);"
-        >
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-stone-800 dark:text-white">Settings</h3>
-            <div class="flex gap-2">
-              <button
-                class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
-                style="height: 32px !important; min-height: 32px !important;"
-                on:click={() => {
-                  if ($user) saveSettingsToFirebase();
-                  showSettingsModal = false;
-                }}
-                aria-label="Save and close settings"
-              >
-                <span>Save & Close</span>
-              </button>
-              <button
-                class="py-0.25 px-2 h-[32px] flex items-center justify-center rounded transition-colors text-sm amber-button"
-                on:click={() => (showSettingsModal = false)}
-                aria-label="Close settings modal without saving"
-                style="height: 32px !important; min-height: 32px !important;"
-              >
-                <span>Cancel</span>
-              </button>
-            </div>
-          </div>
-          
-          <div class="space-y-3 px-4">
-            <!-- Gaslands Refueled Book Acknowledgment - At the top -->
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="has-rules-setting"
-                  bind:checked={hasRules}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="has-rules-setting" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  I have the Gaslands Refuelled rulebook
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Acknowledge that you own a copy of the Gaslands Refuelled rules. This is required to use Play Mode and Print features.
-                <a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline ml-1">
-                  Purchase the book here
-                </a>
-              </p>
-            </div>
-
-            <!-- Game Options Section -->
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Game Options</h4>
-
-              <div class="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  id="enable-sponsorships"
-                  bind:checked={enableSponsorships}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="enable-sponsorships" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Enable Sponsorships
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                If you prefer to build a team without using Sponsor or driver perks, uncheck this option.
-              </p>
-
-              <div class="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  id="include-advanced"
-                  bind:checked={includeAdvanced}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="include-advanced" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Include Advanced
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Enable this option to include advanced vehicles, weapons, and upgrades from the rulebook. When disabled, only basic options will be shown.
-              </p>
-            </div>
-
-            <!-- Display Options Section -->
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Display Options</h4>
-
-              <div class="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  id="dark-mode"
-                  bind:checked={darkMode}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="dark-mode" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Dark Mode
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Enable dark mode for better visibility in low-light conditions.
-              </p>
-
-              <div class="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  id="show-team-summary"
-                  bind:checked={showTeamSummary}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="show-team-summary" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Show Team Summary
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Show or hide the Team Summary section at the bottom of the page.
-              </p>
-
-              <div class="flex items-center mt-3">
-                <input
-                  type="checkbox"
-                  id="show-gaslands-math"
-                  bind:checked={showGaslandsMath}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="show-gaslands-math" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Show Gaslands Math
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Show or hide the Gaslands Math section at the bottom of the page.
-              </p>
-            </div>
-
-
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Print Style</h4>
-              <div class="space-y-2">
-                <div class="flex items-center">
-                  <input
-                    type="radio"
-                    id="print-style-classic"
-                    name="print-style"
-                    value="classic"
-                    bind:group={printStyle}
-                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                  />
-                  <label for="print-style-classic" class="ml-3 text-stone-800 dark:text-white">
-                    Classic
-                  </label>
-                </div>
-                <div class="flex items-center">
-                  <input
-                    type="radio"
-                    id="print-style-compact"
-                    name="print-style"
-                    value="compact"
-                    bind:group={printStyle}
-                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                  />
-                  <label for="print-style-compact" class="ml-3 text-stone-800 dark:text-white">
-                    Compact
-                  </label>
-                </div>
-                <div class="flex items-center">
-                  <input
-                    type="radio"
-                    id="print-style-dashboard"
-                    name="print-style"
-                    value="dashboard"
-                    bind:group={printStyle}
-                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                  />
-                  <label for="print-style-dashboard" class="ml-3 text-stone-800 dark:text-white">
-                    Dashboard
-                  </label>
-                </div>
-                <div class="flex items-center">
-                  <input
-                    type="radio"
-                    id="print-style-roster"
-                    name="print-style"
-                    value="roster"
-                    bind:group={printStyle}
-                    class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                  />
-                  <label for="print-style-roster" class="ml-3 text-stone-800 dark:text-white">
-                    Roster
-                  </label>
-                </div>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Choose your preferred print layout style.
-              </p>
-
-              <!-- Print Description Options -->
-              <div class="mt-4 border-t pt-4 border-amber-100 dark:border-amber-900/50">
-                <h5 class="font-medium text-stone-800 dark:text-white mb-3">Print Content Options</h5>
-
-                <div class="flex items-center mt-3">
-                  <input
-                    type="checkbox"
-                    id="show-equipment-descriptions"
-                    bind:checked={showEquipmentDescriptions}
-                    class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                  />
-                  <label for="show-equipment-descriptions" class="ml-3 text-stone-800 dark:text-white font-medium">
-                    Show Equipment Descriptions
-                  </label>
-                </div>
-                <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-3">
-                  Include descriptions of weapons and upgrades in the printout.
-                </p>
-
-                <div class="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="show-perk-descriptions"
-                    bind:checked={showPerkDescriptions}
-                    class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                  />
-                  <label for="show-perk-descriptions" class="ml-3 text-stone-800 dark:text-white font-medium">
-                    Show Perk Descriptions
-                  </label>
-                </div>
-                <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                  Include descriptions of perks in the printout.
-                </p>
-              </div>
-            </div>
-
-            <!-- Players Map Section - Only shown when logged in -->
-            {#if $user && showExperimentalFeatures}
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <h4 class="font-medium text-stone-800 dark:text-white mb-3">Players Map</h4>
-
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="show-on-players-map"
-                  bind:checked={showOnPlayersMap}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="show-on-players-map" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Show me on the Gaslands Players map
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-4">
-                Appear on the global map of Gaslands players to connect with local players.
-              </p>
-
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="allow-contact-from-players"
-                  bind:checked={allowContactFromPlayers}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="allow-contact-from-players" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Allow other players to contact me to setup a game
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-4">
-                Let other players in your area reach out to organize games.
-              </p>
-
-              <div class="mt-2">
-                <label for="location-input" class="block text-stone-800 dark:text-white font-medium mb-1">
-                  Your location
-                </label>
-                <input
-                  type="text"
-                  id="location-input"
-                  bind:value={location}
-                  placeholder="Enter your town/city/county, province/state, country"
-                  list="location-suggestions"
-                  class="w-full px-4 py-2 border border-stone-300 dark:border-gray-600 rounded-md text-stone-800 dark:text-white bg-white dark:bg-gray-700 focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
-                <datalist id="location-suggestions">
-                  <option value="New York, NY, USA"></option>
-                  <option value="Los Angeles, CA, USA"></option>
-                  <option value="Chicago, IL, USA"></option>
-                  <option value="London, UK"></option>
-                  <option value="Sydney, NSW, Australia"></option>
-                  <option value="Toronto, ON, Canada"></option>
-                  <option value="Berlin, Germany"></option>
-                  <option value="Paris, France"></option>
-                  <option value="Tokyo, Japan"></option>
-                </datalist>
-                <p class="text-stone-600 dark:text-gray-200 text-sm mt-1">
-                  Provide your location to help find nearby players. We recommend including your town/city, state/province, and country.
-                </p>
-              </div>
-            </div>
-            {/if}
-
-            <!-- Experimental Features Option -->
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="show-experimental-features"
-                  bind:checked={showExperimentalFeatures}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="show-experimental-features" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Show Experimental Features
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Enable this option to access features that are still under development.
-              </p>
-            </div>
-
-            <!-- Email Updates Option - Only shown when logged in -->
-            {#if $user}
-            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 space-y-3">
-              <div class="flex items-center">
-                <input
-                  type="checkbox"
-                  id="receive-updates"
-                  bind:checked={receiveUpdates}
-                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
-                />
-                <label for="receive-updates" class="ml-3 text-stone-800 dark:text-white font-medium">
-                  Keep me up to date
-                </label>
-              </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-                Receive emails with Gaslands and Gaslands Garage feature updates and marketing materials.
-              </p>
-            </div>
-            {/if}
-
-          </div>
-        </div>
-      </div>
-    {/if}
+    <SettingsMenu 
+      bind:showSettingsModal
+      bind:hasRules
+      bind:enableSponsorships
+      bind:includeAdvanced
+      bind:darkMode
+      bind:showTeamSummary
+      bind:showGaslandsMath
+      bind:printStyle
+      bind:showEquipmentDescriptions
+      bind:showPerkDescriptions
+      bind:showExperimentalFeatures
+      bind:showOnPlayersMap
+      bind:allowContactFromPlayers
+      bind:location
+      bind:receiveUpdates
+      bind:activeSettingsTab
+      saveSettingsToFirebase={saveSettingsToFirebase}
+    />
     
 
 
