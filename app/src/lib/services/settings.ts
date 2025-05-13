@@ -13,6 +13,13 @@ export interface UserSettings {
   showTeamSummary?: boolean;
   showGaslandsMath?: boolean;
   hasRules?: boolean; // Indicates if the user has acknowledged owning the rules
+  showExperimentalFeatures?: boolean; // Whether to show experimental features
+  receiveUpdates?: boolean; // Whether user wants to receive updates and marketing emails
+  showOnPlayersMap?: boolean; // Whether to show on the Gaslands Players map
+  allowContactFromPlayers?: boolean; // Whether other players can contact for game setup
+  location?: string; // User's location for the players map
+  showEquipmentDescriptions?: boolean; // Whether to show equipment descriptions in printouts
+  showPerkDescriptions?: boolean; // Whether to show perk descriptions in printouts
 }
 
 // Default settings
@@ -23,7 +30,14 @@ export const DEFAULT_SETTINGS: UserSettings = {
   printStyle: 'classic',
   showTeamSummary: true,
   showGaslandsMath: true,
-  hasRules: false // Default to false until acknowledged
+  hasRules: false, // Default to false until acknowledged
+  showExperimentalFeatures: false, // Default to not showing experimental features
+  receiveUpdates: false, // Default to not receiving updates
+  showOnPlayersMap: false, // Default to not showing on players map
+  allowContactFromPlayers: false, // Default to not allowing contact
+  location: '', // Default to empty location
+  showEquipmentDescriptions: true, // Default to showing equipment descriptions
+  showPerkDescriptions: true // Default to showing perk descriptions
 };
 
 /**

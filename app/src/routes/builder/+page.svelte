@@ -41,6 +41,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let showOnPlayersMap = false; // Whether to show on the Gaslands Players map
 	let allowContactFromPlayers = false; // Whether other players can contact for game setup
 	let location = ''; // User's location for the players map
+	let showEquipmentDescriptions = true; // Whether to show equipment descriptions in printouts
+	let showPerkDescriptions = true; // Whether to show perk descriptions in printouts
 
 	// Rules acknowledgment modal state
 	let showRulesAcknowledgmentModal = false;
@@ -57,6 +59,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				darkMode = settings.darkMode;
 				printStyle = settings.printStyle || 'classic';
 				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
+				showEquipmentDescriptions = settings.showEquipmentDescriptions ?? DEFAULT_SETTINGS.showEquipmentDescriptions;
+				showPerkDescriptions = settings.showPerkDescriptions ?? DEFAULT_SETTINGS.showPerkDescriptions;
 			}
 		} else {
 			// Use default settings when not authenticated
@@ -65,6 +69,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			darkMode = DEFAULT_SETTINGS.darkMode;
 			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
 			hasRules = DEFAULT_SETTINGS.hasRules;
+			showEquipmentDescriptions = DEFAULT_SETTINGS.showEquipmentDescriptions;
+			showPerkDescriptions = DEFAULT_SETTINGS.showPerkDescriptions;
 		}
 	});
 
@@ -647,7 +653,9 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					receiveUpdates,
 					showOnPlayersMap,
 					allowContactFromPlayers,
-					location
+					location,
+					showEquipmentDescriptions,
+					showPerkDescriptions
 				});
 
 				// Also save printStyle to localStorage for persistence
@@ -751,7 +759,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				classPerksList: classPerksList || [],
 				sponsorPerksList: sponsorPerksList || []
 			},
-			// Add vehicle data with more details
+			// Add vehicle data with more details including full objects
 			vehicles: vehicles.map(v => ({
 				...v,
 				// Include calculated cost
@@ -775,7 +783,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						name: weapon?.name || weaponId,
 						facing: v.weaponFacings?.[weaponId] || weapon?.facing || 'front',
 						attackDice: weapon?.attackDice || '-',
-						cost: weapon?.cost || 0
+						cost: weapon?.cost || 0,
+						specialRules: weapon?.specialRules || ''
 					};
 				}),
 				// Include full upgrade objects with names
@@ -798,8 +807,20 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						text: perk?.text || ''
 					};
 				})
-			}))
+			})),
+			// Add print settings
+			showEquipmentDescriptions: showEquipmentDescriptions,
+			showPerkDescriptions: showPerkDescriptions
 		};
+
+		console.log("Printing team with options:", {
+			printStyle,
+			showEquipmentDescriptions,
+			showPerkDescriptions,
+			totalCans,
+			maxCans
+		});
+
 		await printTeamService(printStyle, enhancedDraft);
 	}
 
@@ -1213,6 +1234,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				darkMode = settings.darkMode;
 				printStyle = settings.printStyle || 'classic';
 				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
+				showEquipmentDescriptions = settings.showEquipmentDescriptions ?? DEFAULT_SETTINGS.showEquipmentDescriptions;
+				showPerkDescriptions = settings.showPerkDescriptions ?? DEFAULT_SETTINGS.showPerkDescriptions;
 			}
 		} else {
 			// Use default settings when not authenticated
@@ -1221,6 +1244,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			darkMode = DEFAULT_SETTINGS.darkMode;
 			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
 			hasRules = DEFAULT_SETTINGS.hasRules;
+			showEquipmentDescriptions = DEFAULT_SETTINGS.showEquipmentDescriptions;
+			showPerkDescriptions = DEFAULT_SETTINGS.showPerkDescriptions;
 		}
 	});
 
@@ -2545,6 +2570,41 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
                 Choose your preferred print layout style.
               </p>
+
+              <!-- Print Description Options -->
+              <div class="mt-4 border-t pt-4 border-amber-100 dark:border-amber-900/50">
+                <h5 class="font-medium text-stone-800 dark:text-white mb-3">Print Content Options</h5>
+
+                <div class="flex items-center mt-3">
+                  <input
+                    type="checkbox"
+                    id="show-equipment-descriptions"
+                    bind:checked={showEquipmentDescriptions}
+                    class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                  />
+                  <label for="show-equipment-descriptions" class="ml-3 text-stone-800 dark:text-white font-medium">
+                    Show Equipment Descriptions
+                  </label>
+                </div>
+                <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-3">
+                  Include descriptions of weapons and upgrades in the printout.
+                </p>
+
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="show-perk-descriptions"
+                    bind:checked={showPerkDescriptions}
+                    class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                  />
+                  <label for="show-perk-descriptions" class="ml-3 text-stone-800 dark:text-white font-medium">
+                    Show Perk Descriptions
+                  </label>
+                </div>
+                <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                  Include descriptions of perks in the printout.
+                </p>
+              </div>
             </div>
 
             <!-- Players Map Section - Only shown when logged in -->

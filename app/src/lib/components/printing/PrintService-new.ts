@@ -32,8 +32,21 @@ export function generatePrintableHtml(data: {
   sponsor?: any;
   sponsorPerks?: any;
   qrCode?: string;
+  showEquipmentDescriptions?: boolean;
+  showPerkDescriptions?: boolean;
 }): string {
-  const { teamName, totalCans, maxCans, sponsorName, vehicles, sponsor, sponsorPerks, qrCode } = data;
+  const {
+    teamName,
+    totalCans,
+    maxCans,
+    sponsorName,
+    vehicles,
+    sponsor,
+    sponsorPerks,
+    qrCode,
+    showEquipmentDescriptions = true,
+    showPerkDescriptions = true
+  } = data;
   
   // Check if vehicles exist
   if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
@@ -65,16 +78,39 @@ export function generatePrintableHtml(data: {
         <p>${perksClasses.join(', ')}</p>
       </div>`;
     }
-    
+
     // Then show the class perks
     const classPerksList = sponsorPerks.classPerksList || [];
-    if (classPerksList.length > 0) {
+    // Filter perkClasses to only show those purchased by vehicles
+    const purchasedPerkClasses = new Set();
+    if (vehicles && Array.isArray(vehicles)) {
+      vehicles.forEach(vehicle => {
+        if (vehicle.perkObjects) {
+          vehicle.perkObjects.forEach((perk: any) => {
+            if (perk && perk.id) {
+              // Add the perk to the purchased list
+              purchasedPerkClasses.add(perk.id);
+            }
+          });
+        }
+      });
+    }
+
+    // Filter to only show purchased perks
+    const filteredClassPerksList = classPerksList.filter(perk => {
+      if (perk && perk.id) {
+        return purchasedPerkClasses.has(perk.id);
+      }
+      return false;
+    });
+
+    if (filteredClassPerksList.length > 0) {
       sponsorPerksHtml += `
       <div class="sponsor-perks-section">
-        <h3>Perk Classes</h3>
+        <h3>Purchased Perk Classes</h3>
         <ul class="perks-list">`;
-        
-      classPerksList.forEach((perk: any) => {
+
+      filteredClassPerksList.forEach((perk: any) => {
         if (perk && perk.name) {
           sponsorPerksHtml += `
           <li>
@@ -83,12 +119,12 @@ export function generatePrintableHtml(data: {
           </li>`;
         }
       });
-      
+
       sponsorPerksHtml += `
         </ul>
       </div>`;
     }
-    
+
     // Finally show the sponsor-specific perks
     const sponsorPerksList = sponsorPerks.sponsorPerksList || [];
     if (sponsorPerksList.length > 0) {
@@ -96,7 +132,7 @@ export function generatePrintableHtml(data: {
       <div class="sponsor-perks-section">
         <h3>${sponsorName} Specific Perks</h3>
         <ul class="perks-list">`;
-        
+
       sponsorPerksList.forEach((perk: any) => {
         if (perk && perk.name) {
           sponsorPerksHtml += `
@@ -106,8 +142,84 @@ export function generatePrintableHtml(data: {
           </li>`;
         }
       });
-      
+
       sponsorPerksHtml += `
+        </ul>
+      </div>`;
+    }
+  }
+
+  // Generate equipment descriptions HTML (weapons and upgrades)
+  let equipmentDescriptionsHtml = '';
+  if (showEquipmentDescriptions && vehicles && Array.isArray(vehicles)) {
+    // Collect all weapons and upgrades across vehicles
+    const allWeapons = new Map();
+    const allUpgrades = new Map();
+
+    vehicles.forEach(vehicle => {
+      // Add weapons
+      if (vehicle.weaponObjects && Array.isArray(vehicle.weaponObjects)) {
+        vehicle.weaponObjects.forEach(weapon => {
+          if (weapon && weapon.id && weapon.name) {
+            allWeapons.set(weapon.id, weapon);
+          }
+        });
+      }
+
+      // Add upgrades
+      if (vehicle.upgradeObjects && Array.isArray(vehicle.upgradeObjects)) {
+        vehicle.upgradeObjects.forEach(upgrade => {
+          if (upgrade && upgrade.id && upgrade.name) {
+            allUpgrades.set(upgrade.id, upgrade);
+          }
+        });
+      }
+    });
+
+    // Generate weapons section
+    if (allWeapons.size > 0) {
+      equipmentDescriptionsHtml += `
+      <div class="equipment-section">
+        <h3>Weapons</h3>
+        <ul class="equipment-list">`;
+
+      Array.from(allWeapons.values()).forEach(weapon => {
+        equipmentDescriptionsHtml += `
+        <li>
+          <div class="equipment-name">${weapon.name}</div>
+          <div class="equipment-details">
+            <span class="equipment-stat">Cost: ${weapon.cost} cans</span>
+            <span class="equipment-stat">Attack Dice: ${weapon.attackDice !== '-' ? weapon.attackDice : 'N/A'}</span>
+            <span class="equipment-stat">Default Facing: ${weapon.facing || 'Front'}</span>
+            ${weapon.specialRules ? `<div class="equipment-rules">${weapon.specialRules}</div>` : ''}
+          </div>
+        </li>`;
+      });
+
+      equipmentDescriptionsHtml += `
+        </ul>
+      </div>`;
+    }
+
+    // Generate upgrades section
+    if (allUpgrades.size > 0) {
+      equipmentDescriptionsHtml += `
+      <div class="equipment-section">
+        <h3>Upgrades</h3>
+        <ul class="equipment-list">`;
+
+      Array.from(allUpgrades.values()).forEach(upgrade => {
+        equipmentDescriptionsHtml += `
+        <li>
+          <div class="equipment-name">${upgrade.name}</div>
+          <div class="equipment-details">
+            <span class="equipment-stat">Cost: ${upgrade.cost} cans</span>
+            ${upgrade.specialRules ? `<div class="equipment-rules">${upgrade.specialRules}</div>` : ''}
+          </div>
+        </li>`;
+      });
+
+      equipmentDescriptionsHtml += `
         </ul>
       </div>`;
     }
@@ -128,44 +240,44 @@ export function generatePrintableHtml(data: {
         color: black;
         background-color: white;
       }
-      
+
       /* Print-specific page settings */
       @media print {
         @page {
           size: auto;
           margin: 10mm;
         }
-        
+
         body {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
       }
-      
+
       /* Header styles */
       .print-header {
         margin-bottom: 20px;
         border-bottom: 2px solid #d97706;
         padding-bottom: 10px;
       }
-      
+
       h1 {
         color: #d97706;
         font-size: 24px;
         margin: 0 0 10px 0;
       }
-      
+
       h2, h3 {
         color: #d97706;
         margin-top: 20px;
         margin-bottom: 10px;
       }
-      
+
       .team-info {
         display: flex;
         justify-content: space-between;
       }
-      
+
       /* Vehicle card grid */
       .vehicle-cards {
         display: grid;
@@ -173,7 +285,7 @@ export function generatePrintableHtml(data: {
         gap: 20px;
         margin-bottom: 30px;
       }
-      
+
       /* Individual vehicle card */
       .vehicle-card {
         border: 1px solid #888;
@@ -181,7 +293,7 @@ export function generatePrintableHtml(data: {
         padding: 15px;
         page-break-inside: avoid;
       }
-      
+
       .card-header {
         display: flex;
         justify-content: space-between;
@@ -189,12 +301,12 @@ export function generatePrintableHtml(data: {
         border-bottom: 1px solid #eee;
         padding-bottom: 8px;
       }
-      
+
       .vehicle-name {
         font-weight: bold;
         font-size: 1.2em;
       }
-      
+
       .vehicle-type {
         display: inline-block;
         background-color: #333 !important;
@@ -203,7 +315,7 @@ export function generatePrintableHtml(data: {
         border-radius: 4px;
         font-size: 0.8em;
       }
-      
+
       .vehicle-cost {
         background-color: black !important;
         color: white !important;
@@ -212,68 +324,111 @@ export function generatePrintableHtml(data: {
         font-weight: bold;
         text-align: center;
       }
-      
+
       /* Stats section */
       .stats-section {
         margin-bottom: 15px;
       }
-      
+
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 10px;
       }
-      
+
       .stat-item {
         text-align: center;
       }
-      
+
       .stat-label {
         font-size: 0.8em;
         display: block;
         margin-bottom: 2px;
       }
-      
+
       .stat-value {
         font-weight: bold;
       }
-      
+
       /* Hull tracker */
       .hull-track {
         margin-bottom: 15px;
       }
-      
+
       .hull-boxes {
         display: flex;
         gap: 2px;
       }
-      
+
       .hull-box {
         width: 15px;
         height: 15px;
         border: 1px solid black;
       }
-      
+
       /* Loadout sections */
       .loadout-section {
         margin-bottom: 10px;
       }
-      
+
       .section-title {
         font-weight: bold;
         margin-bottom: 5px;
         border-bottom: 1px solid #eee;
       }
-      
+
       ul {
         margin: 0;
         padding-left: 20px;
       }
-      
+
       li {
         margin-bottom: 2px;
       }
-      
+
+      /* Equipment section */
+      .equipment-container {
+        margin-top: 30px;
+        page-break-before: always;
+        border-top: 2px solid #d97706;
+        padding-top: 20px;
+      }
+
+      .equipment-section {
+        margin-bottom: 20px;
+      }
+
+      .equipment-list {
+        list-style-type: disc;
+        padding-left: 20px;
+      }
+
+      .equipment-name {
+        font-weight: bold;
+      }
+
+      .equipment-details {
+        margin-top: 3px;
+        margin-bottom: 8px;
+        font-size: 0.9em;
+      }
+
+      .equipment-stat {
+        display: inline-block;
+        background-color: #f3f4f6;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-right: 8px;
+        margin-bottom: 4px;
+        font-size: 0.8em;
+      }
+
+      .equipment-rules {
+        margin-top: 4px;
+        font-size: 0.9em;
+        color: #444;
+      }
+
       /* Sponsor perks section */
       .sponsor-perks-container {
         margin-top: 30px;
@@ -281,56 +436,67 @@ export function generatePrintableHtml(data: {
         border-top: 2px solid #d97706;
         padding-top: 20px;
       }
-      
+
       .sponsor-perks-section {
         margin-bottom: 20px;
       }
-      
+
       .perks-list {
         list-style-type: disc;
         padding-left: 20px;
       }
-      
+
       .perk-name {
         font-weight: bold;
       }
-      
+
       .perk-text {
         margin-top: 3px;
         margin-bottom: 8px;
         font-size: 0.9em;
       }
-      
+
+      /* Footer section with QR code */
+      .print-footer-container {
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 2px solid #d97706;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        page-break-before: auto;
+        page-break-inside: avoid;
+      }
+
       /* QR code section */
       .qr-section {
         text-align: center;
-        margin-top: 30px;
-        page-break-before: auto;
       }
-      
+
       .qr-code {
-        max-width: 150px;
+        max-width: 120px;
         height: auto;
         margin: 0 auto;
         display: block;
       }
-      
+
       .qr-caption {
-        margin-top: 10px;
+        margin-top: 6px;
         font-size: 0.9em;
         color: #666;
       }
-      
+
       /* Footer */
       .print-footer {
-        margin-top: 20px;
-        text-align: center;
         font-size: 0.8em;
         color: #666;
+        flex-grow: 1;
+        text-align: center;
       }
     </style>
   </head>
   <body>
+    <!-- Header Section -->
     <div class="print-header">
       <h1>${teamName}</h1>
       <div class="team-info">
@@ -338,25 +504,38 @@ export function generatePrintableHtml(data: {
         <div>Sponsor: ${sponsorName}</div>
       </div>
     </div>
-    
+
+    <!-- Vehicle Cards Section -->
     <div class="vehicle-cards">
       ${vehicleCardsHtml}
     </div>
-    
-    ${sponsorPerksHtml ? `
+
+    <!-- Equipment Descriptions Section -->
+    ${showEquipmentDescriptions && equipmentDescriptionsHtml ? `
+    <div class="equipment-container">
+      <h2>Equipment Descriptions</h2>
+      ${equipmentDescriptionsHtml}
+    </div>
+    ` : ''}
+
+    <!-- Perk Descriptions Section -->
+    ${showPerkDescriptions && sponsorPerksHtml ? `
     <div class="sponsor-perks-container">
-      <h2>Sponsor Perks</h2>
+      <h2>Perk Descriptions</h2>
       ${sponsorPerksHtml}
     </div>
     ` : ''}
-    
-    <div class="qr-section">
-      ${qrCode ? `<img src="${qrCode}" class="qr-code" alt="QR Code for team">` : ''}
-      <div class="qr-caption">Scan to load this team build</div>
-    </div>
-    
-    <div class="print-footer">
-      Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
+
+    <!-- Footer Section with QR Code -->
+    <div class="print-footer-container">
+      <div class="print-footer">
+        Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
+      </div>
+
+      <div class="qr-section">
+        ${qrCode ? `<img src="${qrCode}" class="qr-code" alt="QR Code for team">` : ''}
+        <div class="qr-caption">Scan to load this team build</div>
+      </div>
     </div>
   </body>
   </html>
@@ -581,7 +760,7 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
   try {
     // Dump the draft data to console to debug vehicle data
     console.log("[PrintService-new] Print data:", JSON.stringify(draft, null, 2));
-    
+
     // Generate QR code
     let qrCode = '';
     try {
@@ -590,14 +769,27 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     } catch (qrError) {
       console.error("[PrintService-new] Error generating QR code:", qrError);
     }
-    
+
     // Check if vehicles array exists
     if (!draft.vehicles || !Array.isArray(draft.vehicles) || draft.vehicles.length === 0) {
       console.error("[PrintService-new] No vehicles found in draft data", draft);
       alert('No vehicles found to print. Please add vehicles to your team.');
       return;
     }
-    
+
+    // Determine if we should include equipment and perk descriptions
+    const showEquipmentDescriptions = draft.showEquipmentDescriptions !== undefined ?
+      draft.showEquipmentDescriptions : true;
+
+    const showPerkDescriptions = draft.showPerkDescriptions !== undefined ?
+      draft.showPerkDescriptions : true;
+
+    console.log("[PrintService-new] Print options:", {
+      showEquipmentDescriptions,
+      showPerkDescriptions,
+      printStyle
+    });
+
     // Collect data for printing
     const printData = {
       teamName: draft.teamName || 'Gaslands Team',
@@ -605,9 +797,11 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       maxCans: draft.maxCans || 50,
       sponsorName: draft.sponsorName || 'No Sponsor',
       sponsor: draft.sponsor || null,
-      sponsorPerks: draft.sponsorPerks || null,
+      sponsorPerks: showPerkDescriptions ? (draft.sponsorPerks || null) : null,
       vehicles: draft.vehicles,
-      qrCode: qrCode
+      qrCode: qrCode,
+      showEquipmentDescriptions: showEquipmentDescriptions,
+      showPerkDescriptions: showPerkDescriptions
     };
     
     // Generate printable HTML
