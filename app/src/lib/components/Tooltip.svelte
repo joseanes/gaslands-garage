@@ -43,6 +43,19 @@
     showTooltip = false;
   }
   
+  function handleKeyDown(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      showTooltip = !showTooltip;
+      if (showTooltip) {
+        setTimeout(positionTooltip, 0);
+      }
+    }
+    if (event.key === 'Escape' && showTooltip) {
+      showTooltip = false;
+    }
+  }
+  
   onMount(() => {
     window.addEventListener('scroll', () => {
       if (showTooltip) positionTooltip();
@@ -59,6 +72,11 @@
   class="tooltip-trigger"
   on:mouseenter={handleMouseEnter}
   on:mouseleave={handleMouseLeave}
+  on:keydown={handleKeyDown}
+  role="button"
+  tabindex="0"
+  aria-expanded={showTooltip}
+  aria-label="Show information about {text}"
 >
   {text}
   
@@ -67,6 +85,8 @@
       bind:this={tooltipContent}
       class="tooltip-content"
       style="left: {position.left}px; top: {position.top}px;"
+      role="tooltip"
+      aria-live="polite"
     >
       <div class="tooltip-arrow"></div>
       <div class="tooltip-inner">

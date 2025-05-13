@@ -66,13 +66,23 @@ export async function getUserSettings(): Promise<{ success: boolean; settings?: 
     if (!auth?.currentUser) return { success: false, error: 'User not authenticated', settings: DEFAULT_SETTINGS };
 
     const userId = auth.currentUser.uid;
+    console.log("Getting settings for user:", userId);
     const settingsSnapshot = await getDoc(doc(db, 'userSettings', userId));
     
     if (settingsSnapshot.exists()) {
       const data = settingsSnapshot.data() as UserSettings;
+      console.log("Retrieved user settings from Firebase:", data, "printStyle:", data.printStyle);
+      
+      // Ensure printStyle is preserved (defensive coding)
+      if (!data.printStyle && DEFAULT_SETTINGS.printStyle) {
+        console.log("No printStyle in Firebase data, using default:", DEFAULT_SETTINGS.printStyle);
+        data.printStyle = DEFAULT_SETTINGS.printStyle;
+      }
+      
       return { success: true, settings: data };
     } else {
       // Create default settings if none exist
+      console.log("No settings found for user, creating defaults");
       await saveUserSettings(DEFAULT_SETTINGS);
       return { success: true, settings: DEFAULT_SETTINGS };
     }

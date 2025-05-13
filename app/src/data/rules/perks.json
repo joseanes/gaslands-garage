@@ -581,7 +581,688 @@
       "cost": 6,
       "text": "If this vehicle has Handling 3 or higher, it may take 3 Hazard Tokens at the end of its Movement Step to be ignored by other vehicles during their Movement Steps until the start of this vehicle’s next activation. If, by ignoring this vehicle, another vehicle’s Final Position would overlap it, move that vehicle backwards along its movement template by the minimum amount required to avoid overlapping any obstruction."
     }
+    ,
+      {
+        "id": "military_hardware",
+        "name": "Military Hardware",
+        "sponsor": "rutherford",
+        "class": "",
+        "cost": 0,
+        "text": "This team may purchase a single Tank. This team may purchase a single Helicopter."
+      },
+      {
+        "id": "well_stocked",
+        "name": "Well Stocked",
+        "sponsor": "rutherford",
+        "class": "",
+        "cost": 0,
+        "text": "This vehicle considers any weapon with the AMMO 3 special rule to instead have the AMMO 4 special rule when purchased."
+      },
+      {
+        "id": "might_is_right",
+        "name": "Might Is Right",
+        "sponsor": "rutherford",
+        "class": "",
+        "cost": 0,
+        "text": "This team may not purchase Lightweight vehicles."
+      },
+      {
+        "id": "televised_carnage",
+        "name": "Televised Carnage",
+        "sponsor": "rutherford",
+        "class": "",
+        "cost": 0,
+        "text": "If this vehicle causes 6 or more hits in a single Attack Step, before Evades, the controller of this vehicle gains 1 Audience Vote."
+      },
+      
+        
+        {
+          "id": "virtuoso",
+          "name": "Virtuoso",
+          "sponsor": "miyazaki",
+          "class": "",
+          "cost": 0,
+          "text": "The first time this vehicle Pushes It during an activation, this vehicle may Push It without gaining a Hazard Token."
+        },
+        {
+          "id": "elegance",
+          "name": "Elegance",
+          "sponsor": "miyazaki",
+          "class": "",
+          "cost": 0,
+          "text": "Teams sponsored by Miyazaki may not purchase vehicle types with a base Handling Value of 2 or lower."
+        },
+        {
+          "id": "showing_off",
+          "name": "Showing Off",
+          "sponsor": "miyazaki",
+          "class": "",
+          "cost": 0,
+          "text": "At the end of this vehicle’s activation, if it resolved at least one Spin result, resolved at least one Slide result, changed Gear at least once, and did not Wipeout, it gains a Showing Off token. If a vehicle with a Showing Off token wipes out, that token is discarded. At the end of this vehicle’s activation, if every in-play vehicle on this team has a Showing Off token, discard all Showing Off tokens and gain 1 Audience Vote for each discarded. Discard any remaining Showing Off tokens at the end of the Gear Phase."
+        },
+      
+     
+        {
+          "id": "thumpermonkey",
+          "name": "Thumpermonkey",
+          "sponsor": "mishkin",
+          "class": "",
+          "cost": 0,
+          "text": "This team may purchase electrical weapons and upgrades."
+        },
+        {
+          "id": "dynamo",
+          "name": "Dynamo",
+          "sponsor": "mishkin",
+          "class": "",
+          "cost": 0,
+          "text": "After activating in Gear Phase 4, 5, or 6, this vehicle may add +1 Ammo Token to a single electrical weapon or electrical upgrade on that vehicle."
+        },
+        {
+          "id": "all_the_toys",
+          "name": "All the Toys",
+          "sponsor": "mishkin",
+          "class": "",
+          "cost": 0,
+          "text": "Whenever a vehicle in this team attacks with a named weapon that has not been attacked with by any vehicle during this game yet, that vehicle’s controller gains 1 Audience Vote."
+        },
+      
+    
+        {
+          "id": "n2o_addict",
+          "name": "N2O Addict",
+          "sponsor": "idris",
+          "class": "",
+          "cost": 0,
+          "text": "This team may purchase the Nitro upgrade at half the listed cost."
+        },
+        {
+          "id": "speed_demon",
+          "name": "Speed Demon",
+          "sponsor": "idris",
+          "class": "",
+          "cost": 0,
+          "text": "When this vehicle gains Hazard Tokens as a result of the Nitro Booster, it only gains Hazard Tokens until it has 3 Hazard Tokens, rather than 5."
+        },
+        {
+          "id": "cult_of_speed",
+          "name": "Cult of Speed",
+          "sponsor": "idris",
+          "class": "",
+          "cost": 0,
+          "text": "During Gear Phase 1, 2, or 3, if this vehicle selects the Long Straight movement template, including when using the Nitro Booster upgrade, its controller gains 1 Audience Vote. (You can select any template to trigger this rule, but if it is not permitted, the player to your left chooses your template instead.)"
+        },
+        {
+          "id": "kiss_my_asphalt",
+          "name": "Kiss My Asphalt",
+          "sponsor": "idris",
+          "class": "",
+          "cost": 0,
+          "text": "This team may not purchase Gyrocopters."
+        },
+      
+      
+        {
+          "id": "pinball",
+          "name": "Pinball",
+          "sponsor": "slime",
+          "class": "",
+          "cost": 0,
+          "text": "If this vehicle is involved in a Collision during its Movement Step where both vehicles’ points of contact are along their side edges, and this vehicle declares a Smash Attack, it may immediately resolve another Movement Step after the current one."
+        },
+        {
+          "id": "spiked_fist",
+          "name": "Spiked Fist",
+          "sponsor": "slime",
+          "class": "",
+          "cost": 0,
+          "text": "This team counts the Ram upgrade as requiring zero build slots."
+        },
+        {
+          "id": "live_fast",
+          "name": "Live Fast",
+          "sponsor": "slime",
+          "class": "",
+          "cost": 0,
+          "text": "During this vehicle’s activation, if it begins the Wipeout Step with more Hazard Tokens than Hull Points, its controller gains 1 Audience Vote."
+        }
+      
+      ,
+
+  {
+    "id": "prison_cars",
+    "name": "Prison Cars",
+    "sponsor": "warden",
+    "class": "",
+    "cost": 0,
+    "text": "Vehicles in this team may purchase the upgrade “Prison Car”: reduce the base cost of the vehicle by 4 Cans (to a minimum of 5 Cans) and reduce its Hull value by 2. May only be purchased by Middleweight vehicles and only once per vehicle."
+  },
+  {
+    "id": "fireworks",
+    "name": "Fireworks",
+    "sponsor": "warden",
+    "class": "",
+    "cost": 0,
+    "text": "If this vehicle Explodes, its controller gains 1 Audience Vote if it is Middleweight, or 2 Audience Votes if it is Heavyweight, in addition to any votes gained for being Wrecked. Then discard all Ammo Tokens from the wreck."
+  },
+
+ 
+  {
+    "id": "crew_quarters",
+    "name": "Crew Quarters",
+    "sponsor": "scarlett",
+    "class": "",
+    "cost": 0,
+    "text": "This team may purchase the Extra Crewmember upgrade at half the listed cost."
+  },
+  {
+    "id": "raiders",
+    "name": "Raiders",
+    "sponsor": "scarlett",
+    "class": "",
+    "cost": 0,
+    "text": "At the end of the Attack Step, this vehicle may permanently reduce its Crew value by any amount (to a minimum of 0). Remove 1 Hull Point from any vehicle in base contact for each crew removed in this way."
+  },
+  {
+    "id": "raise_the_sails",
+    "name": "Raise the Sails",
+    "sponsor": "scarlett",
+    "class": "",
+    "cost": 0,
+    "text": "After rolling Skid Dice, this vehicle may permanently reduce its Crew value by 1 (to a minimum of 0) to add 1 free Shift result to the Skid Dice results."
+  },
+  {
+    "id": "press_gang_or_keelhaul",
+    "name": "Press Gang or Keelhaul",
+    "sponsor": "scarlett",
+    "class": "",
+    "cost": 0,
+    "text": "When another vehicle in contact with this vehicle is Wrecked, this vehicle may either gain 1 Crew or gain 2 Audience Votes."
+  },
+
+ 
+  {
+    "id": "hot_pursuit",
+    "name": "Hot Pursuit",
+    "sponsor": "highway_patrol",
+    "class": "",
+    "cost": 0,
+    "text": "Before the first Gear Phase, after deployment, nominate one enemy vehicle as the bogey. If the bogey is Wrecked or disqualified, immediately nominate another enemy vehicle."
+  },
+  {
+    "id": "bogey_at_12_oclock",
+    "name": "Bogey at 12 o’Clock",
+    "sponsor": "highway_patrol",
+    "class": "",
+    "cost": 0,
+    "text": "At the end of this vehicle’s Movement Step, if the bogey is in this vehicle’s front Arc of Fire, farther than Double range, and visible, this vehicle may immediately resolve another Movement Step."
+  },
+  {
+    "id": "siren",
+    "name": "Siren",
+    "sponsor": "highway_patrol",
+    "class": "",
+    "cost": 0,
+    "text": "At the end of this vehicle’s Attack Step, if this vehicle is in the bogey’s rear Arc of Fire, the bogey must either reduce its Gear by 1 or gain 2 Hazard Tokens."
+  },
+  {
+    "id": "steel_justice",
+    "name": "Steel Justice",
+    "sponsor": "highway_patrol",
+    "class": "",
+    "cost": 0,
+    "text": "If the bogey wipes out, the team gains 2 Audience Votes. If the bogey is Wrecked, the team gains 4 Audience Votes."
+  },
+  {
+    "id": "louder_siren",
+    "name": "Louder Siren",
+    "sponsor": "highway_patrol",
+    "class": "",
+    "cost": 0,
+    "text": "Replace the word “bogey” with “any enemy vehicle” for the purposes of the Siren special rule."
+  },
+
+{
+    "id": "microplate_armour",
+    "name": "MicroPlate Armour",
+    "sponsor": "verney",
+    "class": "",
+    "cost": 0,
+    "text": "Vehicles in this team may purchase the MicroPlate Armour upgrade (6 Cans, +2 Hull, 0 build slots)."
+  },
+  {
+    "id": "trunk_of_junk",
+    "name": "Trunk of Junk",
+    "sponsor": "verney",
+    "class": "",
+    "cost": 0,
+    "text": "You may attack with any number of dropped weapons in a single activation."
+  },
+  {
+    "id": "tombstone",
+    "name": "Tombstone",
+    "sponsor": "verney",
+    "class": "",
+    "cost": 0,
+    "text": "If the shooting template of an attack touches this vehicle’s rear edge, it gains +1 to Evade rolls. During its Attack Step, this vehicle may gain 2 Hazard Tokens; if it does, all Collisions involving it are considered Head-on until the start of its next activation."
+  },
+  {
+    "id": "thats_entertainment",
+    "name": "That’s Entertainment",
+    "sponsor": "verney",
+    "class": "",
+    "cost": 0,
+    "text": "Whenever a dropped-weapon template placed by this team is removed from play, the team gains 1 Audience Vote."
+  },
+
+
+  {
+    "id": "dizzy",
+    "name": "Dizzy",
+    "sponsor": "maxxine",
+    "class": "",
+    "cost": 0,
+    "text": "This vehicle may resolve any number of Spin results separately during its Movement Step, one after another."
+  },
+  {
+    "id": "maxximum_drift",
+    "name": "Maxximum Drift",
+    "sponsor": "maxxine",
+    "class": "",
+    "cost": 0,
+    "text": "If this vehicle resolves two Slide results in one Movement Step, it may use the Medium Straight in place of the slide template. If it resolves three or more Slide results, it may use the Long Straight instead."
+  },
+  {
+    "id": "meshuggah",
+    "name": "Meshuggah",
+    "sponsor": "maxxine",
+    "class": "",
+    "cost": 0,
+    "text": "When this vehicle resolves a Slide or Spin that ends within Medium range of a friendly vehicle without causing a Collision, the team gains 1 Audience Vote."
+  },
+
+ 
+  {
+    "id": "fire_walk_with_me",
+    "name": "Fire Walk With Me",
+    "sponsor": "inferno",
+    "class": "",
+    "cost": 0,
+    "text": "When this vehicle would receive damage from a Fire weapon or effect, it may reduce the damage by up to 3, to a minimum of 1."
+  },
+  {
+    "id": "burning_man",
+    "name": "Burning Man",
+    "sponsor": "inferno",
+    "class": "",
+    "cost": 0,
+    "text": "If this vehicle is On Fire it gains +1 to all Evade dice."
+  },
+  {
+    "id": "cult_of_flame",
+    "name": "Cult of Flame",
+    "sponsor": "inferno",
+    "class": "",
+    "cost": 0,
+    "text": "At the end of the Gear Phase, if there are more enemy vehicles On Fire than friendly ones—or all enemies are On Fire—this team gains 1 Audience Vote for each friendly vehicle that is On Fire."
+  },
+
+ 
+  {
+    "id": "graveyard_shift",
+    "name": "Graveyard Shift",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "At the start of the game, after deployment, all vehicles in this team except one must gain the Ghost Rider special rule."
+  },
+  {
+    "id": "ghost_rider",
+    "name": "Ghost Rider",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "This vehicle ignores, and is ignored by, other vehicles; it cannot take part in Collisions, make or suffer shooting attacks, and never counts toward victory conditions."
+  },
+  {
+    "id": "soul_anchor",
+    "name": "Soul Anchor",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "If all in-play vehicles from this team have the Ghost Rider rule, immediately remove all vehicles in this team from play."
+  },
+  {
+    "id": "at_the_crossroads",
+    "name": "At the Crossroads",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "This team may pay only 1 Audience Vote to respawn a vehicle; if it does, the respawned vehicle must gain the Ghost Rider rule."
+  },
+  {
+    "id": "inexorable",
+    "name": "Inexorable",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "Vehicles from this team may be respawned even if other rules would ordinarily prevent it."
+  },
+  {
+    "id": "soul_harvest",
+    "name": "Soul Harvest",
+    "sponsor": "beverly",
+    "class": "",
+    "cost": 0,
+    "text": "If this vehicle’s movement template touches an enemy vehicle, it gains 1 Soul Token (even if ignoring that vehicle). If it later touches a friendly vehicle without the Ghost Rider rule, choose: gain 1 Audience Vote per Soul Token or repair 2 Hull Points per Soul Token, then discard all Soul Tokens."
+  },
+
+ 
+  {
+    "id": "party_hard",
+    "name": "Party Hard",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "At the end of this vehicle’s Attack Step, if it has more Hazard Tokens than all enemy vehicles within Medium range combined, it gains 1 Audience Vote for each enemy vehicle within Medium range that has one or more Hazard Tokens."
+  },
+  {
+    "id": "dutch_courage",
+    "name": "Dutch Courage",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "Vehicles in this team only Wipeout when they have 8 Hazard Tokens."
+  },
+  {
+    "id": "as_straight_as_im_able",
+    "name": "As Straight as I’m Able",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "This vehicle does not gain a Hazard Token from the Articulated rule when it selects a non-Straight template."
+  },
+  {
+    "id": "over_the_limit",
+    "name": "Over the Limit",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "This vehicle never considers any Straight template to be permitted; it considers the Veer template to be permitted and Trivial in any Gear."
+  },
+  {
+    "id": "trailer_trash",
+    "name": "Trailer Trash",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "This team may purchase Trailers, and must include either one or more Medium/Heavy vehicles with a trailer upgrade or a War Rig."
+  },
+  {
+    "id": "haulage",
+    "name": "Haulage",
+    "sponsor": "rusty",
+    "class": "",
+    "cost": 0,
+    "text": "Each vehicle on this team with a trailer upgrade, and each War Rig, may equip one trailer-cargo upgrade for free."
+  },
+
+
+    {
+      "id": "prison_cars",
+      "name": "Prison Cars",
+      "sponsor": "warden",
+      "class": "",
+      "cost": 0,
+      "text": "Vehicles in this team may purchase the upgrade “Prison Car”: reduce the base cost of the vehicle by 4 Cans (to a minimum of 5 Cans) and reduce its Hull value by 2. May only be purchased by Middleweight vehicles and only once per vehicle."
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks",
+      "sponsor": "warden",
+      "class": "",
+      "cost": 0,
+      "text": "If this vehicle Explodes, its controller gains 1 Audience Vote if it is Middleweight, or 2 Audience Votes if it is Heavyweight, in addition to any votes gained for being Wrecked. Then discard all Ammo Tokens from the wreck."
+    },
+  
+  
+    {
+      "id": "crew_quarters",
+      "name": "Crew Quarters",
+      "sponsor": "scarlett",
+      "class": "",
+      "cost": 0,
+      "text": "This team may purchase the Extra Crewmember upgrade at half the listed cost."
+    },
+    {
+      "id": "raiders",
+      "name": "Raiders",
+      "sponsor": "scarlett",
+      "class": "",
+      "cost": 0,
+      "text": "At the end of the Attack Step, this vehicle may permanently reduce its Crew value by any amount (to a minimum of 0). Remove 1 Hull Point from any vehicle in base contact for each crew removed in this way."
+    },
+    {
+      "id": "raise_the_sails",
+      "name": "Raise the Sails",
+      "sponsor": "scarlett",
+      "class": "",
+      "cost": 0,
+      "text": "After rolling Skid Dice, this vehicle may permanently reduce its Crew value by 1 (to a minimum of 0) to add 1 free Shift result to the Skid Dice results."
+    },
+    {
+      "id": "press_gang_or_keelhaul",
+      "name": "Press Gang or Keelhaul",
+      "sponsor": "scarlett",
+      "class": "",
+      "cost": 0,
+      "text": "When another vehicle in contact with this vehicle is Wrecked, this vehicle may either gain 1 Crew or gain 2 Audience Votes."
+    },
+  
+
+    {
+      "id": "hot_pursuit",
+      "name": "Hot Pursuit",
+      "sponsor": "highway_patrol",
+      "class": "",
+      "cost": 0,
+      "text": "Before the first Gear Phase, after deployment, nominate one enemy vehicle as the bogey. If the bogey is Wrecked or disqualified, immediately nominate another enemy vehicle."
+    },
+    {
+      "id": "bogey_at_12_oclock",
+      "name": "Bogey at 12 o’Clock",
+      "sponsor": "highway_patrol",
+      "class": "",
+      "cost": 0,
+      "text": "At the end of this vehicle’s Movement Step, if the bogey is in this vehicle’s front Arc of Fire, farther than Double range, and visible, this vehicle may immediately resolve another Movement Step."
+    },
+    {
+      "id": "siren",
+      "name": "Siren",
+      "sponsor": "highway_patrol",
+      "class": "",
+      "cost": 0,
+      "text": "At the end of this vehicle’s Attack Step, if this vehicle is in the bogey’s rear Arc of Fire, the bogey must either reduce its Gear by 1 or gain 2 Hazard Tokens."
+    },
+    {
+      "id": "steel_justice",
+      "name": "Steel Justice",
+      "sponsor": "highway_patrol",
+      "class": "",
+      "cost": 0,
+      "text": "If the bogey wipes out, the team gains 2 Audience Votes. If the bogey is Wrecked, the team gains 4 Audience Votes."
+    },
+    {
+      "id": "louder_siren",
+      "name": "Louder Siren",
+      "sponsor": "highway_patrol",
+      "class": "",
+      "cost": 0,
+      "text": "Replace the word “bogey” with “any enemy vehicle” for the purposes of the Siren special rule."
+    },
+  
+ 
+    {
+      "id": "microplate_armour",
+      "name": "MicroPlate Armour",
+      "sponsor": "verney",
+      "class": "",
+      "cost": 0,
+      "text": "Vehicles in this team may purchase the MicroPlate Armour upgrade (6 Cans, +2 Hull, 0 build slots)."
+    },
+    {
+      "id": "trunk_of_junk",
+      "name": "Trunk of Junk",
+      "sponsor": "verney",
+      "class": "",
+      "cost": 0,
+      "text": "You may attack with any number of dropped weapons in a single activation."
+    },
+    {
+      "id": "tombstone",
+      "name": "Tombstone",
+      "sponsor": "verney",
+      "class": "",
+      "cost": 0,
+      "text": "If the shooting template of an attack touches this vehicle’s rear edge, it gains +1 to Evade rolls. During its Attack Step, this vehicle may gain 2 Hazard Tokens; if it does, all Collisions involving it are considered Head-on until the start of its next activation."
+    },
+    {
+      "id": "thats_entertainment",
+      "name": "That’s Entertainment",
+      "sponsor": "verney",
+      "class": "",
+      "cost": 0,
+      "text": "Whenever a dropped-weapon template placed by this team is removed from play, the team gains 1 Audience Vote."
+    },
+  
+  
+  
+    {
+      "id": "fire_walk_with_me",
+      "name": "Fire Walk With Me",
+      "sponsor": "inferno",
+      "class": "",
+      "cost": 0,
+      "text": "When this vehicle would receive damage from a Fire weapon or effect, it may reduce the damage by up to 3, to a minimum of 1."
+    },
+    {
+      "id": "burning_man",
+      "name": "Burning Man",
+      "sponsor": "inferno",
+      "class": "",
+      "cost": 0,
+      "text": "If this vehicle is On Fire it gains +1 to all Evade dice."
+    },
+    {
+      "id": "cult_of_flame",
+      "name": "Cult of Flame",
+      "sponsor": "inferno",
+      "class": "",
+      "cost": 0,
+      "text": "At the end of the Gear Phase, if there are more enemy vehicles On Fire than friendly ones—or all enemies are On Fire—this team gains 1 Audience Vote for each friendly vehicle that is On Fire."
+    },
+  
+
+    {
+      "id": "graveyard_shift",
+      "name": "Graveyard Shift",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "At the start of the game, after deployment, all vehicles in this team except one must gain the Ghost Rider special rule."
+    },
+    {
+      "id": "ghost_rider",
+      "name": "Ghost Rider",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "This vehicle ignores, and is ignored by, other vehicles; it cannot take part in Collisions, make or suffer shooting attacks, and never counts toward victory conditions."
+    },
+    {
+      "id": "soul_anchor",
+      "name": "Soul Anchor",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "If all in-play vehicles from this team have the Ghost Rider rule, immediately remove all vehicles in this team from play."
+    },
+    {
+      "id": "at_the_crossroads",
+      "name": "At the Crossroads",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "This team may pay only 1 Audience Vote to respawn a vehicle; if it does, the respawned vehicle must gain the Ghost Rider rule."
+    },
+    {
+      "id": "inexorable",
+      "name": "Inexorable",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "Vehicles from this team may be respawned even if other rules would ordinarily prevent it."
+    },
+    {
+      "id": "soul_harvest",
+      "name": "Soul Harvest",
+      "sponsor": "beverly",
+      "class": "",
+      "cost": 0,
+      "text": "If this vehicle’s movement template touches an enemy vehicle, it gains 1 Soul Token (even if ignoring that vehicle). If it later touches a friendly vehicle without the Ghost Rider rule, choose: gain 1 Audience Vote per Soul Token or repair 2 Hull Points per Soul Token, then discard all Soul Tokens."
+    },
+  
+
+    {
+      "id": "party_hard",
+      "name": "Party Hard",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "At the end of this vehicle’s Attack Step, if it has more Hazard Tokens than all enemy vehicles within Medium range combined, it gains 1 Audience Vote for each enemy vehicle within Medium range that has one or more Hazard Tokens."
+    },
+    {
+      "id": "dutch_courage",
+      "name": "Dutch Courage",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "Vehicles in this team only Wipeout when they have 8 Hazard Tokens."
+    },
+    {
+      "id": "as_straight_as_im_able",
+      "name": "As Straight as I’m Able",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "This vehicle does not gain a Hazard Token from the Articulated rule when it selects a non-Straight template."
+    },
+    {
+      "id": "over_the_limit",
+      "name": "Over the Limit",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "This vehicle never considers any Straight template to be permitted; it considers the Veer template to be permitted and Trivial in any Gear."
+    },
+    {
+      "id": "trailer_trash",
+      "name": "Trailer Trash",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "This team may purchase Trailers, and must include either one or more Medium/Heavy vehicles with a trailer upgrade or a War Rig."
+    },
+    {
+      "id": "haulage",
+      "name": "Haulage",
+      "sponsor": "rusty",
+      "class": "",
+      "cost": 0,
+      "text": "Each vehicle on this team with a trailer upgrade, and each War Rig, may equip one trailer-cargo upgrade for free."
+    }
   ]
+  
   
   
         

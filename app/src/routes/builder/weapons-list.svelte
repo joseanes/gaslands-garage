@@ -1,6 +1,14 @@
 {#if v.weapons.length === 0}
 	<p class="text-stone-500 text-sm italic px-2">No weapons equipped.</p>
 {:else}
+	<!-- Function to check if vehicle has an upgrade with 360 capability -->
+	{@const hasUpgradeWith360 = (vehicleUpgrades) => {
+		return vehicleUpgrades.some(upgradeId => {
+			const upgrade = upgrades.find(u => u.id === upgradeId);
+			return upgrade && upgrade["360"] === true;
+		});
+	}}
+	
 	<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
 		{#each v.weapons as weaponId, i}
 			{@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
@@ -36,13 +44,23 @@
 						>
 							{#if weaponObj?.facing && weaponObj?.facing !== 'any'}
 								<option value={weaponObj.facing}>{weaponObj.facing}</option>
+							{:else if weaponObj?.crewFired}
+								<!-- Crew fired weapons must be 360 -->
+								<option value="360">360</option>
+							{:else if weaponObj?.dropped}
+								<!-- Dropped weapons must be side or rear -->
+								<option value="side">side</option>
+								<option value="rear">rear</option>
 							{:else}
+								<!-- Standard weapons -->
 								<option value="front">front</option>
 								<option value="side">side</option>
 								<option value="rear">rear</option>
-								<option value="turret">turret</option>
-								<option value="hull">hull</option>
-								<option value="any">any</option>
+								
+								<!-- If vehicle has a 360 upgrade, also allow 360 facing -->
+								{#if hasUpgradeWith360(v.upgrades)}
+									<option value="360">360</option>
+								{/if}
 							{/if}
 						</select>
 					</div>

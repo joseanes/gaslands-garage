@@ -2,8 +2,8 @@
   "id": "thp",
   "name": "The Highway Patrol",
   "starterCans": 50,
-  "perks": ["speed", "pursuit"],
+  "perks": [],
   "perksClasses": ["speed", "pursuit"],
   "color": "#0369a1",
-  "source": "Gaslands"
+  "source": "Gaslands Refueled"
 }

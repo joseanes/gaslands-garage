@@ -1,9 +1,9 @@
 {
   "id": "sca",
-  "name": "Scarlett Annie",
+  "name": "Scarlett",
   "starterCans": 50,
   "perks": [],
-  "perksClasses": ["tuning","aggressive"],
+  "perksClasses": ["tuning", "aggression"],
   "color": "#c2410c",
   "source": "Gaslands"
 }

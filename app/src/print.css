@@ -5,3 +5,369 @@
   visibility: hidden;
   display: none;
 }
+
+/* Hide print view by default */
+#gaslands-print-view {
+  display: none;
+}
+
+/* Print styles */
+@media print {
+  /* Hide elements that shouldn't be printed */
+  .menu-bar,
+  button[aria-label="Remove vehicle"],
+  button[aria-label="Remove weapon"],
+  button[aria-label="Remove upgrade"],
+  button[aria-label="Remove perk"],
+  .relative select,
+  #import-draft,
+  .bg-red-50,
+  .bg-green-50,
+  .print-hide {
+    display: none !important;
+  }
+  
+  /* Page formatting */
+  @page { 
+    size: 8.5in 11in portrait; 
+    margin: 0.5cm;
+  }
+  
+  section {
+    background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Reset padding from header for print */
+  #builder-ui {
+    padding-top: 0 !important;
+  }
+  
+  /* Hide non-print components */
+  .bg-white, .bg-stone-100, #builder-ui, .p-4, .p-5, .p-6 {
+    display: none !important;
+  }
+  
+  /* General text formatting applied to print view container */
+  #gaslands-print-view { 
+    color: #000; 
+    font-family: Arial, sans-serif; 
+    display: block !important;
+  }
+  
+  /* Force background printing */
+  * { 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+  }
+  
+  /* Vehicle card styling */
+  .vehicle-card-print {
+    width: 320px;
+    height: 340px;
+    vertical-align: top;
+    padding: 16px;
+    border: 3px solid #000;
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  
+  /* Text styling */
+  .uppercase { text-transform: uppercase; }
+  .bold { font-weight: bold; }
+  
+  /* Hull boxes */
+  .hull-box {
+    width: 14px;
+    height: 14px;
+    background-color: #fff;
+    border: 2px solid #000;
+    display: inline-block;
+    margin: 2px;
+    border-radius: 2px;
+  }
+  
+  /* Vehicle card sections */
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #222;
+    padding-bottom: 8px;
+  }
+  
+  .card-title {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .card-name {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  
+  .vehicle-type-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: white;
+    font-size: 0.8em;
+    font-weight: bold;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  
+  .card-cost {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #000;
+    padding: 2px 12px;
+    border-radius: 6px;
+    background-color: #fff;
+    font-size: 0.8em;
+    font-weight: bold;
+  }
+  
+  .cost-value {
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1;
+  }
+  
+  /* Stats section */
+  .stats-grid {
+    margin-bottom: 16px;
+  }
+  
+  .stat-block {
+    margin-bottom: 8px;
+  }
+  
+  .stats-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+  }
+  
+  .stat-label {
+    font-weight: bold;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+    color: #444;
+  }
+  
+  .stat-value {
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    padding: 3px 8px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  .hull-tracker {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    padding: 3px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  /* Loadout sections */
+  .loadout {
+    font-size: 0.85em;
+  }
+  
+  .loadout-section {
+    margin-bottom: 10px;
+  }
+  
+  .section-header {
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-size: 0.9em;
+    padding: 2px 0;
+    border-bottom: 1px solid #aaa;
+  }
+  
+  .loadout-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .loadout-table tr:nth-child(odd) {
+    background-color: rgba(0,0,0,0.05);
+  }
+  
+  .item-name {
+    font-weight: bold;
+    padding: 2px 4px;
+  }
+  
+  .item-facing {
+    text-align: center;
+    font-style: italic;
+    padding: 2px 4px;
+    width: 60px;
+  }
+  
+  .item-attack {
+    text-align: right;
+    font-weight: bold;
+    padding: 2px 4px;
+    width: 40px;
+  }
+  
+  .upgrade-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .upgrade-list li {
+    padding: 3px 4px;
+  }
+  
+  .upgrade-list li:nth-child(odd) {
+    background-color: rgba(0,0,0,0.05);
+  }
+  
+  .card-footer {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    font-weight: bold;
+    border-top: 1px solid #aaa;
+    padding-top: 8px;
+    font-size: 0.9em;
+  }
+  
+  .perk-label {
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  
+  /* Team summary styling */
+  .sponsor-print-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid black;
+    padding-bottom: 10px;
+  }
+  
+  .sponsor-print-header h1 {
+    font-size: 24pt;
+    margin-bottom: 5px;
+  }
+  
+  .print-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    page-break-inside: auto;
+  }
+  
+  .print-section {
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+  
+  .rotate90 {
+    display: inline-block;
+    transform: rotate(-90deg);
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .vehicle-type {
+    font-size: 0.9em;
+    font-weight: bold;
+  }
+  
+  /* Perk details section below cards */
+  #perk-details-print {
+    margin-top: 30px;
+    border-top: 2px solid #999;
+    padding-top: 15px;
+  }
+  
+  #perk-details-print h2 {
+    font-size: 14pt;
+    margin-bottom: 10px;
+  }
+  
+  .perk-list {
+    column-count: 2;
+    column-gap: 30px;
+  }
+  
+  .perk-item {
+    margin-bottom: 10px;
+    break-inside: avoid;
+  }
+  
+  /* QR Code and footer styling */
+  .print-footer {
+    width: 100%;
+    margin-top: 30px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    page-break-inside: avoid;
+    display: flex;
+    align-items: flex-end;
+  }
+  
+  .qr-code-container {
+    width: 120px;
+    text-align: center;
+  }
+  
+  .qr-code-image {
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+    background-color: white;
+    margin: 0 auto 5px auto;
+  }
+  
+  .qr-code-placeholder {
+    width: 100px;
+    height: 100px;
+    border: 1px solid black;
+    background-color: white;
+    margin: 0 auto 5px auto;
+    text-align: center;
+    line-height: 100px;
+  }
+  
+  .qr-code-caption {
+    font-size: 8pt;
+  }
+  
+  .print-footer-text {
+    flex: 1;
+    font-size: 10pt;
+    color: #666;
+    text-align: center;
+  }
+}

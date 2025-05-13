@@ -36,6 +36,25 @@
       }
     }, 0);
   }
+  
+  // Direct save to localStorage whenever print settings change
+  $: {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        // Use consistent key names between reactive saving and explicit button saving
+        window.localStorage.setItem('user_print_style', printStyle);
+        window.localStorage.setItem('user_show_equipment', showEquipmentDescriptions ? '1' : '0');
+        window.localStorage.setItem('user_show_perks', showPerkDescriptions ? '1' : '0');
+        console.log("Print settings reactively saved to localStorage:", { 
+          printStyle, 
+          showEquipmentDescriptions, 
+          showPerkDescriptions 
+        });
+      } catch (e) {
+        console.error("Error saving print settings to localStorage:", e);
+      }
+    }
+  }
 </script>
 
 {#if showSettingsModal}
@@ -64,8 +83,62 @@
           <button
             class="py-0.25 px-6 h-[32px] flex items-center justify-center rounded-lg transition-colors text-sm amber-button shadow-md"
             style="height: 32px !important; min-height: 32px !important;"
-            on:click={() => {
-              if ($user) saveSettingsToFirebase();
+            on:click={async () => {
+              console.log("[SettingsMenu] Save & Close clicked");
+              console.log("[SettingsMenu] Print settings: ", {
+                printStyle,
+                showEquipmentDescriptions,
+                showPerkDescriptions
+              });
+              
+              // EXPLICITLY SAVE MOST IMPORTANT SETTINGS TO LOCALSTORAGE
+              localStorage.setItem('printStyle', printStyle);
+              localStorage.setItem('showEquipmentDescriptions', String(showEquipmentDescriptions));
+              localStorage.setItem('showPerkDescriptions', String(showPerkDescriptions));
+              
+              // ALSO SAVE WITH ALTERNATE NAMING FOR COMPATIBILITY
+              localStorage.setItem('user_print_style', printStyle);
+              localStorage.setItem('user_show_equipment', showEquipmentDescriptions ? '1' : '0');
+              localStorage.setItem('user_show_perks', showPerkDescriptions ? '1' : '0');
+              
+              // SAVE OTHER SETTINGS
+              localStorage.setItem('darkMode', String(darkMode));
+              localStorage.setItem('hasRules', String(hasRules));
+              localStorage.setItem('includeAdvanced', String(includeAdvanced));
+              localStorage.setItem('enableSponsorships', String(enableSponsorships));
+              
+              console.log("[SettingsMenu] Settings saved to localStorage, printStyle:", printStyle);
+              
+              // SAVE TO FIREBASE IF LOGGED IN
+              if ($user) {
+                console.log("[SettingsMenu] User logged in, saving to Firebase");
+                try {
+                  // Create ALL settings
+                  const settings = {
+                    printStyle,
+                    showEquipmentDescriptions,
+                    showPerkDescriptions,
+                    hasRules,
+                    darkMode,
+                    enableSponsorships,
+                    includeAdvanced,
+                    showTeamSummary,
+                    showGaslandsMath,
+                    showExperimentalFeatures,
+                    showOnPlayersMap,
+                    allowContactFromPlayers,
+                    location,
+                    receiveUpdates
+                  };
+                  
+                  await saveSettingsToFirebase(settings);
+                  console.log("[SettingsMenu] Settings saved to Firebase");
+                } catch (error) {
+                  console.error("[SettingsMenu] Error saving to Firebase:", error);
+                }
+              }
+              
+              // Close the modal
               showSettingsModal = false;
             }}
             aria-label="Save and close settings"
@@ -256,19 +329,6 @@
               <div class="flex items-center">
                 <input
                   type="radio"
-                  id="print-style-compact"
-                  name="print-style"
-                  value="compact"
-                  bind:group={printStyle}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                />
-                <label for="print-style-compact" class="ml-3 text-stone-800 dark:text-white">
-                  Compact
-                </label>
-              </div>
-              <div class="flex items-center">
-                <input
-                  type="radio"
                   id="print-style-dashboard"
                   name="print-style"
                   value="dashboard"
@@ -279,19 +339,7 @@
                   Dashboard
                 </label>
               </div>
-              <div class="flex items-center">
-                <input
-                  type="radio"
-                  id="print-style-roster"
-                  name="print-style"
-                  value="roster"
-                  bind:group={printStyle}
-                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
-                />
-                <label for="print-style-roster" class="ml-3 text-stone-800 dark:text-white">
-                  Roster
-                </label>
-              </div>
+              
             </div>
             <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
               Choose your preferred print layout style.

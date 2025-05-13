@@ -2,38 +2,38 @@
   {
     "id": "handgun",
     "name": "Handgun",
-    "cost": 1,
-    "slots": 1,
+    "cost": 0,
+    "slots": 0,
     "type": "weapon",
     "facing": "front",
     "crewFired": true,
     "range": "Short",
     "attackDice": 1,
-    "specialRules": "PISTOLS AND SUBMACHINE GUNS",
+    "specialRules": "CREW FIRED",
     "source": "Gaslands Refueled"
   },
   {
     "id": "mg",
     "name": "Machine Gun",
     "cost": 2,
-    "slots": 2,
+    "slots": 1,
     "type": "weapon",
     "facing": "any",
     "range": "Double",
     "attackDice": 1,
-    "specialRules": "BURST, RAPID FIRE",
+    "specialRules": "",
     "source": "Gaslands Refueled"
   },
   {
     "id": "hmg",
     "name": "Heavy Machine Gun",
     "cost": 3,
-    "slots": 3,
+    "slots": 1,
     "type": "weapon",
     "facing": "any",
     "range": "Double",
-    "attackDice": 2,
-    "specialRules": "BURST, RAPID FIRE",
+    "attackDice": 3,
+    "specialRules": "",
     "unique": true,
     "source": "Gaslands Refueled"
   },
@@ -41,12 +41,12 @@
     "id": "minigun",
     "name": "Minigun",
     "cost": 5,
-    "slots": 3,
+    "slots": 1,
     "type": "weapon",
     "facing": "front",
     "range": "Double",
     "attackDice": 4,
-    "specialRules": "360 DEGREES, SPLASH",
+    "specialRules": "",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -237,7 +237,7 @@
     "attackDice": 6,
     "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "bazooka",
@@ -249,7 +249,7 @@
     "attackDice": 3,
     "specialRules": "AMMO 3, BLAST",
     "advanced": true,
-    "crewFired": true,
+    "crewFired": false,
     "source": "Gaslands Refueled"
   },
   {
@@ -286,7 +286,7 @@
     "attackDice": 3,
     "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "flamethrower",
@@ -322,7 +322,7 @@
     "attackDice": 3,
     "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "harpoon",
@@ -346,7 +346,7 @@
     "attackDice": 6,
     "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "magnetic_jammer",
@@ -358,7 +358,7 @@
     "attackDice": 0,
     "specialRules": "ELECTRICAL, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "mortar",
@@ -394,7 +394,7 @@
     "attackDice": 0,
     "specialRules": "AMMO 1, ELECTRICAL, INDIRECT, 360-DEGREE, SEE SPECIAL RULES",
     "advanced": true,
-    "source": "Gaslands Refueled"
+    "source": "Gaslands Refueled", "electrical":true
   },
   {
     "id": "wall_of_amplifiers",
@@ -433,4 +433,102 @@
     "source": "Gaslands Refueled"
   }
 
-]
+  ,
+    {
+      "id": "blunderbuss",
+      "name": "Blunderbuss",
+      "cost": 2,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Small Burst",
+      "attackDice": 2,
+      "specialRules": "CREW FIRED, SPLASH",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "gas_grenades",
+      "name": "Gas Grenades",
+      "cost": 1,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Medium",
+      "attackDice": 1,
+      "specialRules": "AMMO 5, CREW FIRED, INDIRECT, BLITZ, SEE SPECIAL RULES",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "grenades",
+      "name": "Grenades",
+      "cost": 1,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Medium",
+      "attackDice": 1,
+      "specialRules": "AMMO 5, CREW FIRED, BLAST, INDIRECT, BLITZ",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "magnum",
+      "name": "Magnum",
+      "cost": 3,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Double",
+      "attackDice": 1,
+      "specialRules": "CREW FIRED, BLAST",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "molotov_cocktails",
+      "name": "Molotov Cocktails",
+      "cost": 1,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Medium",
+      "attackDice": 1,
+      "specialRules": "AMMO 5, CREW FIRED, FIRE, INDIRECT, BLITZ",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "shotgun",
+      "name": "Shotgun",
+      "cost": 4,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Long",
+      "attackDice": 0,
+      "specialRules": "CREW FIRED, SEE SPECIAL RULES",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "steel_nets",
+      "name": "Steel Nets",
+      "cost": 2,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Short",
+      "attackDice": 3,
+      "specialRules": "CREW FIRED, BLAST, SEE SPECIAL RULES",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    },
+    {
+      "id": "submachine_gun",
+      "name": "Submachine Gun",
+      "cost": 5,
+      "slots": 0,
+      "type": "weapon",
+      "range": "Medium",
+      "attackDice": 3,
+      "specialRules": "CREW FIRED",
+      "crewFired": true,
+      "source": "Gaslands Refueled"
+    }
+  ]
+  
