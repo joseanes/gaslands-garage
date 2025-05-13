@@ -30,63 +30,68 @@ export function checkRulesAcknowledgment(
  * @param draft - The current team draft for QR code generation
  */
 export async function printTeam(printStyle: string, draft: Draft): Promise<void> {
-  // Generate a fresh QR code for printing without showing the modal
-  const printQrCode = await draftToDataURL(draft);
+  console.log("[PrintService] printTeam called");
 
-  // Find and prepare the print view elements
-  const hiddenQrImage = document.querySelector('#print-qr-code') as HTMLImageElement | null;
-  const printView = document.querySelector('#gaslands-print-view') as HTMLElement | null;
-  const placeholder = document.querySelector('.qr-code-placeholder') as HTMLElement | null;
-
-  // For checking our component structure
-  const printViewComponent = document.querySelector('.print-view-content') as HTMLElement | null;
-
-  if (hiddenQrImage) {
-    // Set the QR code directly to this element
-    hiddenQrImage.src = printQrCode;
-    hiddenQrImage.style.display = "block";
-
-    // Hide placeholder
-    if (placeholder) {
-      placeholder.style.display = "none";
-    }
-  }
-
-  // Make sure the print view is visible
-  if (printView) {
-    printView.style.display = "block";
-    console.log('Print view element made visible');
-  } else {
-    console.error('Print view element not found!');
-  }
-
-  // Apply the correct print format to the body element
-  if (printStyle && typeof document !== 'undefined') {
-    document.body.setAttribute('data-print-format', printStyle);
-  }
-
-  // Give the browser a moment to render the QR code into the DOM
-  setTimeout(() => {
+  try {
+    // Generate a fresh QR code for printing
+    let printQrCode: string;
     try {
-      window.print();
-    } catch (err) {
-      console.error("Error during printing:", err);
+      printQrCode = await draftToDataURL(draft);
+      console.log("[PrintService] QR code generated successfully");
+    } catch (qrError) {
+      console.error("[PrintService] Error generating QR code:", qrError);
+      // Use a fallback transparent image
+      printQrCode = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
     }
 
-    // After printing, reset the body attribute
-    if (typeof document !== 'undefined') {
-      document.body.removeAttribute('data-print-format');
-    }
-
-    // Reset the QR code display after printing
+    // Find QR code image element and update its src
+    const hiddenQrImage = document.querySelector('#print-qr-code') as HTMLImageElement | null;
     if (hiddenQrImage) {
-      setTimeout(() => {
-        hiddenQrImage.style.display = 'none';
-        // Show placeholder again
-        if (placeholder) placeholder.style.display = 'block';
-      }, 500);
+      hiddenQrImage.style.display = 'block'; // Make sure it's visible
+      hiddenQrImage.src = printQrCode;
+      console.log("[PrintService] QR code image updated");
+    } else {
+      console.warn("[PrintService] QR code image element not found");
     }
-  }, 500); // Increased timeout to ensure proper rendering
+
+    // Apply the print style attribute
+    if (printStyle && typeof document !== 'undefined') {
+      document.body.setAttribute('data-print-format', printStyle);
+      console.log("[PrintService] Print format applied:", printStyle);
+    }
+
+    // Make sure the print container is at least temporarily visible
+    const printViewElement = document.getElementById('gaslands-print-view');
+    if (printViewElement) {
+      // Force it to be visible BEFORE we try to clone it in the print handler
+      const originalDisplay = printViewElement.style.display;
+      printViewElement.style.display = 'block';
+
+      // Let the custom print handler take over
+      console.log("[PrintService] Print view element found and made visible, calling window.print()");
+
+      // Give the browser a moment to render the now-visible print view
+      setTimeout(() => {
+        try {
+          window.print();
+
+          // Restore the original display after a delay
+          setTimeout(() => {
+            printViewElement.style.display = originalDisplay;
+          }, 1000);
+        } catch (printError) {
+          console.error("[PrintService] Error during printing:", printError);
+          printViewElement.style.display = originalDisplay;
+        }
+      }, 200);
+    } else {
+      console.error("[PrintService] Print view element not found");
+      alert('Print view not found. Please try again or refresh the page.');
+    }
+  } catch (err) {
+    console.error("[PrintService] Error during printing preparation:", err);
+    alert('There was an error preparing for printing. Please try again.');
+  }
 }
 
 /**

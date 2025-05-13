@@ -9,8 +9,8 @@
 	import Auth from '$lib/components/Auth.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
-	import PrintView from '$lib/components/printing/PrintView.svelte';
-	import { printTeam as printTeamService } from '$lib/components/printing/PrintService';
+	// Using new print approach
+	import { printTeam as printTeamService } from '$lib/components/printing/PrintService-new';
 	import { user } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
@@ -735,8 +735,33 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	async function printTeam() {
-		// Use our extracted print service instead of implementing everything here
-		await printTeamService(printStyle, currentDraft);
+		// Use our new standalone print service
+		// This builds a modified draft with more information for printing
+		const enhancedDraft = {
+			...currentDraft,
+			// Add extra data needed for printing
+			teamName: teamName,
+			totalCans: totalCans,
+			maxCans: maxCans,
+			sponsorName: currentSponsor?.name || 'No Sponsor',
+			// Add vehicle data with more details
+			vehicles: vehicles.map(v => ({
+				...v,
+				// Include calculated cost
+				cost: validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || 0,
+				// Include vehicle type details
+				vehicleType: vehicleTypes.find(vt => vt.id === v.type),
+				// Include stats
+				stats: {
+					hull: calculateMaxHull(v),
+					handling: vehicleTypes.find(vt => vt.id === v.type)?.handling || 4,
+					gear: vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6,
+					crew: vehicleTypes.find(vt => vt.id === v.type)?.crew || 1,
+					weight: vehicleTypes.find(vt => vt.id === v.type)?.weight || 2
+				}
+			}))
+		};
+		await printTeamService(printStyle, enhancedDraft);
 	}
 
 	function importBuild() {
@@ -2701,196 +2726,6 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
   </div>
 {/if}
 
-<!-- Print-only view with vehicle cards -->
-<div id="gaslands-print-view" style="display: none;">
-  <PrintView
-    teamName={teamName}
-    totalCans={totalCans}
-    maxCans={maxCans}
-    vehicles={vehicles}
-    vehicleTypes={vehicleTypes}
-    weapons={weapons}
-    upgrades={upgrades}
-    perks={perks}
-    validation={validation}
-    enableSponsorships={enableSponsorships}
-    currentSponsor={currentSponsor}
-    classPerksList={classPerksList}
-    sponsorPerksList={sponsorPerksList}
-  />
-  
-  <div class="print-card-grid">
-    {#each vehicles as v}
-      <div class="vehicle-card-print" style="border-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'};">
-        <!-- Vehicle Card Header with Type & Cost -->
-        <div class="card-header">
-          <div class="card-title">
-            <div class="card-name">{v.name}</div>
-            <div class="vehicle-type-badge" style="background-color: {vehicleTypes.find(vt => vt.id === v.type)?.color || '#f59e0b'};">
-              {vehicleTypes.find(vt => vt.id === v.type)?.name || 'Unknown'}
-            </div>
-          </div>
-          <div class="card-cost">
-            <div>Cost</div>
-            <div class="cost-value">{validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || '?'}</div>
-            <div>cans</div>
-          </div>
-        </div>
-        
-        <!-- Stats Grid: A more structured layout -->
-        <div class="stats-grid">
-          <div class="stat-block">
-            <div class="stat-label">Hull</div>
-            <div class="hull-tracker">
-              {#if calculateMaxHull(v) > (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)}
-                <span class="text-green-500 text-xs font-bold mr-1">(+{calculateMaxHull(v) - (vehicleTypes.find(vt => vt.id === v.type)?.maxHull || 0)})</span>
-              {/if}
-              {#each Array(Math.min(10, calculateMaxHull(v))) as _, i}
-                <span class="hull-box"></span>
-              {/each}
-            </div>
-          </div>
-          
-          <div class="stats-row">
-            <div class="stat-block">
-              <div class="stat-label">Handling</div>
-              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.handling || 4}</div>
-            </div>
-            
-            <div class="stat-block">
-              <div class="stat-label">Gear</div>
-              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6}</div>
-            </div>
-            
-            <div class="stat-block">
-              <div class="stat-label">Crew</div>
-              <div class="stat-value">{vehicleTypes.find(vt => vt.id === v.type)?.crew || 1}</div>
-            </div>
-            
-            <div class="stat-block">
-              <div class="stat-label">Weight</div>
-              <div class="stat-value">
-                {vehicleTypes.find(vt => vt.id === v.type)?.weight === 1 ? 'Light' : 
-                vehicleTypes.find(vt => vt.id === v.type)?.weight === 2 ? 'Medium' : 
-                vehicleTypes.find(vt => vt.id === v.type)?.weight === 3 ? 'Heavy' : 'Massive'}
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Weapons & Upgrades in a clearer format -->
-        <div class="loadout">
-          {#if v.weapons.length > 0}
-            <div class="loadout-section">
-              <div class="section-header">Weapons</div>
-              <table class="loadout-table">
-                <tbody>
-                  {#each v.weapons as weaponId}
-                    {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
-                    {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-                    {@const facing = v.weaponFacings?.[weaponId] || weaponObj?.facing || 'front'}
-                    <tr>
-                      <td class="item-name">{weaponObj?.name || weaponId}</td>
-                      <td class="item-facing">{facing}</td>
-                      <td class="item-attack">{weaponObj?.attackDice || '-'}{weaponObj?.attackDice ? 'D' : ''}</td>
-                    </tr>
-                  {/each}
-                </tbody>
-              </table>
-            </div>
-          {/if}
-          
-          {#if v.upgrades.length > 0}
-            <div class="loadout-section">
-              <div class="section-header">Upgrades</div>
-              <ul class="upgrade-list">
-                {#each v.upgrades as upgradeId}
-                  <li>{upgrades.find(u => u.id === upgradeId)?.name || upgradeId}</li>
-                {/each}
-              </ul>
-            </div>
-          {/if}
-        </div>
-        
-        <!-- Perks at bottom -->
-        {#if v.perks.length > 0}
-          <div class="card-footer">
-            <span class="perk-label">Perks:</span> {v.perks.map(id => perks.find(p => p.id === id)?.name || "").join(' • ')}
-          </div>
-        {/if}
-      </div>
-    {/each}
-  </div>
-  
-  <!-- Perk details section -->
-  <div id="perk-details-print">
-    <h2>Weapons & Upgrades Details</h2>
-    
-    <div class="print-section">
-      <h3>Weapons</h3>
-      <div class="perk-list">
-        {#each [...new Set(vehicles.flatMap(v => v.weapons))] as weaponId}
-          {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
-          {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
-          {#if weaponObj}
-            <div class="perk-item">
-              <strong>{weaponObj.name}</strong> - 
-              {weaponObj.cost} cans
-              {#if weaponObj.unique}
-                (Unique)
-              {/if}
-            </div>
-          {/if}
-        {/each}
-      </div>
-    </div>
-    
-    <div class="print-section">
-      <h3>Upgrades</h3>
-      <div class="perk-list">
-        {#each [...new Set(vehicles.flatMap(v => v.upgrades))] as upgradeId}
-          {#if upgrades.find(u => u.id === upgradeId)}
-            <div class="perk-item">
-              <strong>{upgrades.find(u => u.id === upgradeId)?.name}</strong> - 
-              {upgrades.find(u => u.id === upgradeId)?.specialRules}
-            </div>
-          {/if}
-        {/each}
-      </div>
-    </div>
-    
-    {#if enableSponsorships}
-    <div class="print-section">
-      <h3>Perks</h3>
-      <div class="perk-list">
-        {#each [...new Set(vehicles.flatMap(v => v.perks))] as perkId}
-          {#if perks.find(p => p.id === perkId)}
-            <div class="perk-item">
-              <strong>{perks.find(p => p.id === perkId)?.name} (Level {perks.find(p => p.id === perkId)?.level})</strong> - 
-              {perks.find(p => p.id === perkId)?.text}
-            </div>
-          {/if}
-        {/each}
-      </div>
-    </div>
-    {/if}
-  </div>
-  
-  <!-- QR Code and footer -->
-  <div class="print-footer">
-    <div class="qr-code-container">
-      {#if qrDataUrl}
-        <img src={qrDataUrl} alt="QR Code" class="qr-code-image" />
-      {:else}
-        <!-- Hidden image element that will be updated when printing without showing the modal -->
-        <img id="print-qr-code" src="" alt="QR Code" class="qr-code-image" />
-        <!-- Placeholder is only shown when not printing -->
-        <div class="qr-code-placeholder print-hide">QR Code</div>
-      {/if}
-      <div class="qr-code-caption">Scan to load team</div>
-    </div>
-    <div class="print-footer-text">
-      Generated by Gaslands Garage on {new Date().toLocaleDateString()}
-    </div>
-  </div>
-</div>
+<!-- No print view needed - using standalone print system -->
+<!-- Hidden QR code for new print system to use -->
+<img id="print-qr-code" src="" alt="QR Code" style="display: none;" />

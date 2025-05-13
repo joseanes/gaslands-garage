@@ -40,7 +40,7 @@
 </script>
 
 <!-- Print-only view with vehicle cards -->
-<div class="print-view-content">
+<div style="padding: 20px; background-color: white; color: black;">
   <div class="sponsor-print-header">
     <h1>Gaslands: {teamName}</h1>
     <p>
@@ -160,10 +160,11 @@
     {/each}
   </div>
   
-  <!-- QR code area (hidden by default, made visible during printing) -->
+  <!-- QR code area (made visible during printing) -->
   <div class="qr-code-container">
-    <div class="qr-code-placeholder">Scan QR Code to load this team</div>
-    <img id="print-qr-code" class="qr-code-image" style="display: none;" alt="QR Code for team" />
+    <div class="qr-code-placeholder print-hide">Scan QR Code to load this team</div>
+    <img id="print-qr-code" class="qr-code-image" alt="QR Code for team" />
+    <div class="qr-code-caption">Scan to load team</div>
   </div>
   
   <!-- Perk details section -->
