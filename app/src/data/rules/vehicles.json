@@ -59,7 +59,8 @@
     "weight": 1,
     "advanced": false,
     "source": "Gaslands Refueled",
-    "handling": 2
+    "handling": 2,
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
   {
     "id": "heavy_truck",
@@ -74,7 +75,8 @@
     "weight": 2,
     "advanced": false,
     "source": "Gaslands Refueled",
-    "handling": 2
+    "handling": 2,
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
   {
     "id": "bus",
@@ -89,7 +91,8 @@
     "weight": 2,
     "advanced": false,
     "source": "Gaslands Refueled",
-    "handling": 2
+    "handling": 2,
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
 {
     "id": "drag_racer",
@@ -153,7 +156,8 @@
     "advanced": true,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "specialRules": "INFURIATING JINGLE"
+    "specialRules": "INFURIATING JINGLE",
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
   {
     "id": "gyrocopter",
@@ -170,7 +174,7 @@
     "source": "Gaslands Refueled",
     "handling": 4,
     "specialRules": "AIRWOLF, AIRBORNE",
-    "sponsors": ["miyazaki", "maxxine", "verney"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
   {
     "id": "ambulance",
@@ -219,7 +223,7 @@
     "source": "Gaslands Refueled",
     "handling": 3,
     "specialRules": "AIRWOLF, AIRBORNE, RESTRICTED",
-    "sponsors": ["rutherford", "highway_patrol"]
+    "sponsors": ["rutherford"]
   },
   {
     "id": "tank",
@@ -236,7 +240,7 @@
     "source": "Gaslands Refueled",
     "handling": 4,
     "specialRules": "PIVOT, UP AND OVER, ALL TERRAIN, TURRET, RESTRICTED",
-    "sponsors": ["rutherford", "warden"]
+    "sponsors": ["rutherford"]
   },
   {
     "id": "war_rig",
@@ -252,6 +256,7 @@
     "advanced": true,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "specialRules": "SEE WAR RIG RULES"
+    "specialRules": "SEE WAR RIG RULES",
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   }
 ]
