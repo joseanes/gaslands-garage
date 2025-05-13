@@ -28,7 +28,8 @@ export const Vehicle = z.object({
   advanced: z.boolean().optional().default(false),
   source: z.string().optional(),
   handling: z.number().int().optional(),
-  specialRules: z.string().optional()
+  specialRules: z.string().optional(),
+  sponsors: z.string().array().optional() // Array of sponsor IDs that can use this vehicle
 });
 export type Vehicle = z.infer<typeof Vehicle>;
 
