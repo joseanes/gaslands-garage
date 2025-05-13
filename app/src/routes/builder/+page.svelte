@@ -2246,7 +2246,25 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
               Log in to save this preference so you won't be asked again.
             </p>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end space-x-3">
+              <button
+                class="py-2 px-4 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+                on:click={() => {
+                  // Find the auth component and trigger login
+                  const authComponent = document.querySelector('header auth');
+                  if (authComponent) {
+                    // Try to find login button within auth component
+                    const loginButton = authComponent.querySelector('button');
+                    if (loginButton) {
+                      loginButton.click();
+                      showRulesAcknowledgmentModal = false;
+                    }
+                  }
+                }}
+              >
+                Log in
+              </button>
+              
               <button
                 class="py-2 px-4 bg-amber-500 text-white rounded hover:bg-amber-600 transition-colors"
                 on:click={() => {
