@@ -57,10 +57,29 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		await initializeSettings();
 	});
 
-	// Filter vehicle types based on includeAdvanced setting
-	$: filteredVehicleTypes = includeAdvanced 
-		? vehicleTypes 
-		: vehicleTypes.filter(v => !v.advanced);
+	// Filter vehicle types based on includeAdvanced setting and sponsor restrictions
+	$: filteredVehicleTypes = vehicleTypes.filter(v => {
+		// First filter based on advanced setting
+		if (!includeAdvanced && v.advanced) {
+			return false;
+		}
+		
+		// Then filter based on sponsor restrictions
+		// If the vehicle has a sponsors array and it's not empty, check if current sponsor is in it
+		if (v.sponsors && v.sponsors.length > 0) {
+			const allowed = v.sponsors.includes(sponsorId);
+			
+			// Log vehicles that have sponsor restrictions
+			if (v.id === 'tank' || v.id === 'helicopter' || v.id === 'war_rig') {
+				console.log(`Vehicle ${v.name} with sponsors [${v.sponsors.join(', ')}] - Current sponsor: ${sponsorId} - Allowed: ${allowed}`);
+			}
+			
+			return allowed;
+		}
+		
+		// No sponsor restriction or current sponsor is allowed
+		return true;
+	});
 	// Sort all data alphabetically
 	$: sortedSponsors = [...sponsors].sort((a, b) => a.name.localeCompare(b.name));
   $: sortedVehicleTypes = [...filteredVehicleTypes].sort((a, b) => a.name.localeCompare(b.name));
@@ -1374,6 +1393,43 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	$: if (!enableSponsorships) {
 		const noSponsorId = sponsors.find(s => s.id === 'no_sponsor')?.id ?? '';
 		sponsorId = noSponsorId;
+	}
+	
+	// When sponsor changes, check if any vehicles are no longer allowed with the new sponsor
+	$: {
+		// This reactive block will run whenever sponsorId changes
+		const invalidVehicles = vehicles.filter(v => {
+			const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+			if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
+				return !vehicleType.sponsors.includes(sponsorId);
+			}
+			return false;
+		});
+		
+		// If we found invalid vehicles, remove them and inform the user
+		if (invalidVehicles.length > 0) {
+			console.log(`Removing ${invalidVehicles.length} vehicles not available with sponsor ${sponsorId}`);
+			
+			// Get the names of the removed vehicles for the alert
+			const removedVehicleNames = invalidVehicles.map(v => {
+				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+				return vehicleType ? vehicleType.name : v.type;
+			});
+			
+			// Remove the invalid vehicles
+			vehicles = vehicles.filter(v => {
+				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+				if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
+					return vehicleType.sponsors.includes(sponsorId);
+				}
+				return true;
+			});
+			
+			// Inform the user about removed vehicles - but only if this isn't initial load
+			if (vehicles.length > 0) {
+				alert(`The following vehicles were removed because they're not available with the selected sponsor: ${removedVehicleNames.join(', ')}`);
+			}
+		}
 	}
 	
 	// Remove any advanced vehicle types when includeAdvanced is disabled

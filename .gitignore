@@ -1,4 +1,29 @@
 node_modules/
 package-lock.json
 
+# Claude settings
 **/.claude/settings.local.json
+
+# Temporary and backup files
+*.swp
+*.bak
+*.backup*
+*.orig
+*.new
+app/debug.html
+app/settings-modal-complete.txt
+app/settings-modal-fix.svelte
+app/src/correct-settings-structure.html
+app/src/fixed-settings-modal.svelte
+app/src/settings-modal-fix.txt
+app/test-indentation.txt
+
+# Experimental files
+app/src/lib/components/printing/PrintService-new-*.ts
+app/src/print-direct.js
+
+# Static app assets (if needed, remove this line)
+app/static/app/
+
+# Firebase Functions (if needed, remove this line)
+functions/
