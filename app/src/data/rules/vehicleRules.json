@@ -21,11 +21,13 @@
   },
   {
     "ruleName": "AIRBORNE",
-    "rule": "<p>This vehicle ignores non-tall obstructions, dropped weapons, and terrain at all times, except when checking for Cover, and when targeting other vehicles in its Attack Step.<br>Other vehicles ignore this vehicle at all times, except that other vehicles may target this vehicle during their Attack Steps. This vehicle cannot be involved in Collisions.</p>"
+    "rule": "<p>This vehicle ignores non-tall obstructions, dropped weapons, and terrain at all times, except when checking for Cover, and when targeting other vehicles in its Attack Step.<br>Other vehicles ignore this vehicle at all times, except that other vehicles may target this vehicle during their Attack Steps. This vehicle cannot be involved in Collisions.</p>",
+    "vehicleType": "gyrocopter"
   },
   {
     "ruleName": "AIRWOLF",
-    "rule": "<p>At the start of this vehicle's activation, this vehicle may gain 2 Hazard Tokens to make a single pivot about its centre point, up to 90 degrees.</p>"
+    "rule": "<p>At the start of this vehicle's activation, this vehicle may gain 2 Hazard Tokens to make a single pivot about its centre point, up to 90 degrees.</p>",
+    "vehicleType": "helicopter"
   },
   {
     "ruleName": "BOMBS AWAY",
@@ -37,14 +39,17 @@
   },
   {
     "ruleName": "ALL TERRAIN",
-    "rule": "<p>This vehicle may ignore the penalties for rough and treacherous surfaces.</p>"
+    "rule": "<p>This vehicle may ignore the penalties for rough and treacherous surfaces.</p>",
+    "vehicleType": "buggy"
   },
   {
     "ruleName": "UP AND OVER",
-    "rule": "<p>During this vehicle's Movement Step, after resolving a Collision with an obstruction of a lower weight class, this vehicle may declare that it is going \"Up and Over\". If it does, it may ignore the obstruction for the remainder of its Movement Step, as it drives right over the top of it. This vehicle cannot use this ability to ignore another vehicle with the Up and Over special rule.</p>"
+    "rule": "<p>During this vehicle's Movement Step, after resolving a Collision with an obstruction of a lower weight class, this vehicle may declare that it is going \"Up and Over\". If it does, it may ignore the obstruction for the remainder of its Movement Step, as it drives right over the top of it. This vehicle cannot use this ability to ignore another vehicle with the Up and Over special rule.</p>",
+    "vehicleType": "monster_truck"
   },
   {
     "ruleName": "TURRET",
-    "rule": "<p>This vehicle may count one weapon as turret-mounted without paying for the upgrade.</p>"
+    "rule": "<p>This vehicle may count one weapon as turret-mounted without paying for the upgrade.</p>",
+    "vehicleType": "tank"
   }
 ]

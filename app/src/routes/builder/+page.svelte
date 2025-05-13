@@ -314,7 +314,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		let actualFacing = 'front';
 
 		if (weaponObj.specialRules && weaponObj.specialRules.toUpperCase().includes("CREW FIRED")) {
-			actualFacing = 'any'; // Crew fired weapons are always 360°
+			actualFacing = '360'; // Crew fired weapons are always 360°
 		} else if (weaponObj.dropped || (weaponObj.range && weaponObj.range.includes('Dropped'))) {
 			actualFacing = 'rear'; // Dropped weapons default to rear
 		} else if (weaponObj.facing && weaponObj.facing !== 'any') {
@@ -398,10 +398,79 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	function removeUpgrade(vehicleId: string, upgradeIndex: number) {
-		vehicles = vehicles.map(v =>
-			v.id === vehicleId ?
-			{ ...v, upgrades: v.upgrades.filter((_, idx) => idx !== upgradeIndex) } :
-			v
+		// Find the vehicle first so we can access its data
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (!vehicle) return;
+		
+		// Get the upgrade being removed
+		const upgradeId = vehicle.upgrades[upgradeIndex];
+		const upgradeObj = upgrades.find(u => u.id === upgradeId);
+		
+		// Check if this is a 360 degree upgrade that's being removed
+		const is360Upgrade = upgradeObj && upgradeObj["360"] === true;
+		
+		// Prepare updates for the vehicle
+		let updatedVehicle = {
+			...vehicle,
+			upgrades: vehicle.upgrades.filter((_, idx) => idx !== upgradeIndex)
+		};
+		
+		// If removing a 360 upgrade, check remaining upgrades to see if vehicle still has any 360 capability
+		if (is360Upgrade) {
+			const still360Capable = updatedVehicle.upgrades.some(id => {
+				const upgrade = upgrades.find(u => u.id === id);
+				return upgrade && upgrade["360"] === true;
+			});
+			
+			// If not 360 capable anymore, reset any weapons with 360 facing to 'front'
+			if (!still360Capable) {
+				// Find weapons with 360 facing
+				const updatedFacings = { ...vehicle.weaponFacings };
+				let facingsChanged = false;
+				
+				// For each weapon with 360 facing, check if it should be reset
+				Object.entries(updatedFacings).forEach(([weaponId, facing]) => {
+					// Skip if not 360 facing
+					if (facing !== '360') return;
+					
+					// Get weapon details
+					const lastUnderscoreIndex = weaponId.lastIndexOf('_');
+					const baseWeaponId = lastUnderscoreIndex !== -1 ?
+						weaponId.substring(0, lastUnderscoreIndex) :
+						weaponId;
+					const weapon = weapons.find(w => w.id === baseWeaponId);
+					
+					// Skip crew fired weapons (they should stay 360)
+					const isCrewFired = weapon?.crewFired || 
+						(weapon?.specialRules && weapon.specialRules.toUpperCase().includes("CREW FIRED"));
+					
+					// Skip dropped weapons (they should be side/rear)
+					const isDropped = weapon?.dropped || 
+						(weapon?.range && weapon.range.includes('Dropped'));
+					
+					// If not crew fired or dropped, reset to 'front'
+					if (!isCrewFired && !isDropped) {
+						updatedFacings[weaponId] = 'front';
+						facingsChanged = true;
+					}
+				});
+				
+				// Only update facings if changes were made
+				if (facingsChanged) {
+					updatedVehicle = {
+						...updatedVehicle,
+						weaponFacings: updatedFacings
+					};
+					
+					// Show user a notification that weapons were reset
+					alert("Warning: Some weapons had 360° firing arc due to the removed upgrade. They have been reset to front facing.");
+				}
+			}
+		}
+		
+		// Update the vehicles array with our modified vehicle
+		vehicles = vehicles.map(v => 
+			v.id === vehicleId ? updatedVehicle : v
 		);
 	}
 

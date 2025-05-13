@@ -88,7 +88,8 @@ export type Perk = z.infer<typeof Perk>;
 
 export const VehicleRule = z.object({
   ruleName: z.string(),
-  rule: z.string()
+  rule: z.string(),
+  vehicleType: z.string().optional() // Optional field to indicate which vehicle type this rule applies to
 });
 export type VehicleRule = z.infer<typeof VehicleRule>;
 

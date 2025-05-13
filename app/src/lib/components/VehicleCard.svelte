@@ -732,28 +732,48 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <!-- Weapon facing controls -->
-                                    <div class="flex items-center">
-                                        <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Dice:</span>
-                                        <span class="text-stone-700 dark:text-gray-200 text-xs mr-4">{weaponObj?.attackDice || 0}</span>
-                                        <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
-                                        <select
-                                            bind:value={vehicle.weaponFacings[weaponId]}
-                                            class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
-                                            disabled={weaponObj?.facing === 'fixed' || weaponObj?.crewFired || (weaponObj?.specialRules && (weaponObj?.specialRules.toUpperCase().includes("CREW FIRED") || parseSpecialRules(weaponObj.specialRules).includes("crew_fired"))) || playMode}
-                                        >
-                                            {#if weaponObj?.dropped || (weaponObj?.range && weaponObj?.range.includes('Dropped'))}
-                                                <!-- Dropped weapons can only be side or rear -->
-                                                <option value="side">Side</option>
-                                                <option value="rear">Rear</option>
-                                            {:else}
-                                                <option value="front">Front</option>
-                                                <option value="side">Side</option>
-                                                <option value="rear">Rear</option>
-                                                <option value="any" disabled={!weaponObj?.crewFired}>360°</option>
-                                            {/if}
-                                        </select>
-                                    </div>
+                                    {#if weaponObj}
+                                        <!-- Compute necessary values before using them -->
+                                        {#if true}
+                                            {@const has360Upgrade = vehicle.upgrades.some(upgradeId => {
+                                                const upgrade = upgrades.find(u => u.id === upgradeId);
+                                                return upgrade && upgrade["360"] === true;
+                                            })}
+                                            {@const isCrewFired = weaponObj?.crewFired || (weaponObj?.specialRules && (
+                                                weaponObj?.specialRules.toUpperCase().includes("CREW FIRED") || 
+                                                parseSpecialRules(weaponObj.specialRules).includes("crew_fired")
+                                            ))}
+                                            {@const isDropped = weaponObj?.dropped || (weaponObj?.range && weaponObj?.range.includes('Dropped'))}
+                                            
+                                            <!-- Weapon facing controls -->
+                                            <div class="flex items-center">
+                                                <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Dice:</span>
+                                                <span class="text-stone-700 dark:text-gray-200 text-xs mr-4">{weaponObj?.attackDice || 0}</span>
+                                                <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
+                                                
+                                                <select
+                                                    bind:value={vehicle.weaponFacings[weaponId]}
+                                                    class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
+                                                    disabled={weaponObj?.facing === 'fixed' || isCrewFired || playMode}
+                                                >
+                                                    {#if isCrewFired}
+                                                        <!-- Crew fired weapons must be 360° -->
+                                                        <option value="360">360°</option>
+                                                    {:else if isDropped}
+                                                        <!-- Dropped weapons can only be side or rear -->
+                                                        <option value="side">Side</option>
+                                                        <option value="rear">Rear</option>
+                                                    {:else}
+                                                        <!-- Standard weapons -->
+                                                        <option value="front">Front</option>
+                                                        <option value="side">Side</option>
+                                                        <option value="rear">Rear</option>
+                                                        <option value="360" disabled={!has360Upgrade}>360°</option>
+                                                    {/if}
+                                                </select>
+                                            </div>
+                                        {/if}
+                                    {/if}
                                     <button
                                         class="py-0.25 px-2 flex items-center justify-center rounded transition-colors flex-shrink-0 text-xs h-[1.5rem] red-button"
                                         on:click={() => removeWeapon(i)}
