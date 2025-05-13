@@ -509,13 +509,67 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
         const vehicleCardsCheck = printWindow.document.querySelectorAll('.vehicle-card');
         console.log("[PrintService-new] Vehicle cards before printing:", vehicleCardsCheck.length);
 
-        // Print the window
+        // Add close button to the print window
+        const closeButton = printWindow.document.createElement('button');
+        closeButton.innerHTML = 'Close Window';
+        closeButton.style.position = 'fixed';
+        closeButton.style.top = '10px';
+        closeButton.style.right = '10px';
+        closeButton.style.padding = '8px 16px';
+        closeButton.style.backgroundColor = '#d97706';
+        closeButton.style.color = 'white';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '4px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.zIndex = '1000';
+        closeButton.style.fontWeight = 'bold';
+
+        // Add event listener to close button
+        closeButton.addEventListener('click', function() {
+          printWindow.close();
+        });
+
+        // Add a print button as well
+        const printButton = printWindow.document.createElement('button');
+        printButton.innerHTML = 'Print';
+        printButton.style.position = 'fixed';
+        printButton.style.top = '10px';
+        printButton.style.right = '140px'; // Position next to close button
+        printButton.style.padding = '8px 16px';
+        printButton.style.backgroundColor = '#2563eb'; // Blue
+        printButton.style.color = 'white';
+        printButton.style.border = 'none';
+        printButton.style.borderRadius = '4px';
+        printButton.style.cursor = 'pointer';
+        printButton.style.zIndex = '1000';
+        printButton.style.fontWeight = 'bold';
+
+        // Add event listener to print button
+        printButton.addEventListener('click', function() {
+          printWindow.print();
+        });
+
+        // Add a note about how to use the window
+        const noteDiv = printWindow.document.createElement('div');
+        noteDiv.innerHTML = 'You can print this page using the Print button or close this window when done.';
+        noteDiv.style.textAlign = 'center';
+        noteDiv.style.marginTop = '10px';
+        noteDiv.style.padding = '10px';
+        noteDiv.style.backgroundColor = '#f3f4f6';
+        noteDiv.style.color = '#374151';
+        noteDiv.style.borderRadius = '4px';
+        noteDiv.style.fontSize = '14px';
+
+        // Add elements to the document
+        printWindow.document.body.insertBefore(noteDiv, printWindow.document.body.firstChild);
+        printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
+        printWindow.document.body.insertBefore(printButton, printWindow.document.body.firstChild);
+
+        // Print the window - this will open the print dialog
         printWindow.print();
 
-        // Close window after printing
-        setTimeout(() => {
-          printWindow.close();
-        }, 2000);
+        // We no longer automatically close the window
+        // User must close it manually with the close button
       } catch (printError) {
         console.error("[PrintService-new] Error during printing:", printError);
         alert('Error during printing. Please try again.');
