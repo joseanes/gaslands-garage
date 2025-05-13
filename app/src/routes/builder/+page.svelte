@@ -744,6 +744,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			totalCans: totalCans,
 			maxCans: maxCans,
 			sponsorName: currentSponsor?.name || 'No Sponsor',
+			// Include sponsor perks information
+			sponsor: currentSponsor,
+			sponsorPerks: {
+				perksClasses: currentSponsor?.perksClasses || [],
+				classPerksList: classPerksList || [],
+				sponsorPerksList: sponsorPerksList || []
+			},
 			// Add vehicle data with more details
 			vehicles: vehicles.map(v => ({
 				...v,
@@ -758,7 +765,39 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					gear: vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 6,
 					crew: vehicleTypes.find(vt => vt.id === v.type)?.crew || 1,
 					weight: vehicleTypes.find(vt => vt.id === v.type)?.weight || 2
-				}
+				},
+				// Include full weapon objects with names
+				weaponObjects: v.weapons.map(weaponId => {
+					const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId;
+					const weapon = weapons.find(w => w.id === baseWeaponId);
+					return {
+						id: weaponId,
+						name: weapon?.name || weaponId,
+						facing: v.weaponFacings?.[weaponId] || weapon?.facing || 'front',
+						attackDice: weapon?.attackDice || '-',
+						cost: weapon?.cost || 0
+					};
+				}),
+				// Include full upgrade objects with names
+				upgradeObjects: v.upgrades.map(upgradeId => {
+					const upgrade = upgrades.find(u => u.id === upgradeId);
+					return {
+						id: upgradeId,
+						name: upgrade?.name || upgradeId,
+						cost: upgrade?.cost || 0,
+						specialRules: upgrade?.specialRules || ''
+					};
+				}),
+				// Include full perk objects with names
+				perkObjects: v.perks.map(perkId => {
+					const perk = perks.find(p => p.id === perkId);
+					return {
+						id: perkId,
+						name: perk?.name || perkId,
+						level: perk?.level || 1,
+						text: perk?.text || ''
+					};
+				})
 			}))
 		};
 		await printTeamService(printStyle, enhancedDraft);
