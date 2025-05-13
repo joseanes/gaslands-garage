@@ -113,7 +113,13 @@
 
         // Add weapon costs
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
+            // Extract the base weapon ID by finding the position of the last underscore
+            // This handles weapon IDs like "gas_grenades_abcd123" correctly
+            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+            const baseWeaponId = lastUnderscoreIndex !== -1 ?
+                weaponInstanceId.substring(0, lastUnderscoreIndex) :
+                weaponInstanceId;
+
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj && weaponObj.cost) {
                 totalCost += weaponObj.cost;
@@ -145,7 +151,12 @@
 
         // Calculate slots used by weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
+            // Extract the base weapon ID by finding the position of the last underscore
+            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+            const baseWeaponId = lastUnderscoreIndex !== -1 ?
+                weaponInstanceId.substring(0, lastUnderscoreIndex) :
+                weaponInstanceId;
+
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj) {
                 // Special case: Some weapons don't use build slots in Gaslands Refueled
@@ -285,7 +296,12 @@
 
         // Calculate total attack dice from all weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            const baseWeaponId = weaponInstanceId.includes('_') ? weaponInstanceId.split('_').slice(0, -1).join('_') : weaponInstanceId;
+            // Extract the base weapon ID by finding the position of the last underscore
+            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+            const baseWeaponId = lastUnderscoreIndex !== -1 ?
+                weaponInstanceId.substring(0, lastUnderscoreIndex) :
+                weaponInstanceId;
+
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj && weaponObj.attackDice) {
                 totalAttackDice += weaponObj.attackDice;
@@ -368,7 +384,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-name-{vehicle.id}" class="form-label uppercase">Vehicle Name</label>
                 <div class="form-field">
@@ -383,15 +399,15 @@
                 </div>
             </div>
         </div>
-        <div class="mt-6">
+        <div class="flex items-center gap-2 self-end">
+            <!-- Build header (cans and slots) -->
             <BuildHeader
                 vehicleCost={vehicleCost}
                 usedBuildSlots={usedBuildSlots}
                 maxBuildSlots={maxBuildSlots}
             />
-        </div>
-        <div class="flex items-center gap-2 self-start mt-2">
-            <!-- All buttons with consistent sizing and styling -->
+
+            <!-- Action buttons with consistent sizing and styling -->
             <button
                 class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
                 on:click={cloneVehicle}
@@ -439,23 +455,27 @@
                         <span class="mx-1">|</span> {vehicle.perks.length} perks
                     {/if}
                 </div>
+            </div>
+
+            <div class="flex items-center gap-4">
                 <BuildHeader
                     vehicleCost={vehicleCost}
                     usedBuildSlots={usedBuildSlots}
                     maxBuildSlots={maxBuildSlots}
                 />
-            </div>
-            <div class="weight-class-indicator weight-{typeof vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 'string' ? 'custom' : vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
-                {(() => {
-                    const weight = vehicleTypes.find(vt => vt.id === vehicle.type)?.weight;
-                    if (typeof weight === 'string') {
-                        return weight;
-                    } else {
-                        return weight === 1 ? 'Light' :
-                               weight === 2 ? 'Medium' :
-                               weight === 3 ? 'Heavy' : 'Massive';
-                    }
-                })()}
+
+                <div class="weight-class-indicator weight-{typeof vehicleTypes.find(vt => vt.id === vehicle.type)?.weight === 'string' ? 'custom' : vehicleTypes.find(vt => vt.id === vehicle.type)?.weight || 1}">
+                    {(() => {
+                        const weight = vehicleTypes.find(vt => vt.id === vehicle.type)?.weight;
+                        if (typeof weight === 'string') {
+                            return weight;
+                        } else {
+                            return weight === 1 ? 'Light' :
+                                   weight === 2 ? 'Medium' :
+                                   weight === 3 ? 'Heavy' : 'Massive';
+                        }
+                    })()}
+                </div>
             </div>
         </div>
     {/if}
@@ -558,7 +578,10 @@
                 </div>
                 <div class="mb-2">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
+                        {@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
+                        {@const baseWeaponId = lastUnderscoreIndex !== -1 ?
+                            weaponId.substring(0, lastUnderscoreIndex) :
+                            weaponId}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <div class="text-sm py-2.5 border-b border-stone-200 dark:border-gray-700">
@@ -665,7 +688,10 @@
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
+                        {@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
+                        {@const baseWeaponId = lastUnderscoreIndex !== -1 ?
+                            weaponId.substring(0, lastUnderscoreIndex) :
+                            weaponId}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">

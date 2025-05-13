@@ -109,7 +109,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		
 		// Calculate slots used by weapons
 		for (const weaponInstanceId of vehicle.weapons) {
-			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
 			const weaponObj = weapons.find(w => w.id === baseWeaponId);
 			if (weaponObj) {
 				// Special case: Some weapons don't use build slots in Gaslands Refueled
@@ -238,7 +241,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		const clonedWeapons = sourceVehicle.weapons.map(weaponId => {
 			// Extract the base weapon ID - keeping all parts except the last one (the unique identifier)
 			const baseWeaponId = weaponId.includes('_')
-              ? weaponId.split('_').slice(0, -1).join('_')
+              ? weaponId.split('_')[0]
               : weaponId;
 			const newWeaponId = `${baseWeaponId}_${nanoid(4)}`;
 
@@ -526,7 +529,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Calculate total attack dice from all weapons
 		for (const weaponInstanceId of vehicle.weapons) {
-			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
 			const weaponObj = weapons.find(w => w.id === baseWeaponId);
 			if (weaponObj && weaponObj.attackDice) {
 				totalAttackDice += weaponObj.attackDice;
@@ -837,7 +843,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				},
 				// Include full weapon objects with names
 				weaponObjects: v.weapons.map(weaponId => {
-					const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId;
+					const lastUnderscoreIndex = weaponId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponId.substring(0, lastUnderscoreIndex) : 
+					weaponId;
 					const weapon = weapons.find(w => w.id === baseWeaponId);
 					return {
 						id: weaponId,
@@ -1035,7 +1044,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			...v,
 			weapons: v.weapons.filter(weaponInstanceId => {
 				// Extract the base weapon ID from the instance ID (format: baseId_instanceHash)
-				const baseWeaponId = weaponInstanceId.split('_')[0];
+				const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
 				const weapon = weapons.find(w => w.id === baseWeaponId);
 				return weapon && !weapon.advanced;
 			}),
@@ -1043,7 +1055,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			weaponFacings: v.weaponFacings ? 
 				Object.fromEntries(
 					Object.entries(v.weaponFacings).filter(([weaponInstanceId]) => {
-						const baseWeaponId = weaponInstanceId.split('_')[0];
+						const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
 						const weapon = weapons.find(w => w.id === baseWeaponId);
 						return weapon && !weapon.advanced;
 					})
@@ -1179,7 +1194,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Add weapon costs
 		for (const weaponInstanceId of vehicle.weapons) {
-			const baseWeaponId = weaponInstanceId.split('_')[0];
+			const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
 			const weaponObj = weapons.find(w => w.id === baseWeaponId);
 			if (weaponObj && weaponObj.cost) {
 				totalCost += weaponObj.cost;
