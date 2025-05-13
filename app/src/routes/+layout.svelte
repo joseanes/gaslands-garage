@@ -908,6 +908,8 @@
                 <p class="text-sm">
                   Gaslands TV features game tutorials, battle reports, and showcases of custom Gaslands vehicles. A must-watch resource for beginners and experienced players alike.
                 </p></center>
+                <ul><li><a href="https://www.etsy.com/shop/CreepyHeroStudios">Creepy Hero Studios</a> - Vehicule Accessories</li>
+                  <li><a href="https://www.patreon.com/c/sablebadger/">Sable Badger</a> - 3D Printing Models</li></ul>
               </div>
             </div>
 
