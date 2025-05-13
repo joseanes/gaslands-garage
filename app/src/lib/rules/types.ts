@@ -64,6 +64,7 @@ export const Upgrade = z.object({
   advanced: z.boolean().optional().default(false),
   source: z.string().optional(),
   electrical: z.boolean().optional().default(false), // New field for electrical upgrades
+  360: z.boolean().optional().default(false), // Whether the upgrade provides 360-degree firing arc
   // Vehicle stat modifiers
   hull: z.number().int().optional(), // Hull points modifier
   gear: z.number().int().optional(), // Max gear modifier
