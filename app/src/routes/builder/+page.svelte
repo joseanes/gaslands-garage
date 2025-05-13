@@ -1662,7 +1662,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[127px] w-auto max-w-[167px] text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[127px] w-auto max-w-[150px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>

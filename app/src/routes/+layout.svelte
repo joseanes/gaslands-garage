@@ -441,7 +441,7 @@
           </span>
         </div>
 
-        <div class="flex flex-wrap items-center justify-end" style="gap: 10px;">
+        <div class="flex flex-wrap items-center justify-end" style="gap: 5px;">
           <div class="relative">
             <button
               type="button"
@@ -452,7 +452,7 @@
               style="height: auto !important; min-height: auto !important;"
             >
             Teams
-            <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+            <svg class="ml-1 w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
             </svg>
           </button>
@@ -494,7 +494,7 @@
               style="height: auto !important; min-height: auto !important;"
             >
               Settings
-              <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <svg class="ml-1 w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
               </svg>
             </button>
@@ -524,7 +524,7 @@
               style="height: auto !important; min-height: auto !important;"
             >
               Help
-              <svg class="ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <svg class="ml-1 w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
               </svg>
             </button>
@@ -965,6 +965,16 @@
   letter-spacing: 0.02em;
 }
 
+/* Responsive adjustments for mobile screens */
+@media (max-width: 640px) {
+  :global(.logo) {
+    font-size: 1rem;
+  }
+  :global(.logo-sponsor) {
+    font-size: 0.6rem;
+  }
+}
+
 :global(.logo-highlight) {
   color: #f59e0b;
 }
@@ -999,6 +1009,13 @@
   font: inherit;
   font-size: 0.9rem;
   border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  :global(.menu-item) {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
 }
 
 :global(.menu-item:hover) {

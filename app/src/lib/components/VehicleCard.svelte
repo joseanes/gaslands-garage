@@ -365,7 +365,7 @@
         <div class="flex flex-col md:flex-row items-start md:items-center gap-2 flex-grow w-full">
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-type-{vehicle.id}" class="form-label uppercase">Vehicle Type</label>
-                <div class="form-field">
+                <div class="form-field mb-0">
                     <select
                         id="vehicle-type-{vehicle.id}"
                         class="form-select compact-select"
@@ -387,7 +387,7 @@
 
             <div class="form-group mb-0 flex-grow">
                 <label for="vehicle-name-{vehicle.id}" class="form-label uppercase">Vehicle Name</label>
-                <div class="form-field">
+                <div class="form-field mb-0">
                     <input
                         type="text"
                         id="vehicle-name-{vehicle.id}"
