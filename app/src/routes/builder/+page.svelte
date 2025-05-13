@@ -159,23 +159,34 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 	function addVehicle(type = 'car') {
 		console.log('addVehicle called');
-		// Make sure we have a valid vehicle type
-		const vt = vehicleTypes.find((v) => v.id === type);
+		
+		// Get filtered vehicle types that respect sponsor restrictions
+		const availableTypes = filteredVehicleTypes;
+		console.log('Available vehicle types:', availableTypes.map(v => v.id));
+		
+		// First, check if the requested type is valid and available with current sponsor
+		const vt = availableTypes.find((v) => v.id === type);
+		
 		if (!vt) {
-			console.error("No valid vehicle type found", type, vehicleTypes);
+			console.error("No valid vehicle type found or type not available with current sponsor", 
+				type, availableTypes.map(v => v.id));
 
-			// Car type not found, look for a fallback
-			const carType = vehicleTypes.find(v => v.id === 'car');
+			// Requested type not found or not available, look for a fallback
+			const carType = availableTypes.find(v => v.id === 'car');
 
 			// If car type is available, use it
 			if (carType) {
+				console.log('Falling back to car type');
 				return addVehicle('car');
 			}
 
 			// Otherwise, try to use the first available vehicle type
-			if (vehicleTypes.length > 0) {
-				return addVehicle(vehicleTypes[0].id);
+			if (availableTypes.length > 0) {
+				console.log('Falling back to first available type:', availableTypes[0].id);
+				return addVehicle(availableTypes[0].id);
 			}
+			
+			alert('No vehicle types are available with the current sponsor');
 			return; // Can't add a vehicle without a type
 		}
 		
@@ -2120,7 +2131,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				{#each vehicles as vehicle (vehicle.id)}
 					<VehicleCard
 						{vehicle}
-						{vehicleTypes}
+						vehicleTypes={sortedVehicleTypes}
 						{weapons}
 						{upgrades}
 						{perks}
