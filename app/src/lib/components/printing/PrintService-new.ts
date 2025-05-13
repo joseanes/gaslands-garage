@@ -34,6 +34,7 @@ export function generatePrintableHtml(data: {
   qrCode?: string;
   showEquipmentDescriptions?: boolean;
   showPerkDescriptions?: boolean;
+  printStyle?: string;
 }): string {
   const {
     teamName,
@@ -45,15 +46,37 @@ export function generatePrintableHtml(data: {
     sponsorPerks,
     qrCode,
     showEquipmentDescriptions = true,
-    showPerkDescriptions = true
+    showPerkDescriptions = true,
+    printStyle = 'classic'
   } = data;
   
-  // Check if vehicles exist
-  if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
-    console.error("[PrintService-new] No vehicles data in generatePrintableHtml:", data);
+  // Check if vehicles exist and are valid
+  const hasValidVehicles = vehicles && 
+    Array.isArray(vehicles) && 
+    vehicles.length > 0 &&
+    vehicles.some(v => v && typeof v === 'object');
+    
+  if (!hasValidVehicles) {
+    console.error("[PrintService-new] No valid vehicles data in generatePrintableHtml:", data);
   }
   
-  console.log("[PrintService-new] Generating HTML for vehicles:", vehicles);
+  console.log("[PrintService-new] Generating HTML for vehicles with style:", printStyle, vehicles);
+  
+  // Ensure printStyle is a string and handle various dashboard naming conventions
+  const style = String(printStyle || 'classic').toLowerCase().trim();
+  
+  // Check if we should use Dashboard style - handle different naming variations
+  console.log("[PrintService-new] Using print style:", style);
+  console.log("[PrintService-new] Dashboard style check:", style.includes('dashboard'));
+  
+  if (style === 'dashboard_v2' || style === 'dashboard' || style.includes('dashboard')) {
+    console.log("[PrintService-new] Generating dashboard-style HTML");
+    return generateDashboardHtml(data);
+  }
+  
+  console.log("[PrintService-new] Generating classic-style HTML");
+  
+  // Continue with Classic style
   
   // Generate vehicle cards HTML
   let vehicleCardsHtml = '';
@@ -225,7 +248,7 @@ export function generatePrintableHtml(data: {
     }
   }
   
-  // Generate complete HTML
+  // Generate complete HTML for Classic style
   return `
   <!DOCTYPE html>
   <html>
@@ -548,6 +571,754 @@ export function generatePrintableHtml(data: {
 }
 
 /**
+ * Generate HTML for Dashboard style printing
+ */
+function generateDashboardHtml(data: {
+  teamName: string;
+  totalCans: number;
+  maxCans: number;
+  sponsorName: string;
+  vehicles: any[];
+  sponsor?: any;
+  sponsorPerks?: any;
+  qrCode?: string;
+  showEquipmentDescriptions?: boolean;
+  showPerkDescriptions?: boolean;
+}): string {
+  const {
+    teamName,
+    totalCans,
+    maxCans,
+    sponsorName,
+    vehicles,
+    sponsor,
+    sponsorPerks,
+    qrCode,
+    showEquipmentDescriptions = true,
+    showPerkDescriptions = true
+  } = data;
+  
+  // Get sponsor description if available
+  let sponsorDescription = '';
+  if (sponsor && sponsor.description) {
+    sponsorDescription = sponsor.description;
+  } else if (sponsorPerks && sponsorPerks.perksClasses) {
+    sponsorDescription = sponsorPerks.perksClasses.join(', ');
+  }
+  
+  // Generate vehicle dashboards HTML
+  let vehicleDashboardsHtml = '';
+  
+  if (vehicles && Array.isArray(vehicles)) {
+    vehicles.forEach((vehicle, index) => {
+      vehicleDashboardsHtml += generateVehicleDashboardHtml(vehicle, sponsorName);
+      
+      // Add page break after each vehicle except the last one
+      if (index < vehicles.length - 1) {
+        vehicleDashboardsHtml += '<div class="page-break"></div>';
+      }
+    });
+  } else {
+    vehicleDashboardsHtml = '<div class="dashboard-card">No vehicles found</div>';
+  }
+  
+  // Inspect what's in the data for debugging
+  console.log("[PrintService-new] Dashboard data:", {
+    teamName,
+    sponsorName,
+    vehiclesLength: vehicles?.length,
+    hasQrCode: Boolean(qrCode),
+    sponsorPerks: Boolean(sponsorPerks)
+  });
+
+  // Generate complete HTML for Dashboard style
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <title>Gaslands Dashboard: ${teamName}</title>
+    <meta charset="utf-8">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        color: black;
+        background-color: white;
+        line-height: 1.2;
+      }
+
+      /* Print-specific page settings */
+      @media print {
+        @page {
+          size: auto;
+          margin: 5mm;
+        }
+
+        body {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        
+        .page-break {
+          page-break-after: always;
+        }
+        
+        .print-buttons {
+          display: none;
+        }
+      }
+      
+      /* Print Control Buttons */
+      .print-buttons {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+      }
+      
+      .print-button {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      
+      .print-button-print {
+        background-color: #2563eb;
+        color: white;
+      }
+      
+      .print-button-settings {
+        background-color: #047857;
+        color: white;
+      }
+      
+      .print-button-close {
+        background-color: #d97706;
+        color: white;
+      }
+      
+      /* Dashboard-specific styles */
+      .sponsor-header {
+        border: 1px solid black;
+        margin-bottom: 15px;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        page-break-inside: avoid;
+      }
+      
+      .sponsor-name {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      
+      .sponsor-description {
+        font-size: 16px;
+        font-style: italic;
+      }
+      
+      /* Dashboard Vehicle Card */
+      .dashboard-card {
+        border: 1px solid black;
+        margin-bottom: 15px;
+        page-break-inside: avoid;
+      }
+      
+      .vehicle-header {
+        font-size: 28px;
+        font-weight: bold;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      
+      .vehicle-subheader {
+        font-size: 16px;
+        font-weight: normal;
+      }
+      
+      .vehicle-type-perks {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 5px;
+        margin-bottom: 10px;
+      }
+      
+      .dashboard-stats {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+        margin-top: 5px;
+      }
+      
+      .stat-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px solid black;
+        padding: 5px;
+        width: 80px;
+        height: 80px;
+      }
+      
+      .stat-box-label {
+        font-size: 16px;
+        font-weight: bold;
+      }
+      
+      .stat-box-value {
+        font-size: 36px;
+        font-weight: bold;
+      }
+      
+      .hull-track {
+        margin: 10px 0;
+      }
+      
+      .hull-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      
+      .hull-boxes {
+        display: flex;
+        gap: 3px;
+        flex-wrap: wrap;
+      }
+      
+      .hull-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid black;
+      }
+      
+      .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      
+      .dashboard-table th, .dashboard-table td {
+        border: 1px solid black;
+        padding: 5px;
+        text-align: left;
+      }
+      
+      .dashboard-table th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+      }
+      
+      .dashboard-table td {
+        vertical-align: top;
+      }
+      
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+      }
+      
+      .stat-item {
+        font-size: 16px;
+        font-weight: bold;
+      }
+      
+      .stat-item span {
+        font-size: 24px;
+        margin-left: 5px;
+      }
+      
+      .upgrades-section, .perks-section {
+        margin-top: 15px;
+        padding: 0 10px 10px 10px;
+      }
+      
+      .section-label {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      
+      .perks-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      .perks-table th, .perks-table td {
+        border: 1px solid black;
+        padding: 5px;
+        text-align: left;
+      }
+      
+      .ammo-box {
+        width: 20px;
+        height: 20px;
+        border: 1px solid black;
+        display: inline-block;
+        margin-right: 2px;
+      }
+      
+      /* QR Code Footer */
+      .print-footer-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #ccc;
+        page-break-inside: avoid;
+      }
+      
+      .qr-section {
+        text-align: center;
+      }
+      
+      .qr-code {
+        max-width: 120px;
+        height: auto;
+        margin: 0 auto;
+        display: block;
+        border: 1px solid #000;
+        background: #fff;
+      }
+      
+      .qr-caption {
+        margin-top: 6px;
+        font-size: 0.9em;
+        color: #666;
+      }
+      
+      /* Footer */
+      .dashboard-footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #666;
+        flex-grow: 1;
+      }
+    </style>
+    <script>
+    // Add listener to run after page loads
+    window.addEventListener('DOMContentLoaded', function() {
+      console.log('Dashboard window loaded - adding controls');
+      
+      // Add buttons manually via script
+      var buttonsDiv = document.createElement('div');
+      buttonsDiv.className = 'print-buttons';
+      buttonsDiv.style.position = 'fixed';
+      buttonsDiv.style.top = '10px';
+      buttonsDiv.style.right = '10px';
+      buttonsDiv.style.zIndex = '1000';
+      buttonsDiv.style.display = 'flex';
+      buttonsDiv.style.gap = '10px';
+      
+      // Print button
+      var printBtn = document.createElement('button');
+      printBtn.innerHTML = 'Print';
+      printBtn.className = 'print-button print-button-print';
+      printBtn.style.padding = '8px 16px';
+      printBtn.style.border = 'none';
+      printBtn.style.borderRadius = '4px';
+      printBtn.style.fontWeight = 'bold';
+      printBtn.style.cursor = 'pointer';
+      printBtn.style.fontSize = '14px';
+      printBtn.style.backgroundColor = '#2563eb';
+      printBtn.style.color = 'white';
+      printBtn.onclick = function() { window.print(); };
+      
+      // Close button
+      var closeBtn = document.createElement('button');
+      closeBtn.innerHTML = 'Close Window';
+      closeBtn.className = 'print-button print-button-close';
+      closeBtn.style.padding = '8px 16px';
+      closeBtn.style.border = 'none';
+      closeBtn.style.borderRadius = '4px';
+      closeBtn.style.fontWeight = 'bold';
+      closeBtn.style.cursor = 'pointer';
+      closeBtn.style.fontSize = '14px';
+      closeBtn.style.backgroundColor = '#d97706';
+      closeBtn.style.color = 'white';
+      closeBtn.onclick = function() { window.close(); };
+      
+      // Add settings button
+      var settingsBtn = document.createElement('button');
+      settingsBtn.innerHTML = 'Change Print Settings';
+      settingsBtn.className = 'print-button print-button-settings';
+      settingsBtn.style.padding = '8px 16px';
+      settingsBtn.style.border = 'none';
+      settingsBtn.style.borderRadius = '4px';
+      settingsBtn.style.fontWeight = 'bold';
+      settingsBtn.style.cursor = 'pointer';
+      settingsBtn.style.fontSize = '14px';
+      settingsBtn.style.backgroundColor = '#047857'; // Green
+      settingsBtn.style.color = 'white';
+      settingsBtn.onclick = function() {
+        // The most direct approach - set a local storage item that the main window will check
+        try {
+          // Create a timestamp to ensure the event is detected
+          const timestamp = new Date().getTime();
+          localStorage.setItem('openPrintSettings', timestamp.toString());
+          console.log("Set localStorage flag to open print settings");
+          
+          // Also try to call the function directly if available
+          if (window.opener && typeof window.opener.openSettings === 'function') {
+            try {
+              window.opener.openSettings('print');
+            } catch (e) {
+              console.error("Error calling openSettings directly:", e);
+            }
+          }
+        } catch (err) {
+          console.error("Error setting localStorage:", err);
+        }
+        
+        // Close the print window
+        window.close();
+      };
+      
+      // Add buttons to div
+      buttonsDiv.appendChild(printBtn);
+      buttonsDiv.appendChild(settingsBtn);
+      buttonsDiv.appendChild(closeBtn);
+      
+      // Add div to document
+      document.body.appendChild(buttonsDiv);
+    });
+    </script>
+  </head>
+  <body>
+    <!-- Sponsor Header -->
+    <div class="sponsor-header">
+      <div>
+        <div class="sponsor-name">${sponsorName}</div>
+        <div class="sponsor-description">${sponsorDescription}</div>
+      </div>
+      <div style="text-align: right;">
+        <div class="sponsor-name">${totalCans} / ${maxCans} cans</div>
+        <div class="sponsor-description">Total team cost</div>
+      </div>
+    </div>
+
+    <!-- Vehicle Dashboards -->
+    ${vehicleDashboardsHtml}
+    
+    <!-- Equipment and Perk Descriptions (if enabled) -->
+    ${showEquipmentDescriptions || showPerkDescriptions ? `
+    <div class="descriptions-section" style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px;">
+      ${showEquipmentDescriptions ? `
+      <div class="equipment-descriptions" style="margin-bottom: 20px;">
+        <h2 style="font-size: 24px; margin-bottom: 10px; color: #333;">Equipment Descriptions</h2>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888; width: 25%;">Equipment</th>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${generateEquipmentDescriptionsHtml(vehicles)}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+      
+      ${showPerkDescriptions ? `
+      <div class="perk-descriptions">
+        <h2 style="font-size: 24px; margin-bottom: 10px; color: #333;">Perk Descriptions</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888; width: 25%;">Perk</th>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${generatePerkDescriptionsHtml(vehicles, sponsorPerks)}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+    </div>
+    ` : ''}
+
+    <!-- Footer with QR Code -->
+    <div class="print-footer-container">
+      <div class="dashboard-footer">
+        Generated by <a href="https://www.GaslandsGarage.com" target="_blank">GaslandsGarage.com</a> on ${new Date().toLocaleDateString()}
+      </div>
+
+      <div class="qr-section">
+        ${qrCode ?
+          `<img src="${qrCode}" class="qr-code" alt="QR Code for team" style="width:120px; height:120px;">` :
+          `<div style="width:120px; height:120px; border:1px solid #000; background:#fff; text-align:center; line-height:120px; font-size:10px;">
+            Visit gaslandsgarage.com
+          </div>`
+        }
+        <div class="qr-caption">Scan to load this team build</div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
+/**
+ * Generate HTML for a dashboard-style vehicle card
+ */
+function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string {
+  if (!vehicle) {
+    return '<div class="dashboard-card">Error: Invalid vehicle data</div>';
+  }
+  
+  try {
+    // Extract needed data with defensive coding
+    const name = vehicle.name || 'Vehicle';
+    const vehicleType = vehicle.vehicleType || {};
+    const typeName = vehicleType.name || 'Car';
+    const stats = vehicle.stats || {};
+    const cost = vehicle.cost || 0;
+    
+    // Get lists of weapons, upgrades, and perks
+    const weaponObjects = Array.isArray(vehicle.weaponObjects) ? vehicle.weaponObjects : [];
+    const upgradeObjects = Array.isArray(vehicle.upgradeObjects) ? vehicle.upgradeObjects : [];
+    const perkObjects = Array.isArray(vehicle.perkObjects) ? vehicle.perkObjects : [];
+    
+    // Get hull, handling, crew, and max gear
+    const hull = stats.hull || 4;
+    const handling = stats.handling || vehicleType.handling || 4;
+    const crew = stats.crew || vehicleType.crew || 1;
+    const maxGear = stats.gear || vehicleType.maxGear || 6;
+    const weight = getWeightText(stats.weight || vehicleType.weight || 2);
+    
+    // Generate hull boxes (more similar to reference image)
+    let hullBoxesHtml = '';
+    for (let i = 0; i < hull; i++) {
+      hullBoxesHtml += '<div class="hull-box"></div>';
+    }
+    
+    // Generate weapons table rows
+    let weaponsTableHtml = '';
+    if (weaponObjects.length > 0) {
+      weaponObjects.forEach(weapon => {
+        // Get weapon details
+        const weaponName = weapon.name || 'Unknown Weapon';
+        const facing = weapon.facing || 'Front';
+        
+        // Format range based on weapon type
+        let range = weapon.range || '-';
+        if (typeof range === 'string' && range.trim().length === 0) {
+          range = '-';
+        }
+        
+        // Format attack dice
+        let attackDice = weapon.attackDice || '0D6';
+        // Ensure number has "D6" suffix
+        if (typeof attackDice === 'number' || /^\d+$/.test(attackDice)) {
+          attackDice = `${attackDice}D6`;
+        }
+        
+        // Generate ammo boxes (get correct number based on weapon type)
+        let ammoBoxes = 0;
+        // Determine ammo count based on weapon type, matching reference image
+        if (
+          weaponName.includes('Machine Gun') || 
+          weaponName.includes('Minigun') || 
+          weaponName.includes('Napalm') ||
+          weaponName.includes('Flamethrower')
+        ) {
+          ammoBoxes = 3;
+        } else if (
+          weaponName.includes('Rockets') || 
+          weaponName.includes('Missile') || 
+          weaponName.includes('Oil') || 
+          weaponName.includes('Slick') ||
+          weaponName.includes('Dropper')
+        ) {
+          ammoBoxes = 3;
+        } else if (
+          weaponName.includes('Mine') || 
+          weaponName.includes('Bomb') || 
+          weaponName.includes('Smoke') ||
+          weaponName.includes('Glue') ||
+          weaponName.includes('Caltrop')
+        ) {
+          ammoBoxes = 3;
+        }
+        
+        let ammoBoxesHtml = '';
+        if (ammoBoxes > 0) {
+          for (let i = 0; i < ammoBoxes; i++) {
+            ammoBoxesHtml += '<div class="ammo-box"></div>';
+          }
+        } else {
+          ammoBoxesHtml = '&mdash;';
+        }
+        
+        // Get special rules
+        const specialRules = weapon.specialRules || '';
+        
+        // Add row to table (matching reference image layout)
+        weaponsTableHtml += `
+        <tr>
+          <td>${weaponName}</td>
+          <td>${facing}</td>
+          <td>${range}</td>
+          <td>${attackDice}</td>
+          <td>${ammoBoxesHtml}</td>
+          <td>${specialRules}</td>
+        </tr>`;
+      });
+    }
+    
+    // If no weapons, add a "No weapons" row
+    if (weaponsTableHtml === '') {
+      weaponsTableHtml = `
+      <tr>
+        <td colspan="6" style="text-align: center;">No weapons installed</td>
+      </tr>`;
+    }
+    
+    // Generate upgrades list
+    let upgradesHtml = '';
+    if (upgradeObjects.length > 0) {
+      upgradeObjects.forEach(upgrade => {
+        const upgradeName = upgrade.name || 'Unknown Upgrade';
+        const upgradeRules = upgrade.specialRules || '';
+        
+        // Include the rules if available
+        upgradesHtml += `<div style="margin-bottom: 5px;"><strong>${upgradeName}</strong>${upgradeRules ? `: ${upgradeRules}` : ''}</div>`;
+      });
+    } else {
+      upgradesHtml = '<div style="text-align: center;">No upgrades installed</div>';
+    }
+    
+    // Generate perks table with complete rules
+    let perksTableHtml = '';
+    if (perkObjects.length > 0) {
+      perkObjects.forEach(perk => {
+        const perkName = perk.name || 'Unknown Perk';
+        // Use text or rules, whichever is available
+        const perkText = perk.text || perk.rules || 'No description available.';
+        
+        perksTableHtml += `
+        <tr>
+          <td style="font-weight: bold; width: 25%;">${perkName}</td>
+          <td>${perkText}</td>
+        </tr>`;
+      });
+    } else {
+      perksTableHtml = `
+      <tr>
+        <td colspan="2" style="text-align: center;">No perks</td>
+      </tr>`;
+    }
+    
+    // Combine vehicle type and perks/abilities for the subheader
+    const vehicleTypePerks = [
+      weight, 
+      typeName
+    ];
+    
+    // Add any team-wide perks like "Thumpermonkey" or "Dynamo"
+    if (perkObjects.length > 0) {
+      const teamwidePerkNames = perkObjects.map(p => p.name || '').filter(Boolean);
+      if (teamwidePerkNames.length > 0) {
+        vehicleTypePerks.push(...teamwidePerkNames);
+      }
+    }
+    
+    // Return complete dashboard HTML
+    return `
+    <div class="dashboard-card">
+      <div class="vehicle-header">
+        <div>
+          <div>${name}</div>
+          <div class="vehicle-type-perks">${vehicleTypePerks.join(', ')}</div>
+        </div>
+        <div>
+          ${sponsorName}<br>
+          <strong>${cost} cans</strong>
+        </div>
+      </div>
+      
+      <div style="padding: 0 10px;">
+        <div class="hull-track">
+          <div class="hull-label">Hull</div>
+          <div class="hull-boxes">${hullBoxesHtml}</div>
+        </div>
+        
+        <div class="dashboard-stats">
+          <div class="stat-row" style="flex: 1; margin-right: 20px;">
+            <div class="stat-item">Handling <span>${handling}</span></div>
+            <div class="stat-item" style="margin-right: 20px;">Crew <span>${crew}</span></div>
+          </div>
+          
+          <div style="display: flex; gap: 15px;">
+            <div class="stat-box">
+              <div class="stat-box-label">Max Gear</div>
+              <div class="stat-box-value">${maxGear}</div>
+            </div>
+            
+            <div class="stat-box">
+              <div class="stat-box-label">Hazards</div>
+              <div class="stat-box-value"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th>Weapon</th>
+            <th>Facing</th>
+            <th>Range</th>
+            <th>Attack</th>
+            <th>Ammo</th>
+            <th>Rules</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${weaponsTableHtml}
+        </tbody>
+      </table>
+      
+      <div class="upgrades-section">
+        <div class="section-label">Upgrades:</div>
+        ${upgradesHtml}
+      </div>
+      
+      <table class="perks-table">
+        <thead>
+          <tr>
+            <th>Perk</th>
+            <th>Rules</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${perksTableHtml}
+        </tbody>
+      </table>
+    </div>
+    `;
+  } catch (error) {
+    console.error("[PrintService-new] Error generating dashboard HTML:", error);
+    return `<div class="dashboard-card">Error generating dashboard: ${error.message}</div>`;
+  }
+}
+
+/**
  * Generate HTML for a vehicle card
  */
 function generateVehicleCardHtml(vehicle: any): string {
@@ -757,10 +1528,248 @@ function getWeightText(weight: number): string {
 }
 
 /**
+ * Generate HTML for equipment descriptions table
+ */
+function generateEquipmentDescriptionsHtml(vehicles: any[]): string {
+  if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
+    return '<tr><td colspan="2">No equipment found</td></tr>';
+  }
+  
+  // Collect all unique weapons and upgrades
+  const weaponMap = new Map();
+  const upgradeMap = new Map();
+  
+  vehicles.forEach(vehicle => {
+    // Process weapons
+    if (vehicle.weaponObjects && Array.isArray(vehicle.weaponObjects)) {
+      vehicle.weaponObjects.forEach((weapon: any) => {
+        if (weapon && weapon.name && !weaponMap.has(weapon.name)) {
+          weaponMap.set(weapon.name, {
+            name: weapon.name,
+            specialRules: weapon.specialRules || '',
+            cost: weapon.cost || 0
+          });
+        }
+      });
+    }
+    
+    // Process upgrades
+    if (vehicle.upgradeObjects && Array.isArray(vehicle.upgradeObjects)) {
+      vehicle.upgradeObjects.forEach((upgrade: any) => {
+        if (upgrade && upgrade.name && !upgradeMap.has(upgrade.name)) {
+          upgradeMap.set(upgrade.name, {
+            name: upgrade.name,
+            specialRules: upgrade.specialRules || '',
+            cost: upgrade.cost || 0
+          });
+        }
+      });
+    }
+  });
+  
+  // Create HTML rows
+  let rowsHtml = '';
+  
+  // Add weapons
+  weaponMap.forEach(weapon => {
+    rowsHtml += `
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${weapon.name} (${weapon.cost} cans)</td>
+      <td style="padding: 8px; text-align: left;">${weapon.specialRules || 'No description available'}</td>
+    </tr>`;
+  });
+  
+  // Add upgrades
+  upgradeMap.forEach(upgrade => {
+    rowsHtml += `
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${upgrade.name} (${upgrade.cost} cans)</td>
+      <td style="padding: 8px; text-align: left;">${upgrade.specialRules || 'No description available'}</td>
+    </tr>`;
+  });
+  
+  return rowsHtml || '<tr><td colspan="2">No equipment descriptions available</td></tr>';
+}
+
+/**
+ * Generate HTML for perk descriptions table
+ */
+function generatePerkDescriptionsHtml(vehicles: any[], sponsorPerks: any): string {
+  if ((!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) && (!sponsorPerks)) {
+    return '<tr><td colspan="2">No perks found</td></tr>';
+  }
+  
+  // Collect all unique perks
+  const perkMap = new Map();
+  
+  // Process vehicle perks
+  vehicles.forEach(vehicle => {
+    if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
+      vehicle.perkObjects.forEach((perk: any) => {
+        if (perk && perk.name && !perkMap.has(perk.name)) {
+          perkMap.set(perk.name, {
+            name: perk.name,
+            text: perk.text || '',
+            level: perk.level || 1
+          });
+        }
+      });
+    }
+  });
+  
+  // Process sponsor perks if available
+  if (sponsorPerks) {
+    // Class perks list
+    if (sponsorPerks.classPerksList && Array.isArray(sponsorPerks.classPerksList)) {
+      sponsorPerks.classPerksList.forEach((perk: any) => {
+        if (perk && perk.name && !perkMap.has(perk.name)) {
+          perkMap.set(perk.name, {
+            name: perk.name,
+            text: perk.text || '',
+            level: perk.level || 1
+          });
+        }
+      });
+    }
+    
+    // Sponsor perks list
+    if (sponsorPerks.sponsorPerksList && Array.isArray(sponsorPerks.sponsorPerksList)) {
+      sponsorPerks.sponsorPerksList.forEach((perk: any) => {
+        if (perk && perk.name && !perkMap.has(perk.name)) {
+          perkMap.set(perk.name, {
+            name: perk.name,
+            text: perk.text || '',
+            level: perk.level || 1
+          });
+        }
+      });
+    }
+  }
+  
+  // Create HTML rows
+  let rowsHtml = '';
+  
+  perkMap.forEach(perk => {
+    const levelText = perk.level > 1 ? ` (Level ${perk.level})` : '';
+    rowsHtml += `
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${perk.name}${levelText}</td>
+      <td style="padding: 8px; text-align: left;">${perk.text || 'No description available'}</td>
+    </tr>`;
+  });
+  
+  return rowsHtml || '<tr><td colspan="2">No perk descriptions available</td></tr>';
+}
+
+/**
+ * Main print function that generates and opens printable content in a new window
+ */
+/**
+ * Print team in Dashboard style - separate function for clarity
+ */
+export async function printTeamDashboard(draft: Draft): Promise<void> {
+  console.log("[PrintService-new] printTeamDashboard called");
+  console.log("[PrintService-new] Draft structure:", Object.keys(draft));
+  
+  try {
+    // Log details of draft for debugging
+    console.log("[PrintService-new] Draft details:", {
+      teamName: draft.teamName,
+      sponsorName: draft.sponsorName,
+      hasVehicles: Boolean(draft.vehicles),
+      isVehiclesArray: Array.isArray(draft.vehicles),
+      vehiclesLength: draft.vehicles?.length,
+      firstVehicle: draft.vehicles?.[0] ? Object.keys(draft.vehicles[0]) : null,
+      printStyle: draft.printStyle,
+      showEquipmentDescriptions: draft.showEquipmentDescriptions,
+      showPerkDescriptions: draft.showPerkDescriptions
+    });
+    
+    // Basic validation
+    if (!draft || !draft.vehicles || !Array.isArray(draft.vehicles) || draft.vehicles.length === 0) {
+      alert("Cannot print: No vehicles found in team");
+      return;
+    }
+    
+    // Collect data for printing
+    const printData = {
+      teamName: draft.teamName || 'Gaslands Team',
+      totalCans: draft.totalCans || 0,
+      maxCans: draft.maxCans || 50,
+      sponsorName: draft.sponsorName || 'No Sponsor',
+      sponsor: draft.sponsor || null,
+      sponsorPerks: draft.showPerkDescriptions ? (draft.sponsorPerks || null) : null,
+      vehicles: draft.vehicles,
+      qrCode: draft.qrCode,
+      showEquipmentDescriptions: draft.showEquipmentDescriptions ?? true,
+      showPerkDescriptions: draft.showPerkDescriptions ?? true,
+      printStyle: 'dashboard' // Force dashboard style
+    };
+    
+    // Generate dashboard HTML
+    console.log("[PrintService-new] Generating dashboard HTML with data:", {
+      teamName: printData.teamName,
+      sponsorName: printData.sponsorName,
+      vehicleCount: printData.vehicles.length,
+      showEquipmentDescriptions: printData.showEquipmentDescriptions,
+      showPerkDescriptions: printData.showPerkDescriptions
+    });
+    
+    // Call the generateDashboardHtml function to create the full dashboard HTML
+    const dashboardHtml = generateDashboardHtml(printData);
+    
+    // Open and populate print window
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      alert('Please allow popups to print your team');
+      return;
+    }
+    
+    // Write simplified HTML
+    printWindow.document.write(dashboardHtml);
+    printWindow.document.close();
+    
+    // Print after a delay
+    setTimeout(() => {
+      try {
+        printWindow.print();
+      } catch (printError) {
+        console.error("[PrintService-new] Error during simplified dashboard printing:", printError);
+        alert('Error during printing. Please try again.');
+      }
+    }, 1000);
+  } catch (error) {
+    console.error("[PrintService-new] Error in printTeamDashboard:", error);
+    console.error("[PrintService-new] Dashboard error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      typeof_draft: typeof draft,
+      draft_keys: draft ? Object.keys(draft) : null,
+      vehicles_length: draft?.vehicles?.length
+    });
+    alert('There was an error preparing for dashboard printing. Please try again.');
+  }
+}
+
+/**
  * Main print function that generates and opens printable content in a new window
  */
 export async function printTeam(printStyle: string, draft: Draft): Promise<void> {
-  console.log("[PrintService-new] printTeam called", { printStyle, draft });
+  // Check if we should use the dashboard style - handle various naming variations
+  const actualPrintStyle = String(printStyle || draft.printStyle || 'classic').toLowerCase().trim();
+  
+  if (actualPrintStyle === 'dashboard' || actualPrintStyle === 'dashboard_v2' || actualPrintStyle.includes('dashboard')) {
+    console.log("[PrintService-new] Redirecting to dashboard print style from:", { printStyle, draftPrintStyle: draft.printStyle });
+    // Make sure printStyle is set in the draft
+    draft.printStyle = 'dashboard';
+    return printTeamDashboard(draft);
+  }
+  
+  // Continue with classic style
+  console.log("[PrintService-new] printTeam called with style parameter:", printStyle);
+  console.log("[PrintService-new] Draft printStyle:", draft.printStyle);
+  console.log("[PrintService-new] Using classic style");
 
   try {
     // Dump the draft data to console to debug vehicle data
@@ -807,9 +1816,14 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       qrCode = null;
     }
 
-    // Check if vehicles array exists
-    if (!draft.vehicles || !Array.isArray(draft.vehicles) || draft.vehicles.length === 0) {
-      console.error("[PrintService-new] No vehicles found in draft data", draft);
+    // Check if vehicles array exists and contains at least one valid vehicle
+    const hasValidVehicles = draft.vehicles && 
+      Array.isArray(draft.vehicles) && 
+      draft.vehicles.length > 0 &&
+      draft.vehicles.some(v => v && typeof v === 'object');
+      
+    if (!hasValidVehicles) {
+      console.error("[PrintService-new] No valid vehicles found in draft data", draft.vehicles);
       alert('No vehicles found to print. Please add vehicles to your team.');
       return;
     }
@@ -841,11 +1855,16 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       showPerkDescriptions: showPerkDescriptions
     };
     
+    // Make sure printStyle is passed correctly to the data
+    printData.printStyle = printStyle;
+    console.log("[PrintService-new] Using print style for HTML generation:", printStyle);
+    
     // Generate printable HTML
     const printHtml = generatePrintableHtml(printData);
     
     // Log the HTML for debugging
     console.log("[PrintService-new] Generated HTML length:", printHtml.length);
+    console.log("[PrintService-new] Generated HTML contains dashboard:", printHtml.includes("dashboard-card"));
     
     // Open a new window for printing
     const printWindow = window.open('', '_blank', 'width=800,height=600');
@@ -1010,8 +2029,66 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     
   } catch (error) {
     console.error("[PrintService-new] Error in printTeam:", error);
+    console.error("[PrintService-new] Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     alert('There was an error preparing for printing. Please try again.');
   }
+}
+
+/**
+ * Add print and close buttons to the print window
+ */
+function addPrintButtons(printWindow: Window): void {
+  // Add close button to the print window
+  const closeButton = printWindow.document.createElement('button');
+  closeButton.innerHTML = 'Close Window';
+  closeButton.style.position = 'fixed';
+  closeButton.style.top = '10px';
+  closeButton.style.right = '10px';
+  closeButton.style.padding = '8px 16px';
+  closeButton.style.backgroundColor = '#d97706';
+  closeButton.style.color = 'white';
+  closeButton.style.border = 'none';
+  closeButton.style.borderRadius = '4px';
+  closeButton.style.cursor = 'pointer';
+  closeButton.style.zIndex = '1000';
+  closeButton.style.fontWeight = 'bold';
+  
+  // Add event listener to close button
+  closeButton.addEventListener('click', function() {
+    printWindow.close();
+  });
+  
+  // Add a print button as well
+  const printButton = printWindow.document.createElement('button');
+  printButton.innerHTML = 'Print';
+  printButton.style.position = 'fixed';
+  printButton.style.top = '10px';
+  printButton.style.right = '140px'; // Position next to close button
+  printButton.style.padding = '8px 16px';
+  printButton.style.backgroundColor = '#2563eb'; // Blue
+  printButton.style.color = 'white';
+  printButton.style.border = 'none';
+  printButton.style.borderRadius = '4px';
+  printButton.style.cursor = 'pointer';
+  printButton.style.zIndex = '1000';
+  printButton.style.fontWeight = 'bold';
+  
+  // Add event listener to print button
+  printButton.addEventListener('click', function() {
+    printWindow.print();
+  });
+  
+  // Update button positions to avoid overlapping
+  printButton.style.right = '150px'; // Left button
+  closeButton.style.right = '10px'; // Right button
+  
+  // Add elements to the document
+  printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
+  printWindow.document.body.insertBefore(printButton, printWindow.document.body.firstChild);
 }
 
 /**

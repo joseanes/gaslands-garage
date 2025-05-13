@@ -11,7 +11,7 @@ import SettingsMenu from '$lib/components/SettingsMenu.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	// Using new print approach - fixed import to avoid module collision with the function name
-	import { printTeam as printServiceFunc } from '$lib/components/printing/PrintService-new';
+	import { printTeam as printServiceFunc, printTeamDashboard } from '$lib/components/printing/PrintService-new';
 	import { user, signInWithGoogle } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
@@ -51,29 +51,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let rulesModalAction = ''; // To track which action triggered the rules modal
 
 	// Load settings on mount
+	// Load settings directly
 	onMount(async () => {
-		// Only try to load settings if user is authenticated
-		if ($user) {
-			const { success, settings } = await getUserSettings();
-			if (success && settings) {
-				includeAdvanced = settings.includeAdvanced;
-				enableSponsorships = settings.enableSponsorships;
-				darkMode = settings.darkMode;
-				printStyle = settings.printStyle || 'classic';
-				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
-				showEquipmentDescriptions = settings.showEquipmentDescriptions ?? DEFAULT_SETTINGS.showEquipmentDescriptions;
-				showPerkDescriptions = settings.showPerkDescriptions ?? DEFAULT_SETTINGS.showPerkDescriptions;
-			}
-		} else {
-			// Use default settings when not authenticated
-			includeAdvanced = DEFAULT_SETTINGS.includeAdvanced;
-			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
-			darkMode = DEFAULT_SETTINGS.darkMode;
-			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
-			hasRules = DEFAULT_SETTINGS.hasRules;
-			showEquipmentDescriptions = DEFAULT_SETTINGS.showEquipmentDescriptions;
-			showPerkDescriptions = DEFAULT_SETTINGS.showPerkDescriptions;
-		}
+		console.log("[Builder] IMMEDIATE onMount - Loading settings");
+		await initializeSettings();
 	});
 
 	// Filter vehicle types based on includeAdvanced setting
@@ -209,25 +190,15 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	}
 
 	function removeVehicle(id: string) {
-		// Find vehicle report to subtract its cost from total
-		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === id);
-		const vehicleCost = vehicleReport ? vehicleReport.cans : 0;
-
 		// Remove the vehicle
 		vehicles = vehicles.filter((v) => v.id !== id);
-
-		// Update validation report
-		validation.vehicleReports = validation.vehicleReports.filter(r => r.vehicleId !== id);
-		validation.cans -= vehicleCost;
-
-		// Ensure validation object is reactive
-		validation = { ...validation };
 
 		// Handle collapse state
 		collapsedVehicles.delete(id);
 		collapsedVehicles = collapsedVehicles; // Trigger reactivity
 
 		// Force full validation to ensure consistency
+		// This will recalculate all costs properly
 		forceValidation();
 	}
 
@@ -709,11 +680,81 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let isPrinting = false;
 	
 	// Wrapper function for printing with rules check
+	// Direct dashboard printing test
+	function printDashboardDirect() {
+		console.log('[printDashboardDirect] Called');
+		
+		// Check if we have vehicles
+		if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
+			console.log('[printDashboardDirect] No vehicles to print');
+			alert('You need to add at least one vehicle before printing.');
+			return;
+		}
+		
+		try {
+			// Create a simplified vehicle object for printing
+			const simplifiedVehicles = vehicles.map(v => ({
+				id: v.id,
+				name: v.name,
+				type: v.type
+			}));
+			
+			// Create HTML directly
+			const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Test</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+  </style>
+</head>
+<body>
+  <h1>DIRECT DASHBOARD PRINT TEST</h1>
+  <h2>Team: ${teamName || 'Unnamed Team'}</h2>
+  <h3>Sponsor: ${sponsors.find(s => s.id === sponsorId)?.name || 'No Sponsor'}</h3>
+  <p>Vehicle count: ${vehicles.length}</p>
+  
+  ${vehicles.map(v => `
+  <div style="border: 1px solid black; padding: 10px; margin: 10px 0;">
+    <h3>Vehicle: ${v.name || 'Unnamed'}</h3>
+    <p>Type: ${vehicleTypes.find(vt => vt.id === v.type)?.name || v.type || 'Unknown'}</p>
+  </div>
+  `).join('')}
+  
+  <p>Printed directly from builder page at ${new Date().toLocaleString()}</p>
+</body>
+</html>`;
+			
+			// Open and print
+			const printWindow = window.open('', '_blank', 'width=800,height=600');
+			if (!printWindow) {
+				alert('Please allow popups to print your team');
+				return;
+			}
+			
+			printWindow.document.write(html);
+			printWindow.document.close();
+			
+			// Print after a delay
+			setTimeout(() => {
+				try {
+					printWindow.print();
+				} catch (e) {
+					console.error('[printDashboardDirect] Print error:', e);
+				}
+			}, 500);
+			
+		} catch (err) {
+			console.error('[printDashboardDirect] Error:', err);
+			alert('Error preparing direct dashboard print');
+		}
+	}
+	
 	function printWithRulesCheck() {
 		console.log('[printWithRulesCheck] Called');
 		
 		// Check if we have vehicles before proceeding
-		if (!vehicles || vehicles.length === 0) {
+		if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
 			console.log('[printWithRulesCheck] No vehicles to print');
 			alert('You need to add at least one vehicle before printing.');
 			return;
@@ -722,6 +763,18 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// Check if we're already printing to prevent multiple prints
 		if (isPrinting) {
 			console.log('[printWithRulesCheck] Already printing, ignoring call');
+			return;
+		}
+		
+		// Direct dashboard print disabled - now using main function
+		if (false) { // Disabled direct approach
+			console.log('[printWithRulesCheck] Using direct dashboard print');
+			if (hasRules) {
+				printDashboardDirect();
+			} else {
+				showRulesAcknowledgmentModal = true;
+				rulesModalAction = 'printDashboard';
+			}
 			return;
 		}
 		
@@ -756,33 +809,21 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// let darkMode = false;  // Already declared at the top
 
 	// Save settings to Firebase when they change
-	async function saveSettingsToFirebase() {
-		if ($user) {
-			try {
-				await saveUserSettings({
-					enableSponsorships,
-					includeAdvanced,
-					darkMode,
-					showTeamSummary,
-					showGaslandsMath,
-					printStyle,
-					hasRules,
-					showExperimentalFeatures,
-					receiveUpdates,
-					showOnPlayersMap,
-					allowContactFromPlayers,
-					location,
-					showEquipmentDescriptions,
-					showPerkDescriptions
-				});
-
-				// Also save printStyle to localStorage for persistence
-				if (typeof localStorage !== 'undefined') {
-					localStorage.setItem('printStyle', printStyle);
-				}
-			} catch (error) {
-				console.error("Error saving settings:", error);
-			}
+	// SIMPLE FUNCTION TO SAVE SETTINGS TO FIREBASE
+	async function saveSettingsToFirebase(settings) {
+		console.log("[Builder] saveSettingsToFirebase called with:", settings);
+		console.log("[Builder] printStyle:", settings.printStyle);
+		
+		if (!$user) {
+			console.log("[Builder] No user logged in, cannot save to Firebase");
+			return;
+		}
+		
+		try {
+			await saveUserSettings(settings);
+			console.log("[Builder] Settings saved to Firebase successfully");
+		} catch (error) {
+			console.error("[Builder] Error saving to Firebase:", error);
 		}
 	}
 
@@ -872,7 +913,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		console.log("[printTeam] Print function called");
 		
 		// Check for vehicles again (defensive coding)
-		if (!vehicles || vehicles.length === 0) {
+		if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
 			console.log("[printTeam] No vehicles to print");
 			isPrinting = false;
 			alert("You need to add at least one vehicle before printing.");
@@ -896,9 +937,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			...currentDraft,
 			// Add extra data needed for printing
 			teamName: teamName,
-			totalCans: totalCans,
+			totalCans: validation.cans, // Use validation.cans directly for consistency
 			maxCans: maxCans,
 			sponsorName: currentSponsor?.name || 'No Sponsor',
+			// Explicitly add ALL print settings - ensure we're using the latest values
+			printStyle: printStyle,
+			showEquipmentDescriptions: showEquipmentDescriptions,
+			showPerkDescriptions: showPerkDescriptions,
 			// Include sponsor perks information
 			sponsor: currentSponsor,
 			sponsorPerks: {
@@ -965,6 +1010,27 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			showPerkDescriptions: showPerkDescriptions
 		};
 
+		// Last chance to update print settings from localStorage if they've changed
+		if (typeof localStorage !== 'undefined') {
+			const storedPrintStyle = localStorage.getItem('user_print_style');
+			if (storedPrintStyle) {
+				printStyle = storedPrintStyle;
+				enhancedDraft.printStyle = storedPrintStyle;
+			}
+			
+			const storedEquipDesc = localStorage.getItem('user_show_equipment');
+			if (storedEquipDesc !== null) {
+				showEquipmentDescriptions = storedEquipDesc === '1' || storedEquipDesc === 'true';
+				enhancedDraft.showEquipmentDescriptions = showEquipmentDescriptions;
+			}
+			
+			const storedPerkDesc = localStorage.getItem('user_show_perks');
+			if (storedPerkDesc !== null) {
+				showPerkDescriptions = storedPerkDesc === '1' || storedPerkDesc === 'true';
+				enhancedDraft.showPerkDescriptions = showPerkDescriptions;
+			}
+		}
+
 		console.log("Printing team with options:", {
 			printStyle,
 			showEquipmentDescriptions,
@@ -975,8 +1041,23 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Call the imported function with proper service name
 		try {
-			console.log("[printTeam] Calling printServiceFunc with style:", printStyle);
-			await printServiceFunc(printStyle, enhancedDraft);
+			console.log("[printTeam] --- DEBUG ---");
+			console.log("[printTeam] Current printStyle value:", printStyle);
+			console.log("[printTeam] Settings menu printStyle:", document.getElementById('print-style-dashboard')?.checked ? 'dashboard' : 'not-dashboard');
+			console.log("[printTeam] enhancedDraft.printStyle:", enhancedDraft.printStyle);
+			console.log("[printTeam] typeof enhancedDraft.printStyle:", typeof enhancedDraft.printStyle);
+			console.log("[printTeam] --- END DEBUG ---");
+			
+			// Use the proper print function based on style
+			const finalPrintStyle = printStyle || enhancedDraft.printStyle || 'classic';
+			if (finalPrintStyle === 'dashboard' || finalPrintStyle.includes('dashboard')) {
+				console.log("[printTeam] Using dedicated dashboard print function");
+				enhancedDraft.printStyle = 'dashboard'; // Ensure consistent naming
+				await printTeamDashboard(enhancedDraft);
+			} else {
+				console.log("[printTeam] Using classic print function with style:", finalPrintStyle);
+				await printServiceFunc(finalPrintStyle, enhancedDraft);
+			}
 			console.log("[printTeam] Print completed successfully");
 			return true;
 		} catch (error) {
@@ -1325,59 +1406,21 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// Update currentDraft to trigger the reactive validation
 		currentDraft = updatedDraft;
 
-		// Force immediate recalculation for UI responsiveness
-		let tempTotal = 0;
-		vehicles.forEach(vehicle => {
-			// Calculate vehicle cost
-			const vehicleCost = calculateVehicleCost(vehicle);
-
-			// Find or create vehicle report
-			let vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicle.id);
-			if (!vehicleReport) {
-				vehicleReport = {
-					vehicleId: vehicle.id,
-					cans: vehicleCost,
-					errors: []
-				};
-				validation.vehicleReports.push(vehicleReport);
-			} else {
-				vehicleReport.cans = vehicleCost;
-			}
-
-			tempTotal += vehicleCost;
-		});
-
-		// Update total cans in validation object
-		validation.cans = tempTotal;
-
-		// Ensure reactivity
-		validation = { ...validation };
+		// Let the validateDraft function handle the calculation
+		// This creates consistency between the UI and the validation system
+		// We'll get the updated values in the reactive declaration below
 	}
 
 	// Function to handle vehicle type changes
 	function handleVehicleTypeChange(vehicleId, newVehicleType) {
-		// Find the vehicle in the validation reports for updating UI immediately
-		const vehicleReport = validation.vehicleReports.find(r => r.vehicleId === vehicleId);
-		if (vehicleReport) {
-			// Find the new vehicle type
-			const vehicleType = vehicleTypes.find(vt => vt.id === newVehicleType);
-			if (vehicleType) {
-				// Update the total cans immediately by recalculating
-				const vehicle = vehicles.find(v => v.id === vehicleId);
-				if (vehicle) {
-					// Manually update the total cans
-					const oldCost = vehicleReport.cans;
-					const newCost = calculateVehicleCost(vehicle);
-					validation.cans = validation.cans - oldCost + newCost;
-
-					// Update the vehicle report
-					vehicleReport.cans = newCost;
-				}
-			}
+		// Find the vehicle to update
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (vehicle) {
+			// Update vehicle type
+			vehicle.type = newVehicleType;
+			// Trigger full validation to update all costs consistently
+			forceValidation();
 		}
-
-		// Also trigger the full validation
-		forceValidation();
 	}
 
 	// Function to calculate vehicle cost for immediate updates
@@ -1540,35 +1583,113 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let importString = '';
 
 	// Remove all duplicate settings declarations
-	// let printStyle = localStorage.getItem('printStyle') || DEFAULT_SETTINGS.printStyle;
-	// let enableSponsorships = true;
-	// let includeAdvanced = true;
-	// let darkMode = false;
-
-	onMount(async () => {
-		// Only try to load settings if user is authenticated
-		if ($user) {
-			const { success, settings } = await getUserSettings();
-			if (success && settings) {
-				includeAdvanced = settings.includeAdvanced;
-				enableSponsorships = settings.enableSponsorships;
-				darkMode = settings.darkMode;
-				printStyle = settings.printStyle || 'classic';
-				hasRules = settings.hasRules ?? DEFAULT_SETTINGS.hasRules;
-				showEquipmentDescriptions = settings.showEquipmentDescriptions ?? DEFAULT_SETTINGS.showEquipmentDescriptions;
-				showPerkDescriptions = settings.showPerkDescriptions ?? DEFAULT_SETTINGS.showPerkDescriptions;
-			}
-		} else {
-			// Use default settings when not authenticated
-			includeAdvanced = DEFAULT_SETTINGS.includeAdvanced;
-			enableSponsorships = DEFAULT_SETTINGS.enableSponsorships;
-			darkMode = DEFAULT_SETTINGS.darkMode;
-			printStyle = DEFAULT_SETTINGS.printStyle || 'classic';
-			hasRules = DEFAULT_SETTINGS.hasRules;
-			showEquipmentDescriptions = DEFAULT_SETTINGS.showEquipmentDescriptions;
-			showPerkDescriptions = DEFAULT_SETTINGS.showPerkDescriptions;
+	// Load settings from localStorage
+	function loadFromLocalStorage() {
+		if (typeof localStorage === 'undefined') return;
+		
+		console.log("[Builder] Loading settings from localStorage");
+		
+		// PRINT SETTINGS - TRY BOTH NAMING CONVENTIONS
+		const storedPrintStyle = localStorage.getItem('printStyle') || localStorage.getItem('user_print_style');
+		if (storedPrintStyle) {
+			printStyle = storedPrintStyle;
+			console.log("[Builder] Loaded printStyle from localStorage:", printStyle);
 		}
-	});
+		
+		// EQUIPMENT DESCRIPTIONS
+		const storedEquipDesc = localStorage.getItem('showEquipmentDescriptions') || localStorage.getItem('user_show_equipment');
+		if (storedEquipDesc) {
+			showEquipmentDescriptions = storedEquipDesc === 'true' || storedEquipDesc === '1';
+			console.log("[Builder] Loaded showEquipmentDescriptions from localStorage:", showEquipmentDescriptions);
+		}
+		
+		// PERK DESCRIPTIONS
+		const storedPerkDesc = localStorage.getItem('showPerkDescriptions') || localStorage.getItem('user_show_perks');
+		if (storedPerkDesc) {
+			showPerkDescriptions = storedPerkDesc === 'true' || storedPerkDesc === '1';
+			console.log("[Builder] Loaded showPerkDescriptions from localStorage:", showPerkDescriptions);
+		}
+		
+		// OTHER SETTINGS
+		const storedDarkMode = localStorage.getItem('darkMode');
+		if (storedDarkMode) {
+			darkMode = storedDarkMode === 'true';
+		}
+		
+		const storedHasRules = localStorage.getItem('hasRules');
+		if (storedHasRules) {
+			hasRules = storedHasRules === 'true';
+		}
+	}
+	
+	// Load settings from Firebase
+	async function loadFromFirebase() {
+		if (!$user) return;
+		
+		console.log("[Builder] Loading settings from Firebase");
+		
+		try {
+			const { success, settings } = await getUserSettings();
+			
+			if (success && settings) {
+				console.log("[Builder] Got settings from Firebase:", settings);
+				
+				// Apply Firebase settings, prioritizing printStyle
+				if (settings.printStyle) {
+					printStyle = settings.printStyle;
+					console.log("[Builder] Set printStyle from Firebase:", printStyle);
+					
+					// Also update localStorage for consistency
+					if (typeof localStorage !== 'undefined') {
+						localStorage.setItem('printStyle', printStyle);
+					}
+				}
+				
+				// Apply other settings if they exist
+				if (settings.showEquipmentDescriptions !== undefined) {
+					showEquipmentDescriptions = settings.showEquipmentDescriptions;
+				}
+				
+				if (settings.showPerkDescriptions !== undefined) {
+					showPerkDescriptions = settings.showPerkDescriptions;
+				}
+				
+				// Other common settings
+				if (settings.darkMode !== undefined) darkMode = settings.darkMode;
+				if (settings.hasRules !== undefined) hasRules = settings.hasRules;
+				if (settings.includeAdvanced !== undefined) includeAdvanced = settings.includeAdvanced;
+				if (settings.enableSponsorships !== undefined) enableSponsorships = settings.enableSponsorships;
+				
+				console.log("[Builder] Applied settings from Firebase");
+			} else {
+				console.log("[Builder] No settings found in Firebase");
+			}
+		} catch (error) {
+			console.error("[Builder] Error loading from Firebase:", error);
+		}
+	}
+	
+	// Initialize settings on page load
+	async function initializeSettings() {
+		console.log("[Builder] Initializing settings");
+		
+		// First load from localStorage
+		loadFromLocalStorage();
+		
+		// Then try Firebase if logged in
+		if ($user) {
+			await loadFromFirebase();
+		}
+		
+		// Apply defaults if necessary
+		if (!printStyle) printStyle = 'classic';
+		
+		console.log("[Builder] Settings initialized:", {
+			printStyle,
+			showEquipmentDescriptions,
+			showPerkDescriptions
+		});
+	}
 
 </script>
 
@@ -2289,6 +2410,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
                     // Just set the flag - printWithRulesCheck will handle checking
                     isPrinting = false;
                     printWithRulesCheck();
+                  }
+                  else if (rulesModalAction === 'printDashboard' && hasRules) {
+                    console.log('[Rules Modal] Dashboard printing after acknowledgment');
+                    printDashboardDirect();
                   }
                 }}
               >
