@@ -30,7 +30,20 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	};
 	const { sponsors, vehicleTypes, weapons, upgrades, perks, vehicleRules } = data;
   
-	console.log('vehicleTypes', vehicleTypes);
+	// Log detailed vehicle type information to check sponsor restrictions
+	console.log('LOADED DATA: All vehicle types:', vehicleTypes.map(v => ({
+		id: v.id,
+		name: v.name, 
+		sponsors: v.sponsors || []
+	})));
+	
+	// Special focus on vehicles with sponsor restrictions
+	const restrictedVehicles = vehicleTypes.filter(v => v.sponsors && v.sponsors.length > 0);
+	console.log('RESTRICTED VEHICLES:', restrictedVehicles.map(v => ({
+		id: v.id,
+		name: v.name,
+		sponsors: v.sponsors
+	})));
   
 	/* ---------- settings ---------- */
 	let includeAdvanced = true;
@@ -64,20 +77,20 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			return false;
 		}
 		
-		// Then filter based on sponsor restrictions
-		// If the vehicle has a sponsors array and it's not empty, check if current sponsor is in it
+		// Vehicle can only be taken if:
+		// a) It has no sponsors list, OR
+		// b) The current sponsor matches one in the vehicle's sponsors list
 		if (v.sponsors && v.sponsors.length > 0) {
+			// This vehicle has a sponsors restriction - check if current sponsor is in the list
 			const allowed = v.sponsors.includes(sponsorId);
 			
-			// Log vehicles that have sponsor restrictions
-			if (v.id === 'tank' || v.id === 'helicopter' || v.id === 'war_rig') {
-				console.log(`Vehicle ${v.name} with sponsors [${v.sponsors.join(', ')}] - Current sponsor: ${sponsorId} - Allowed: ${allowed}`);
-			}
+			// Log for debugging
+			console.log(`Vehicle ${v.id} with sponsors [${v.sponsors.join(', ')}] - Current sponsor: ${sponsorId} - Allowed: ${allowed}`);
 			
 			return allowed;
 		}
 		
-		// No sponsor restriction or current sponsor is allowed
+		// No sponsor restriction - vehicle is allowed with any sponsor
 		return true;
 	});
 	// Sort all data alphabetically
@@ -1400,9 +1413,17 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		// This reactive block will run whenever sponsorId changes
 		const invalidVehicles = vehicles.filter(v => {
 			const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+			
+			// Vehicle is only invalid if:
+			// 1. We have a vehicle type definition, AND
+			// 2. It has a sponsors list, AND
+			// 3. The current sponsor is not in that list
 			if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
+				// Check if current sponsor is NOT in the list
 				return !vehicleType.sponsors.includes(sponsorId);
 			}
+			
+			// Vehicle type has no sponsor restrictions or doesn't exist
 			return false;
 		});
 		
@@ -1419,11 +1440,18 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			// Remove the invalid vehicles
 			vehicles = vehicles.filter(v => {
 				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+				
+				// Only filter if the vehicle has sponsor restrictions
 				if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
 					return vehicleType.sponsors.includes(sponsorId);
 				}
+				
+				// Keep vehicles with no sponsor restrictions
 				return true;
 			});
+			
+			// Force validation after removing vehicles
+			forceValidation();
 			
 			// Inform the user about removed vehicles - but only if this isn't initial load
 			if (vehicles.length > 0) {
