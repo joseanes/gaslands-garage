@@ -3,13 +3,12 @@
     import { createEventDispatcher } from 'svelte';
     import BuildHeader from './BuildHeader.svelte';
     import { loadWeaponSpecialRules } from '$lib/rules/loadRules';
+    import Tooltip from './Tooltip.svelte';
 
     const dispatch = createEventDispatcher();
 
     // Load weapon special rules
     const weaponSpecialRules = loadWeaponSpecialRules();
-
-    // No need for custom tooltip initialization - using CSS-styled title attributes
     
     // Props
     export let vehicle: {
@@ -21,6 +20,11 @@
         upgrades: string[];
         perks: string[];
     };
+
+    // Initialize weaponFacings if undefined
+    if (!vehicle.weaponFacings) {
+        vehicle.weaponFacings = {};
+    }
     export let vehicleTypes = [];
     export let weapons = [];
     export let upgrades = [];
@@ -180,12 +184,17 @@
         // Add hull points from upgrades
         for (const upgradeId of vehicle.upgrades) {
             const upgradeObj = upgrades.find(u => u.id === upgradeId);
-            // Check for Armor Plating, which adds +1 hull
-            if (upgradeId === 'armor') {
+
+            // Use new hull property if available
+            if (upgradeObj?.hull) {
+                maxHull += upgradeObj.hull;
+            }
+            // Backward compatibility for armor upgrade
+            else if (upgradeId === 'armor') {
                 maxHull += 1;
             }
-            // Add hull modifications from upgrade modifiers
-            if (upgradeObj?.hullModifier) {
+            // Backward compatibility for old property name
+            else if (upgradeObj?.hullModifier) {
                 maxHull += upgradeObj.hullModifier;
             }
         }
@@ -199,6 +208,76 @@
         return maxHull;
     }
     
+    function calculateHandling(): number {
+        const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+        if (!vehicleType) return 0;
+
+        let handling = vehicleType.handling || 4; // Default to 4 if not specified
+
+        // Add handling modifiers from upgrades
+        for (const upgradeId of vehicle.upgrades) {
+            const upgradeObj = upgrades.find(u => u.id === upgradeId);
+
+            // Use new handling property if available
+            if (upgradeObj?.handling) {
+                handling += upgradeObj.handling;
+            }
+            // Backward compatibility for old property name
+            else if (upgradeObj?.handlingModifier) {
+                handling += upgradeObj.handlingModifier;
+            }
+        }
+
+        return handling;
+    }
+
+    function calculateMaxGear(): number {
+        const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+        if (!vehicleType) return 0;
+
+        let maxGear = vehicleType.maxGear;
+
+        // Add gear modifiers from upgrades
+        for (const upgradeId of vehicle.upgrades) {
+            const upgradeObj = upgrades.find(u => u.id === upgradeId);
+
+            // Use new gear property if available
+            if (upgradeObj?.gear) {
+                maxGear += upgradeObj.gear;
+            }
+            // Backward compatibility for old property name
+            else if (upgradeObj?.gearModifier) {
+                maxGear += upgradeObj.gearModifier;
+            }
+        }
+
+        return maxGear;
+    }
+
+    function calculateCrew(): number {
+        const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+        if (!vehicleType) return 0;
+
+        let crew = vehicleType.crew || 1; // Default to 1 if not specified
+
+        // Add crew modifiers from upgrades
+        for (const upgradeId of vehicle.upgrades) {
+            const upgradeObj = upgrades.find(u => u.id === upgradeId);
+
+            // Use new crew property if available
+            if (upgradeObj?.crew) {
+                crew += upgradeObj.crew;
+            }
+            // Backward compatibility for old property name
+            else if (upgradeObj?.crewModifier) {
+                crew += upgradeObj.crewModifier;
+            }
+        }
+
+        // Ensure crew doesn't go below zero
+        return Math.max(0, crew);
+    }
+
     function calculateTotalAttackDice(): number {
         if (!vehicle || !vehicle.weapons || vehicle.weapons.length === 0) return 0;
 
@@ -221,12 +300,47 @@
     }
 
     function getWeaponSpecialRuleDetails(ruleId: string) {
-        return weaponSpecialRules.find(rule => rule.id.toLowerCase() === ruleId.toLowerCase());
+        if (!ruleId) return null;
+
+        // Clean the ruleId to handle potential variations
+        const cleanedRuleId = ruleId.trim();
+
+        // Try to find exact ID match first
+        const exactMatch = weaponSpecialRules.find(rule => rule.id === cleanedRuleId);
+        if (exactMatch) return exactMatch;
+
+        // If no exact match, try case-insensitive match
+        const caseInsensitiveMatch = weaponSpecialRules.find(rule =>
+            rule.id.toLowerCase() === cleanedRuleId.toLowerCase());
+        if (caseInsensitiveMatch) return caseInsensitiveMatch;
+
+        // Try matching by rule name if ID doesn't match
+        const nameMatch = weaponSpecialRules.find(rule =>
+            rule.ruleName.toLowerCase() === cleanedRuleId.toLowerCase());
+        if (nameMatch) return nameMatch;
+
+        // If still no match, create a fallback object
+        return {
+            id: cleanedRuleId,
+            ruleName: cleanedRuleId,
+            rule: "Rule description not found."
+        };
     }
 
     function parseSpecialRules(specialRulesString: string) {
         if (!specialRulesString) return [];
-        return specialRulesString.split(',').map(rule => rule.trim().toLowerCase());
+
+        // Handle special cases where text might be "SEE SPECIAL RULES"
+        if (specialRulesString.toUpperCase().includes("SEE SPECIAL RULES")) {
+            // Return the string before "SEE SPECIAL RULES" if any
+            const parts = specialRulesString.split(/see special rules/i);
+            if (parts[0].trim()) {
+                return parts[0].split(',').map(rule => rule.trim());
+            }
+            return [];
+        }
+
+        return specialRulesString.split(',').map(rule => rule.trim());
     }
 </script>
 
@@ -277,9 +391,9 @@
             />
         </div>
         <div class="flex items-center gap-2 self-start mt-2">
-            <!-- Clone Vehicle Button -->
+            <!-- All buttons with consistent sizing and styling -->
             <button
-                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm h-[2rem] amber-button"
+                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
                 on:click={cloneVehicle}
                 aria-label="Clone vehicle"
                 disabled={playMode}
@@ -291,17 +405,16 @@
             </button>
 
             <button
-                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
+                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm amber-button"
                 on:click={toggleCollapse}
                 aria-label={collapsed ? "Expand vehicle" : "Collapse vehicle"}
-                style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
             >
                 <span>{collapsed ? "+ Expand" : "- Collapse"}</span>
             </button>
 
             <!-- Delete / Remove Vehicle Button-->
             <button
-                class="py-0.25 px-2 flex items-center justify-center rounded-md transition-colors text-sm h-[2rem] red-button"
+                class="h-[32px] min-h-[32px] max-h-[32px] px-3 flex items-center justify-center rounded-md transition-colors text-sm red-button"
                 on:click={removeVehicle}
                 aria-label="Remove vehicle"
             >
@@ -320,7 +433,10 @@
                         {vehicle.weapons.length} weapons
                     {/if}
                     {#if vehicle.upgrades && vehicle.upgrades.length > 0}
-                        | {vehicle.upgrades.length} upgrades
+                        <span class="mx-1">|</span> {vehicle.upgrades.length} upgrades
+                    {/if}
+                    {#if vehicle.perks && vehicle.perks.length > 0}
+                        <span class="mx-1">|</span> {vehicle.perks.length} perks
                     {/if}
                 </div>
                 <BuildHeader
@@ -374,12 +490,12 @@
                         <input 
                             type="range" 
                             min="1" 
-                            max="{vehicleTypes.find(vt => vt.id === vehicle.type)?.maxGear || 6}" 
+                            max="{calculateMaxGear()}" 
                             value="1" 
                             class="gear-range w-full h-7 appearance-none bg-stone-200 dark:bg-gray-600 rounded-full" 
                         />
                         <div class="gear-markers flex justify-between px-2 mt-1">
-                            {#each Array((vehicleTypes.find(vt => vt.id === vehicle.type)?.maxGear || 6)) as _, i}
+                            {#each Array(calculateMaxGear()) as _, i}
                                 <span class="gear-number text-xs font-bold">{i+1}</span>
                             {/each}
                         </div>
@@ -388,9 +504,9 @@
                 
                 <div class="crew-hazard-row flex gap-4 col-span-1 md:col-span-2">
                     <div class="crew-tracker p-3 bg-white dark:bg-gray-800 rounded-lg border border-stone-300 dark:border-gray-600 flex-1">
-                        <div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {vehicleTypes.find(vt => vt.id === vehicle.type)?.crew || 1}</div>
+                        <div class="tracker-label text-sm font-semibold text-stone-600 dark:text-gray-300 uppercase mb-2">Crew: {calculateCrew()}</div>
                         <div class="flex flex-wrap gap-1">
-                            {#each Array(vehicleTypes.find(vt => vt.id === vehicle.type)?.crew || 1) as _, i}
+                            {#each Array(calculateCrew()) as _, i}
                                 <div class="crew-checkbox">
                                     <input type="checkbox" id="crew-{vehicle.id}-{i}" class="crew-checkbox-input" />
                                     <label for="crew-{vehicle.id}-{i}" class="crew-checkbox-label"></label>
@@ -423,7 +539,7 @@
                 <!-- Add Handling and Weight pills at the top -->
                 <div class="flex flex-wrap gap-2 mb-3">
                     <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-200 font-medium px-3 py-1 rounded-full text-sm">
-                        Handling: {vehicleTypes.find(vt => vt.id === vehicle.type)?.handling || '0'}
+                        Handling: {calculateHandling()}
                     </div>
                     <div class="bg-stone-100 dark:bg-gray-700 text-stone-800 dark:text-gray-200 font-medium px-3 py-1 rounded-full text-sm">
                         Weight: {
@@ -445,16 +561,22 @@
                         {@const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId}
                         {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
-                        <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-                            <span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || weaponId}</span>
-                            <span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
+                        <div class="text-sm py-2.5 border-b border-stone-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || baseWeaponId}</span>
+                                <span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
+                                {#if weaponObj?.electrical}
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                {/if}
+                            </div>
                             {#if weaponObj?.specialRules}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-1.5">
                                     {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                         {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
-                                            <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
-                                        </span>
+                                        <Tooltip
+                                            text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
+                                            content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                        />
                                     {/each}
                                 </div>
                             {/if}
@@ -463,20 +585,26 @@
                     
                     {#each vehicle.upgrades as upgradeId}
                         {@const upgrade = upgrades.find(u => u.id === upgradeId)}
-                        <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-                            <span class="font-bold text-stone-700 dark:text-gray-300">{upgrade?.name || upgradeId}</span>
+                        <div class="text-sm py-2.5 border-b border-stone-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <span class="font-bold text-stone-700 dark:text-gray-300">{upgrade?.name || upgradeId}</span>
+                                {#if upgrade?.electrical}
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                {/if}
+                            </div>
                             {#if upgrade?.specialRules}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-1.5">
                                     {#each parseSpecialRules(upgrade.specialRules) as ruleId}
                                         {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                        <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule || ''}">
-                                            {ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
-                                        </span>
+                                        <Tooltip
+                                            text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
+                                            content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                        />
                                     {/each}
                                 </div>
                             {/if}
                             {#if upgrade?.hullModifier || upgrade?.crewModifier || upgrade?.gearModifier || upgrade?.handlingModifier}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">
+                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-1.5">
                                     {upgrade.hullModifier ? `Hull: ${upgrade.hullModifier > 0 ? '+' : ''}${upgrade.hullModifier} ` : ''}
                                     {upgrade.crewModifier ? `Crew: ${upgrade.crewModifier > 0 ? '+' : ''}${upgrade.crewModifier} ` : ''}
                                     {upgrade.gearModifier ? `Gear: ${upgrade.gearModifier > 0 ? '+' : ''}${upgrade.gearModifier} ` : ''}
@@ -488,10 +616,15 @@
                     
                     {#each vehicle.perks as perkId}
                         {@const perk = perks.find(p => p.id === perkId)}
-                        <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-                            <span class="font-bold text-stone-700 dark:text-gray-300">{perk?.name || perkId}</span>
+                        <div class="text-sm py-2.5 border-b border-stone-200 dark:border-gray-700">
+                            <div class="flex items-center">
+                                <span class="font-bold text-stone-700 dark:text-gray-300">{perk?.name || perkId}</span>
+                                {#if perk?.electrical}
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                {/if}
+                            </div>
                             {#if perk?.text}
-                                <div class="text-xs text-stone-500 dark:text-gray-400">{perk.text}</div>
+                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-2">{perk.text}</div>
                             {/if}
                         </div>
                     {/each}
@@ -538,17 +671,23 @@
                         <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
                             <div class="flex items-center justify-between">
                                 <div class="flex-1">
-                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
-                                        {weaponObj?.name || weaponId}
-                                    </span></b>
+                                    <div class="flex items-center">
+                                        <b><span class="text-stone-700 dark:text-gray-200 font-bold">
+                                            {weaponObj?.name || baseWeaponId}
+                                        </span></b>
+                                        {#if weaponObj?.electrical}
+                                            <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                        {/if}
+                                    </div>
                                     <div class="flex items-center gap-2">
                                         {#if weaponObj?.specialRules}
                                         <div class="text-stone-500 dark:text-gray-400 text-xs">
                                             {#each parseSpecialRules(weaponObj.specialRules) as ruleId}
                                                 {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                                <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
-                                                    <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ', ' : ''}
-                                                </span>
+                                                <Tooltip
+                                                    text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(weaponObj.specialRules).indexOf(ruleId) < parseSpecialRules(weaponObj.specialRules).length - 1 ? ',' : ''}"
+                                                    content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                                />
                                             {/each}
                                         </div>
                                     {/if}
@@ -651,16 +790,22 @@
                         {@const upgrade = upgrades.find(u => u.id === upgradeId)}
                         <li class="flex items-center justify-between bg-stone-50 px-3 py-2">
                             <div class="flex-1">
-                                <b><span class="text-stone-700 dark:text-gray-200 font-bold block">
-                                    {upgrade?.name || upgradeId}
-                                </span></b>
+                                <div class="flex items-center">
+                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold">
+                                        {upgrade?.name || upgradeId}
+                                    </span></b>
+                                    {#if upgrade?.electrical}
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                    {/if}
+                                </div>
                                 {#if upgrade?.specialRules}
                                     <div class="text-stone-500 dark:text-gray-400 text-xs">
                                         {#each parseSpecialRules(upgrade.specialRules) as ruleId}
                                             {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
-                                            <span class="tooltip inline-block mr-1" title="{ruleDetails?.ruleName || ruleId}: {ruleDetails?.rule?.replace(/<\/?p>/g, '').replace(/<\/?strong>/g, '') || ''}">
-                                                <span class="font-semibold">{ruleDetails?.ruleName || ruleId}</span>{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ', ' : ''}
-                                            </span>
+                                            <Tooltip
+                                                text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
+                                                content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                            />
                                         {/each}
                                     </div>
                                 {/if}
@@ -733,13 +878,18 @@
             {#if vehicle.perks && vehicle.perks.length === 0}
                 <p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No perks selected.</p>
             {:else}
-                <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
+                <ul class="space-y-2 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
                     {#each vehicle.perks as perkId, i}
                         {@const perk = perks.find(p => p.id === perkId)}
-                        <li class="flex items-center justify-between bg-stone-50 dark:bg-gray-700 px-3 py-2">
+                        <li class="flex items-center justify-between bg-stone-50 dark:bg-gray-700 px-3 py-3">
                             <div class="flex-1">
-                                <b><span class="text-stone-700 dark:text-gray-200 font-bold block">{perk?.name || perkId}</span></b>
-                                <span class="text-stone-500 dark:text-gray-400 text-xs">{perk?.text || ""}</span>
+                                <div class="flex items-center mb-1">
+                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold">{perk?.name || perkId}</span></b>
+                                    {#if perk?.electrical}
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                    {/if}
+                                </div>
+                                <span class="text-stone-500 dark:text-gray-400 text-xs block mt-1">{perk?.text || ""}</span>
                             </div>
                             <button
                                 class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"
@@ -786,12 +936,12 @@
                     {#if specialRules.length === 0}
                         <p class="text-stone-500 dark:text-gray-400 text-sm italic px-2">No special rules.</p>
                     {:else}
-                        <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
+                        <ul class="space-y-2 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
                             {#each specialRules as ruleName}
                                 {@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
-                                <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
+                                <li class="bg-stone-50 dark:bg-gray-700 px-3 py-3">
                                     <div class="flex-1">
-                                        <b><span class="text-stone-700 dark:text-gray-200 font-bold block">{ruleName.trim()}</span></b>
+                                        <b><span class="text-stone-700 dark:text-gray-200 font-bold block mb-1">{ruleName.trim()}</span></b>
                                         {#if ruleDetails}
                                             <div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
                                         {:else}
@@ -833,59 +983,5 @@
 </div>
 
 <style>
-    /* Tooltip styles */
-    :global(.tooltip) {
-        position: relative;
-        display: inline-block;
-        cursor: help;
-        text-decoration: underline;
-        text-decoration-style: dotted;
-        text-decoration-thickness: 1px;
-        text-underline-offset: 2px;
-        color: #d97706; /* amber-600 - slightly darker to stand out */
-        font-weight: 500;
-    }
-
-    :global(.tooltip:hover) {
-        color: #f59e0b; /* amber-500 */
-    }
-
-    /* Hide default browser tooltip */
-    :global([title]) {
-        position: relative;
-    }
-
-    /* Custom tooltip appearance on hover */
-    :global(.tooltip:hover::after) {
-        content: attr(title);
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        background-color: #1f2937; /* dark gray-800 */
-        color: white;
-        text-align: left;
-        padding: 8px 12px;
-        border-radius: 6px;
-        white-space: pre-wrap;
-        z-index: 1000;
-        max-width: 300px;
-        font-size: 0.85rem;
-        line-height: 1.4;
-        font-weight: normal;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #f59e0b; /* amber-500 */
-    }
-
-    /* Arrow pointing to the element */
-    :global(.tooltip:hover::before) {
-        content: "";
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-width: 6px;
-        border-style: solid;
-        border-color: transparent transparent #f59e0b transparent; /* amber-500 */
-    }
+    /* Tooltips are now handled by the Tooltip component */
 </style>

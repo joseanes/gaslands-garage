@@ -8,7 +8,8 @@ export const Sponsor = z.object({
   perks: z.string().array().optional(), // Made optional as it will be deprecated
   perksClasses: z.string().array().optional(), // New field for perk classes
   color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i),
-  source: z.string().optional()
+  source: z.string().optional(),
+  electrical: z.boolean().optional().default(false) // Whether sponsor can use electrical items
 });
 
 export type Sponsor = z.infer<typeof Sponsor>;
@@ -46,7 +47,8 @@ export const Weapon = z.object({
   attackDice: z.number().int().nonnegative().optional(),
   specialRules: z.string().optional(),
   dropped: z.boolean().optional(),
-  source: z.string().optional()
+  source: z.string().optional(),
+  electrical: z.boolean().optional().default(false) // New field for electrical weapons
 });
 
 export type Weapon = z.infer<typeof Weapon>;
@@ -61,11 +63,12 @@ export const Upgrade = z.object({
   type: z.literal('upgrade'),
   advanced: z.boolean().optional().default(false),
   source: z.string().optional(),
-  // New optional numerical fields that can be positive, negative, or zero
-  hullModifier: z.number().int().optional(),
-  crewModifier: z.number().int().optional(),
-  gearModifier: z.number().int().optional(),
-  handlingModifier: z.number().int().optional()
+  electrical: z.boolean().optional().default(false), // New field for electrical upgrades
+  // Vehicle stat modifiers
+  hull: z.number().int().optional(), // Hull points modifier
+  gear: z.number().int().optional(), // Max gear modifier
+  handling: z.number().int().optional(), // Handling modifier
+  crew: z.number().int().optional() // Crew modifier
 });
 
 export type Upgrade = z.infer<typeof Upgrade>;
@@ -76,7 +79,9 @@ export const Perk = z.object({
   sponsor: z.string(), // Renamed from 'line'
   cost: z.number().int().nonnegative().optional(), // Cost in cans
   class: z.string().optional(), // Class field for categorization
-  text: z.string()
+  text: z.string(),
+  electrical: z.boolean().optional().default(false), // New field for electrical perks
+  level: z.number().int().nonnegative().optional() // Perk level
 });
 export type Perk = z.infer<typeof Perk>;
 

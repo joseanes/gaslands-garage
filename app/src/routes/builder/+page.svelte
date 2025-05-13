@@ -442,11 +442,17 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 
 		// Add hull points from upgrades
 		for (const upgradeId of vehicle.upgrades) {
-			// Check for Armor Plating, which adds +1 hull
-			if (upgradeId === 'armor') {
-				maxHull += 1;
+			const upgrade = upgrades.find(u => u.id === upgradeId);
+			if (upgrade) {
+				// Use the hull property if present
+				if (upgrade.hull) {
+					maxHull += upgrade.hull;
+				}
+				// Keep backward compatibility for armor upgrade
+				else if (upgradeId === 'armor') {
+					maxHull += 1;
+				}
 			}
-			// Add any other upgrades that affect hull here
 		}
 
 		// Add hull points from perks (if any)
@@ -456,6 +462,61 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		}
 
 		return maxHull;
+	}
+
+	// Calculate handling with modifiers from upgrades
+	function calculateHandling(vehicle): number {
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return 0;
+
+		let handling = vehicleType.handling || 4; // Default to 4 if not specified
+
+		// Add handling modifiers from upgrades
+		for (const upgradeId of vehicle.upgrades) {
+			const upgrade = upgrades.find(u => u.id === upgradeId);
+			if (upgrade && upgrade.handling) {
+				handling += upgrade.handling;
+			}
+		}
+
+		return handling;
+	}
+
+	// Calculate max gear with modifiers from upgrades
+	function calculateMaxGear(vehicle): number {
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return 0;
+
+		let maxGear = vehicleType.maxGear;
+
+		// Add gear modifiers from upgrades
+		for (const upgradeId of vehicle.upgrades) {
+			const upgrade = upgrades.find(u => u.id === upgradeId);
+			if (upgrade && upgrade.gear) {
+				maxGear += upgrade.gear;
+			}
+		}
+
+		return maxGear;
+	}
+
+	// Calculate crew with modifiers from upgrades
+	function calculateCrew(vehicle): number {
+		const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+		if (!vehicleType) return 0;
+
+		let crew = vehicleType.crew || 1; // Default to 1 if not specified
+
+		// Add crew modifiers from upgrades
+		for (const upgradeId of vehicle.upgrades) {
+			const upgrade = upgrades.find(u => u.id === upgradeId);
+			if (upgrade && upgrade.crew) {
+				crew += upgrade.crew;
+			}
+		}
+
+		// Ensure crew doesn't go below zero
+		return Math.max(0, crew);
 	}
 
 	function calculateTotalAttackDice(vehicle): number {
@@ -1175,15 +1236,30 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	// Trigger re-rendering when vehicles array changes its length
 	$: vehicleCount = vehicles.length;
 
-	// Filter weapons based on includeAdvanced setting
-	$: filteredWeapons = includeAdvanced 
-		? weapons 
-		: weapons.filter(w => !w.advanced);
-	
-	// Filter upgrades based on includeAdvanced setting
-	$: filteredUpgrades = includeAdvanced 
-		? upgrades 
-		: upgrades.filter(u => !u.advanced);
+	// Filter weapons based on includeAdvanced setting and electrical property
+	$: filteredWeapons = weapons.filter(w => {
+		// Filter by advanced setting
+		if (!includeAdvanced && w.advanced) return false;
+
+		// Filter by electrical property
+		if (w.electrical && !(currentSponsor?.electrical)) return false;
+
+		return true;
+	});
+
+	// Filter upgrades based on includeAdvanced setting and electrical property
+	$: filteredUpgrades = upgrades.filter(u => {
+		// Filter by advanced setting
+		if (!includeAdvanced && u.advanced) return false;
+
+		// Filter by electrical property
+		if (u.electrical && !(currentSponsor?.electrical)) return false;
+
+		// Filter by sponsor restriction if applicable
+		if (u.limited_sponsor && u.limited_sponsor !== currentSponsor?.id) return false;
+
+		return true;
+	});
 	
 	// Get available perks for the current sponsor
 	$: currentSponsor = sponsors.find(s => s.id === sponsorId);
@@ -1207,8 +1283,12 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		))
 		: [];
 
-	// All available perks (used for vehicles)
-	$: availablePerks = [...classPerksList, ...sponsorPerksList];
+	// All available perks (used for vehicles), filtered by electrical restrictions
+	$: availablePerks = [...classPerksList, ...sponsorPerksList].filter(perk => {
+		// Filter by electrical property
+		if (perk.electrical && !(currentSponsor?.electrical)) return false;
+		return true;
+	});
 
 	// For legacy support, also include perks with matching id
 	$: legacyPerks = enableSponsorships
@@ -1860,7 +1940,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						<input
 							type="text"
 							bind:value={teamName}
-							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[115px] w-auto max-w-[155px] text-base dark-text-input"
+							class="bg-transparent border-2 border-amber-500 rounded-lg px-3 py-0.25 font-bold text-amber-700 dark:text-white focus:outline-none focus:border-amber-600 min-w-[117px] w-auto max-w-[157px] text-base dark-text-input"
 							style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							aria-label="Team Name"
 						/>
@@ -2013,21 +2093,17 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			<!-- About Gaslands Content when no vehicles -->
 			<div class="mt-3 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
 				<div class="flex justify-between items-center mb-6">
-					<h3 class="text-xl font-bold text-stone-800 dark:text-white">About Gaslands</h3>
+					<h3 class="text-xl font-bold text-stone-800 dark:text-white">Gaslands: The Post Apocalyptic Car Combat Game</h3>
 				</div>
 
 				<div class="space-y-6 text-stone-700 dark:text-gray-200">
-					<p>
-						Gaslands is a tabletop game of post-apocalyptic vehicular combat. Using converted Hot Wheels or Matchbox cars, it simulates a televised bloodsport where drivers compete in a variety of deadly scenarios. Gaslands puts players in control of custom battle cars, buggies, trucks, and other vehicles armed with machine guns, rockets, flamethrowers and more.
-					</p>
-
 					<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">What You Need to Start Playing:</h4>
 					<ul class="list-disc pl-5 space-y-2">
-						<li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios</li>
-						<li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game</li>
-						<li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics</li>
-						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles</li>
-						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify</li>
+						<li><a href="https://amzn.to/4m7OQYa" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Rulebook</a> - The Gaslands Refuelled rulebook contains all the rules and scenarios.  <b>You must purchase the rulebook to use this website.</b>  It is available in printed and electronic formats.</li>
+						<li><a href="https://creatoriq.cc/434pUIp" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Dice</a> - Special dice designed for the game.</li>
+						<li><a href="https://amzn.to/4kaUcA2" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Regular 6-Sided Dice</a> - For resolving various game mechanics.</li>
+						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Gaslands Templates</a> - Movement templates for driving your vehicles.</li>
+						<li><a href="https://creatoriq.cc/3GR0qqD" target="_blank" rel="noopener noreferrer" class="text-amber-600 dark:text-amber-400 hover:underline">Vehicles</a> - Hotwheels or Matchbox cars that you can modify.</li>
 					</ul>
 
 					<h4 class="font-bold text-stone-800 dark:text-white text-lg mb-3">Recommended Resources:</h4>
