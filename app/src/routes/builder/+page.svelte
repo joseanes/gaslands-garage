@@ -2557,7 +2557,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				{#if enableSponsorships}
 				<div class="flex flex-col w-full mt-1">
 					<div class="flex items-center gap-4">
-						<b class="text-base font-bold whitespace-nowrap flex items-center" style="min-width: 147px;">Choose Your Sponsor:</b>
+						<b class="text-base font-bold whitespace-nowrap flex items-center" style="min-width: 95px;">Sponsor:</b>
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
