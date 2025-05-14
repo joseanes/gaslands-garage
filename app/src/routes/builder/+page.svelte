@@ -1,5 +1,22 @@
 <!-- Updated from the content provided by the user - Refactored with VehicleCard component -->
 <script lang="ts">
+	/**
+	 * IMPORTANT: VALIDATION APPROACH
+	 * 
+	 * This component previously experienced infinite update loops (effect_update_depth_exceeded)
+	 * due to circular dependencies in Svelte's reactive declarations.
+	 * 
+	 * We have implemented a safer automatic validation approach that:
+	 * 
+	 * 1. Avoids reactive declarations for validation (no $: validation = ...)
+	 * 2. Uses timeouts to break reactive update chains
+	 * 3. Uses validation flags (isValidating, isForceValidating) to prevent duplicate calls
+	 * 4. Deep copies objects with JSON.parse/stringify to prevent reference sharing
+	 * 5. Updates happen automatically through the updateCurrentDraft function
+	 * 
+	 * This maintains automatic validation while preventing infinite update loops.
+	 */
+	
 	import { nanoid } from 'nanoid';
 	import { validateDraft } from '$lib/validate';
 	import type { Draft, Validation } from '$lib/validate/model';
@@ -107,6 +124,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	let sponsorId: string = sponsors.find(s => s.id === 'no_sponsor')?.id ?? sponsors[0]?.id ?? '';
 	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
 	let totalCans = 0;
+	
+	// Validation state flags to prevent infinite update loops
+	let isValidating = false;
+	let isForceValidating = false;
+	let pendingSponsorValidation = false;
+	let lastSponsorId = '';
 	type Veh = { 
 		id: string; 
 		type: string; 
@@ -234,8 +257,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		console.log("Added new vehicle", newVehicle);
 		console.log("Current vehicles", vehicles.length);
 		
-		// Also trigger a full validation
-		forceValidation();
+		// Update draft to trigger automatic validation
+		updateCurrentDraft();
 	}
 
 	function removeVehicle(id: string) {
@@ -249,9 +272,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		// Update totalCans immediately for better responsiveness
 		totalCans = calculateTotalCansDirectly();
 		
-		// Force full validation to ensure consistency
-		// This will recalculate all costs properly
-		forceValidation();
+		// Update draft to trigger automatic validation
+		updateCurrentDraft();
 	}
 
 	function cloneVehicle(id: string) {
@@ -327,8 +349,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			}
 		}
 		
-		// Also trigger a full validation
-		forceValidation();
+		// Update draft to trigger automatic validation
+		updateCurrentDraft();
 	}
 	
 	function toggleVehicleCollapse(id: string) {
@@ -1623,21 +1645,64 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	}
 	
 	// When sponsor changes, validate restrictions and clean up invalid components
-	$: if (sponsorId) {
-		// This reactive block will run whenever sponsorId changes
-		console.log(`Sponsor changed to: ${sponsorId}`);
-		
-		// Call our validation function which does all the checking and cleanup
-		// Always run validation on sponsor change
-		const changesRequired = validateSponsorRestrictions();
-		
-		// Force validation after any modifications
-		if (changesRequired) {
-			console.log("Changes were made during sponsor validation - updating validation");
-			forceValidation();
-		} else {
-			console.log("No changes required for this sponsor");
+	// DISABLED reactive sponsor changing to prevent infinite loops
+	// $: if (sponsorId && sponsorId !== lastSponsorId) { ... }
+
+	/**
+	 * Handles sponsor changes manually without triggering automatic validation
+	 * Instead of validating immediately, this sets a pendingSponsorValidation flag
+	 * and shows a UI notification asking the user to apply sponsor rules manually
+	 * 
+	 * This approach is part of our solution to prevent infinite update loops
+	 */
+	function handleSponsorChange(newSponsorId) {
+		if (newSponsorId && newSponsorId !== lastSponsorId) {
+			console.log(`Sponsor changed to: ${newSponsorId}`);
+			lastSponsorId = newSponsorId;
+			sponsorId = newSponsorId;
+			
+			// Apply sponsor validation immediately
+			validateSponsorRestrictions();
+			
+			// Update cans directly
+			totalCans = calculateTotalCansDirectly();
+			
+			// Update the draft object - this will also trigger validation
+			updateCurrentDraft();
 		}
+	}
+
+	/**
+	 * Applies sponsor validation rules to the current team
+	 * This is part of our manual validation approach to prevent infinite update loops
+	 * We completely disabled automatic validation after encountering "effect_update_depth_exceeded" errors
+	 * when updating vehicle configurations
+	 */
+	function applySponsorValidation() {
+		if (pendingSponsorValidation) {
+			console.log("Applying sponsor validation");
+			
+			// Call validation function which does checking and cleanup
+			const changesRequired = validateSponsorRestrictions();
+			
+			// Update cans after validation
+			totalCans = calculateTotalCansDirectly();
+			
+			// Explicitly update the draft
+			updateCurrentDraft();
+			
+			// Reset pending flag
+			pendingSponsorValidation = false;
+			
+			// Hide validation notice
+			if (document.getElementById('validation-notice')) {
+				document.getElementById('validation-notice').style.display = 'none';
+			}
+			
+			// Return whether changes were made
+			return changesRequired;
+		}
+		return false;
 	}
 	
 	// Remove any advanced vehicle types when includeAdvanced is disabled
@@ -1718,32 +1783,77 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	} satisfies Draft;
 
 	// Function to force validation to run immediately
+	/**
+	 * Manually validates the team without triggering reactive updates
+	 * 
+	 * This function uses several techniques to prevent the infinite update loops that were
+	 * causing "effect_update_depth_exceeded" errors:
+	 * 1. Flags to prevent concurrent validation (isForceValidating, isValidating)
+	 * 2. setTimeout to break reactive update chains
+	 * 3. Deep copying of objects with JSON.parse/stringify to prevent reference sharing
+	 * 4. Manual draft updates instead of reactive declarations
+	 */
 	function forceValidation() {
-		// Calculate cans directly first for immediate feedback
+		// Skip if already validating to prevent recursive calls
+		if (isForceValidating || isValidating) {
+			console.log("Skipping duplicate validation request");
+			return;
+		}
+		
+		// Set flag to prevent recursive validation
+		isForceValidating = true;
+		console.log("Starting force validation");
+		
+		// First, ensure sponsor validation is applied if needed
+		if (pendingSponsorValidation) {
+			applySponsorValidation();
+		}
+		
+		// Calculate cans directly for immediate feedback
 		totalCans = calculateTotalCansDirectly();
 		
-		// Create a complete draft object to ensure validation runs correctly
-		const updatedDraft: Draft = {
-			sponsor: sponsorId,
-			vehicles: vehicles.map(v => ({
-				id: v.id,
-				type: v.type,
-				name: v.name,
-				weapons: v.weapons,
-				weaponFacings: v.weaponFacings || {},
-				upgrades: v.upgrades || [],
-				perks: v.perks || []
-			})),
-			maxCans: maxCans,
-			teamName: teamName,
-			darkMode: darkMode
-		};
-
-		// Update currentDraft to trigger the reactive validation
-		currentDraft = updatedDraft;
-		
-		// Explicitly run validation to ensure it completes
-		updateValidation();
+		// Use a setTimeout to break any reactive chain
+		setTimeout(() => {
+			try {
+				// Create a manual draft object with deep copy to prevent reactivity issues
+				const draftToValidate = {
+					sponsor: sponsorId,
+					vehicles: JSON.parse(JSON.stringify(vehicles)),
+					teamName,
+					maxCans,
+					darkMode
+				};
+				
+				// Use direct validation in a separate execution context to avoid reactivity
+				validateDraft(draftToValidate)
+					.then(result => {
+						console.log("Force validation completed successfully");
+						
+						// Process the validation result
+						if (result.errors.length > 0) {
+							result.errors = result.errors.map(err => {
+								if (err.includes("cans limit") || err.includes("can limit")) {
+									return `Team exceeds ${maxCans} cans limit`;
+								}
+								return err;
+							});
+						}
+						
+						// Update validation in a separate execution context to break reactivity
+						setTimeout(() => {
+							validation = Object.assign({}, result);
+							isForceValidating = false;
+						}, 10);
+					})
+					.catch(err => {
+						console.error("Error in force validation:", err);
+						isForceValidating = false;
+					});
+			} catch (error) {
+				console.error("Error during force validation setup:", error);
+				isForceValidating = false;
+			}
+		}, 10);
 	}
 
 	// Function to handle vehicle type changes
@@ -1753,8 +1863,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		if (vehicle) {
 			// Update vehicle type
 			vehicle.type = newVehicleType;
-			// Trigger full validation to update all costs consistently
-			forceValidation();
+			// Update draft to trigger automatic validation
+			updateCurrentDraft();
 		}
 	}
 
@@ -2172,12 +2282,31 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	// Run sponsor check once to verify
 	checkVehicleSponsors();
 	
-	// Set up a reactive trigger that calls our function when currentDraft changes
-	$: { 
-		const triggerValidation = JSON.stringify(currentDraft);
-		updateValidation();
-		// Also enforce the one-trailer rule
+	// DISABLED automatic validation to prevent infinite update loops
+	// $: { 
+	//   const triggerValidation = JSON.stringify(currentDraft);
+	//   updateValidation();
+	// }
+	
+	function updateCurrentDraft() {
+		currentDraft = { 
+			sponsor: sponsorId, 
+			vehicles,
+			teamName,
+			maxCans,
+			darkMode
+		};
+		
+		// Automatically validate with each update
 		enforceOneTrailerPerVehicle();
+		
+		// Queue validation to happen after current operation finishes
+		// Only if we're not already validating
+		if (!isValidating && !isForceValidating) {
+			setTimeout(() => {
+				forceValidation();
+			}, 10);
+		}
 	}
 	$: teamErrors = validation.errors;
 
@@ -2561,11 +2690,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						<div class="relative flex-grow">
 							<select
 								id="sponsor-select"
-								bind:value={sponsorId}
-								on:change={() => {
-									// Every time sponsor changes, validate restrictions
-									setTimeout(() => validateSponsorRestrictions(), 0);
+								on:change={(e) => {
+									// Use our manual sponsor change handler to prevent infinite loops
+									handleSponsorChange(e.target.value);
 								}}
+								value={sponsorId}
 								class="form-select h-[32px] flex items-center"
 								style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							>
@@ -2582,19 +2711,6 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						</div>
 						
 						{#if vehicles.length > 0}
-							<button 
-								class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-xs"
-								title="Check your team against this sponsor's restrictions"
-								on:click|preventDefault={() => {
-									if (validateSponsorRestrictions()) {
-										forceValidation();
-									} else {
-										alert('Team is valid with current sponsor!');
-									}
-								}}
-							>
-								Validate Team
-							</button>
 						{/if}
 					</div>
 

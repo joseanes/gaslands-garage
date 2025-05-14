@@ -65,11 +65,11 @@
   },
   {
     "ruleName": "WIPEOUTS",
-    "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
+    "rule": "When a Ponderous vehicle suffers a Wipeout, the player to the left does not pivot it during the final step of the Wipeout process. Leave it in its current orientation.\n\nWAR RIG WIPEOUT\nWhen a War Rig suffers a Wipeout, a failed Flip check results in a Jackknife, rather than a Flip (because it is Articulated), and it doesn't get pivoted at the end of the Wipeout (because it is Ponderous)."
   },
   {
     "ruleName": "PILEDRIVER_ATTACK",
-    "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
+    "rule": "During this vehicle's Movement Step, when this vehicle collides with another vehicle of a lighter weight-class, it may declare a Piledriver Attack as its reaction. A Piledriver Attack counts as a Smash Attack in all regards, and also includes an additional effect.\nIf a vehicle is targeted with a Piledriver Attack, after resolving the Collision, the controller of the vehicle that made the Piledriver Attack may place the target vehicle anywhere within Short range of the target vehicle's original position, then pivot the target vehicle to face any direction, such that it does not collide with the active vehicle again during this Movement Step.\nIf the War Rig has a Ram on the appropriate facing, the piledriver attack does benefit from the Ram's special rules."
   }
   
 

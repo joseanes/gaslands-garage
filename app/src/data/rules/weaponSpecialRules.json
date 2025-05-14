@@ -50,6 +50,46 @@
     "id": "zero_crew",
     "ruleName": "Zero Crew",
     "rule": "<p>Certain game effects can reduce a vehicle’s Crew value. When a vehicle with zero Crew is selected to activate, it automatically changes down one Gear (to a minimum of Gear 1). During its Movement Step, only templates that are hazardous in the vehicle’s current Gear are permitted; in Gear Phases 1 and 2 the player must therefore select templates that are not normally permitted.</p>"
+  },
+  {
+    "id": "caltrop_dropper",
+    "ruleName": "Caltrop Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em> (see Terrain). The <strong>first</strong> vehicle that is affected by the Caltrops is attacked with a <strong>2D6</strong> attack; afterward remove the Caltrops template from play.</p>"
+  },
+  {
+    "id": "glue_dropper",
+    "ruleName": "Glue Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em>. Any vehicle affected by the Glue Dropper must reduce its current Gear by <strong>2</strong> at the end of its Movement Step. A single vehicle may not be affected by this weapon in two consecutive activations.</p>"
+  },
+  {
+    "id": "mine_dropper",
+    "ruleName": "Mine Dropper",
+    "rule": "<p>The <strong>first</strong> vehicle affected by this weapon is attacked with a <strong>4D6</strong> attack with <em>Blast</em>; then remove the Mine template from play.</p>"
+  },
+  {
+    "id": "napalm_dropper",
+    "ruleName": "Napalm Dropper",
+    "rule": "<p>The <strong>first</strong> vehicle affected by this weapon is attacked with a <strong>4D6</strong> attack with <em>Fire</em>; then remove the Napalm template from play.</p>"
+  },
+  {
+    "id": "oil_slick_dropper",
+    "ruleName": "Oil Slick Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em> (see Terrain).</p>"
+  },
+  {
+    "id": "rc_car_bombs",
+    "ruleName": "RC Car Bombs",
+    "rule": "<p>Place a tiny RC Car miniature (≤ 20 mm square) within <strong>Short</strong> range of the attacking vehicle, facing any direction. This triggers a Collision Window. The RC Car counts as a <em>lightweight</em> vehicle in Gear 3 with 1 Hull Point, 1 Crew and 0 Handling. It may shoot but cannot change Gear and does not count as part of the controlling player’s team.</p><p>If the RC Car is involved in a Collision or wipes out, it first suffers 1 damage. When it would be Wrecked, it instead <strong>explodes</strong>, rolling a <strong>4D6</strong> attack as if a middleweight vehicle.</p>"
+  },
+  {
+    "id": "sentry_gun",
+    "ruleName": "Sentry Gun",
+    "rule": "<p>Place a Sentry Gun within <strong>Short</strong> range of the attacking vehicle. It remains in play as a <em>lightweight destructible obstacle</em> with 2 Hull Points. At the end of any vehicle’s Movement Step, the Sentry Gun automatically makes a <strong>2D6</strong> attack against each vehicle (not on the droppers team) within <strong>Medium</strong> range, 360° Arc of Fire. Targets may Evade as normal. The Sentry Gun does not count toward scenario rules, Audience Votes, or perks.</p>"
+  },
+  {
+    "id": "smoke_dropper",
+    "ruleName": "Smoke Dropper",
+    "rule": "<p>The dropped-weapon template counts as an <em>obstruction</em> for Cover. While a vehicle is in contact with the template it is <em>Distracted</em>. If any part of a vehicle’s movement template or Final Position touches the template, that vehicle gains <strong>1 Hazard Token</strong> at the end of its Movement Step.</p>"
   }
   ]
   

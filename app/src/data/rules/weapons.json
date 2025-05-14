@@ -126,7 +126,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 2,
-    "specialRules": "AMMO 3, SMALL BURST, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, SMALL BURST, caltrop_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -138,7 +138,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 0,
-    "specialRules": "AMMO 1, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, glue_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -150,7 +150,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 4,
-    "specialRules": "AMMO 3, SMALL BURST, BLAST, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, SMALL BURST, BLAST, mine_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -162,7 +162,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 4,
-    "specialRules": "AMMO 3, SMALL BURST, FIRE, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, SMALL BURST, FIRE, napalm_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -174,7 +174,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 0,
-    "specialRules": "AMMO 3, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, oil_slick_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -186,7 +186,8 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 4,
-    "specialRules": "AMMO 3, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, rc_car_bombs",
+
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -198,7 +199,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 2,
-    "specialRules": "AMMO 3, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, sentry_gun",
     "dropped": true,
     "source": "Gaslands Refueled"
   },
@@ -210,7 +211,7 @@
     "type": "weapon",
     "range": "Dropped",
     "attackDice": 0,
-    "specialRules": "AMMO 3, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, smoke_dropper",
     "dropped": true,
     "source": "Gaslands Refueled"
   },

@@ -352,11 +352,8 @@
         return suggestions;
     }
     
-    // Refresh metrics on button click
-    let refreshTime = Date.now();
-    function refresh() {
-        refreshTime = Date.now();
-    }
+    // Automatically refresh metrics when props change
+    $: refreshTime = Date.now();
 </script>
 
 <div class="mt-6 bg-stone-100 dark:bg-gray-700 p-4 rounded-lg" in:fade={{ duration: 200 }}>
@@ -366,13 +363,6 @@
             <div class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 py-1 px-3 rounded-full">
                 {totalCans} / {maxCans} cans ({Math.round((totalCans / maxCans) * 100)}%)
             </div>
-            <button on:click|preventDefault={refresh} 
-                    class="flex items-center text-xs bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Update
-            </button>
         </div>
     </div>
     

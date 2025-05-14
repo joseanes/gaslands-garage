@@ -9,34 +9,45 @@
   let position = { top: 0, left: 0 };
   let showTooltip = false;
   
+  let positioningTimeout;
+  
   function positionTooltip() {
     if (!tooltipElement || !tooltipContent) return;
+    
+    // Clear any existing timeout to prevent cascading updates
+    if (positioningTimeout) clearTimeout(positioningTimeout);
     
     const rect = tooltipElement.getBoundingClientRect();
     const tooltipRect = tooltipContent.getBoundingClientRect();
     
-    // Calculate position centered above the element
-    position = {
+    // Create a new position object to avoid reactive updates if values are the same
+    const newPosition = {
       left: rect.left + rect.width / 2 - tooltipRect.width / 2,
       top: rect.top - tooltipRect.height - 10
     };
     
     // Adjust if tooltip would appear off-screen
-    if (position.left < 10) {
-      position.left = 10;
-    } else if (position.left + tooltipRect.width > window.innerWidth - 10) {
-      position.left = window.innerWidth - tooltipRect.width - 10;
+    if (newPosition.left < 10) {
+      newPosition.left = 10;
+    } else if (newPosition.left + tooltipRect.width > window.innerWidth - 10) {
+      newPosition.left = window.innerWidth - tooltipRect.width - 10;
     }
     
-    if (position.top < 10) {
+    if (newPosition.top < 10) {
       // If tooltip would appear above the viewport, position it below the element
-      position.top = rect.bottom + 10;
+      newPosition.top = rect.bottom + 10;
+    }
+    
+    // Only update if position has actually changed
+    if (newPosition.left !== position.left || newPosition.top !== position.top) {
+      position = newPosition;
     }
   }
   
   function handleMouseEnter() {
     showTooltip = true;
-    setTimeout(positionTooltip, 0);
+    // Delay positioning to ensure the tooltip is rendered first
+    positioningTimeout = setTimeout(positionTooltip, 10);
   }
   
   function handleMouseLeave() {
@@ -48,7 +59,9 @@
       event.preventDefault();
       showTooltip = !showTooltip;
       if (showTooltip) {
-        setTimeout(positionTooltip, 0);
+        // Use the managed positioning timeout
+        if (positioningTimeout) clearTimeout(positioningTimeout);
+        positioningTimeout = setTimeout(positionTooltip, 10);
       }
     }
     if (event.key === 'Escape' && showTooltip) {
@@ -56,14 +69,29 @@
     }
   }
   
+  // Event handlers for scroll and resize
+  function handleScroll() {
+    if (showTooltip) positionTooltip();
+  }
+  
+  function handleResize() {
+    if (showTooltip) positionTooltip();
+  }
+  
   onMount(() => {
-    window.addEventListener('scroll', () => {
-      if (showTooltip) positionTooltip();
-    });
+    // Add event listeners
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
     
-    window.addEventListener('resize', () => {
-      if (showTooltip) positionTooltip();
-    });
+    // Return cleanup function
+    return () => {
+      // Clear any pending timeout on unmount
+      if (positioningTimeout) clearTimeout(positioningTimeout);
+      
+      // Remove event listeners
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   });
 </script>
 
