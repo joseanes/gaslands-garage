@@ -58,6 +58,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 	let location = ''; // User's location for the players map
 	let showEquipmentDescriptions = true; // Whether to show equipment descriptions in printouts
 	let showPerkDescriptions = true; // Whether to show perk descriptions in printouts
+let showSpecialRules = true; // Whether to show vehicle special rules in printouts
 
 	// Rules acknowledgment modal state
 	let showRulesAcknowledgmentModal = false;
@@ -1056,6 +1057,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			printStyle: printStyle,
 			showEquipmentDescriptions: showEquipmentDescriptions,
 			showPerkDescriptions: showPerkDescriptions,
+			showSpecialRules: showSpecialRules,
 			// Include sponsor perks information
 			sponsor: currentSponsor,
 			sponsorPerks: {
@@ -1115,11 +1117,14 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						level: perk?.level || 1,
 						text: perk?.text || ''
 					};
-				})
+				}),
+				// Include vehicle rules for special rules descriptions
+				vehicleRules: vehicleRules
 			})),
 			// Add print settings
 			showEquipmentDescriptions: showEquipmentDescriptions,
-			showPerkDescriptions: showPerkDescriptions
+			showPerkDescriptions: showPerkDescriptions,
+			showSpecialRules: showSpecialRules
 		};
 
 		// Last chance to update print settings from localStorage if they've changed
@@ -1141,12 +1146,19 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 				showPerkDescriptions = storedPerkDesc === '1' || storedPerkDesc === 'true';
 				enhancedDraft.showPerkDescriptions = showPerkDescriptions;
 			}
+			
+			const storedSpecialRules = localStorage.getItem('user_show_special_rules');
+			if (storedSpecialRules !== null) {
+				showSpecialRules = storedSpecialRules === '1' || storedSpecialRules === 'true';
+				enhancedDraft.showSpecialRules = showSpecialRules;
+			}
 		}
 
 		console.log("Printing team with options:", {
 			printStyle,
 			showEquipmentDescriptions,
 			showPerkDescriptions,
+			showSpecialRules,
 			totalCans,
 			maxCans
 		});
@@ -1774,6 +1786,13 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 			console.log("[Builder] Loaded showPerkDescriptions from localStorage:", showPerkDescriptions);
 		}
 		
+		// SPECIAL RULES
+		const storedSpecialRules = localStorage.getItem('showSpecialRules') || localStorage.getItem('user_show_special_rules');
+		if (storedSpecialRules) {
+			showSpecialRules = storedSpecialRules === 'true' || storedSpecialRules === '1';
+			console.log("[Builder] Loaded showSpecialRules from localStorage:", showSpecialRules);
+		}
+		
 		// OTHER SETTINGS
 		const storedDarkMode = localStorage.getItem('darkMode');
 		if (storedDarkMode) {
@@ -1818,6 +1837,10 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 					showPerkDescriptions = settings.showPerkDescriptions;
 				}
 				
+				if (settings.showSpecialRules !== undefined) {
+					showSpecialRules = settings.showSpecialRules;
+				}
+				
 				// Other common settings
 				if (settings.darkMode !== undefined) darkMode = settings.darkMode;
 				if (settings.hasRules !== undefined) hasRules = settings.hasRules;
@@ -1851,7 +1874,8 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 		console.log("[Builder] Settings initialized:", {
 			printStyle,
 			showEquipmentDescriptions,
-			showPerkDescriptions
+			showPerkDescriptions,
+			showSpecialRules
 		});
 	}
 
@@ -2135,6 +2159,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
 						{weapons}
 						{upgrades}
 						{perks}
+						{vehicleRules}
 						{currentSponsor}
 						collapsed={collapsedVehicles.has(vehicle.id)}
 						{playMode}
@@ -2454,6 +2479,7 @@ import { saveTeam, getUserTeams } from '$lib/services/team';
       bind:printStyle
       bind:showEquipmentDescriptions
       bind:showPerkDescriptions
+      bind:showSpecialRules
       bind:showExperimentalFeatures
       bind:showOnPlayersMap
       bind:allowContactFromPlayers

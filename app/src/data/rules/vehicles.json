@@ -190,7 +190,8 @@
     "advanced": true,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "specialRules": "UPPERS, DOWNERS"
+    "specialRules": "UPPERS, DOWNERS",  
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty_s_bootleggers", "rutherford", "scarlett_annie", "the_highway_patrol", "verney", "warden"]
   },
   {
     "id": "monster_truck",

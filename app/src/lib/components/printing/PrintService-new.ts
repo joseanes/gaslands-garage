@@ -34,6 +34,7 @@ export function generatePrintableHtml(data: {
   qrCode?: string;
   showEquipmentDescriptions?: boolean;
   showPerkDescriptions?: boolean;
+  showSpecialRules?: boolean;
   printStyle?: string;
 }): string {
   const {
@@ -47,6 +48,7 @@ export function generatePrintableHtml(data: {
     qrCode,
     showEquipmentDescriptions = true,
     showPerkDescriptions = true,
+    showSpecialRules = true,
     printStyle = 'classic'
   } = data;
   
@@ -108,11 +110,28 @@ export function generatePrintableHtml(data: {
     const purchasedPerkClasses = new Set();
     if (vehicles && Array.isArray(vehicles)) {
       vehicles.forEach(vehicle => {
-        if (vehicle.perkObjects) {
+        // First try perkObjects (enhanced format)
+        if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
           vehicle.perkObjects.forEach((perk: any) => {
-            if (perk && perk.id) {
-              // Add the perk to the purchased list
+            // Try id, or if not available, try name
+            if (perk) {
+              if (perk.id) {
+                purchasedPerkClasses.add(perk.id);
+              } else if (perk.name) {
+                purchasedPerkClasses.add(perk.name);
+              }
+            }
+          });
+        }
+        // Fallback to perks array if perkObjects not available
+        else if (vehicle.perks && Array.isArray(vehicle.perks)) {
+          vehicle.perks.forEach((perk: any) => {
+            if (typeof perk === 'string') {
+              purchasedPerkClasses.add(perk);
+            } else if (perk && perk.id) {
               purchasedPerkClasses.add(perk.id);
+            } else if (perk && perk.name) {
+              purchasedPerkClasses.add(perk.name);
             }
           });
         }
@@ -121,8 +140,15 @@ export function generatePrintableHtml(data: {
 
     // Filter to only show purchased perks
     const filteredClassPerksList = classPerksList.filter(perk => {
-      if (perk && perk.id) {
-        return purchasedPerkClasses.has(perk.id);
+      if (perk) {
+        // Try to match by id
+        if (perk.id && purchasedPerkClasses.has(perk.id)) {
+          return true;
+        }
+        // Try to match by name
+        if (perk.name && purchasedPerkClasses.has(perk.name)) {
+          return true;
+        }
       }
       return false;
     });
@@ -542,10 +568,28 @@ export function generatePrintableHtml(data: {
     ` : ''}
 
     <!-- Perk Descriptions Section -->
-    ${showPerkDescriptions && sponsorPerksHtml ? `
+    ${sponsorPerksHtml ? `
     <div class="sponsor-perks-container">
       <h2>Perk Descriptions</h2>
       ${sponsorPerksHtml}
+    </div>
+    ` : ''}
+    
+    <!-- Vehicle Special Rules Section -->
+    ${showSpecialRules ? `
+    <div class="vehicle-rules-container" style="margin-top: 30px; page-break-before: auto; border-top: 2px solid #d97706; padding-top: 20px;">
+      <h2 style="color: #d97706; font-size: 24px; margin-bottom: 15px;">Vehicle Special Rules</h2>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead>
+          <tr>
+            <th style="width: 25%; text-align: left; border-bottom: 2px solid #d97706; padding: 10px; font-size: 16px;">Rule</th>
+            <th style="text-align: left; border-bottom: 2px solid #d97706; padding: 10px; font-size: 16px;">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${generateVehicleSpecialRulesHtml(vehicles)}
+        </tbody>
+      </table>
     </div>
     ` : ''}
 
@@ -584,6 +628,7 @@ function generateDashboardHtml(data: {
   qrCode?: string;
   showEquipmentDescriptions?: boolean;
   showPerkDescriptions?: boolean;
+  showSpecialRules?: boolean;
 }): string {
   const {
     teamName,
@@ -595,7 +640,9 @@ function generateDashboardHtml(data: {
     sponsorPerks,
     qrCode,
     showEquipmentDescriptions = true,
-    showPerkDescriptions = true
+    showPerkDescriptions = true,
+    showSpecialRules = true,
+    printStyle = 'classic'
   } = data;
   
   // Get sponsor description if available
@@ -1045,6 +1092,23 @@ function generateDashboardHtml(data: {
           </thead>
           <tbody>
             ${generatePerkDescriptionsHtml(vehicles, sponsorPerks)}
+          </tbody>
+        </table>
+      </div>
+      ` : ''}
+      
+      ${showSpecialRules ? `
+      <div class="special-rules-descriptions">
+        <h2 style="font-size: 24px; margin-bottom: 10px; color: #333;">Vehicle Special Rules</h2>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888; width: 25%;">Rule</th>
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #888;">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${generateVehicleSpecialRulesHtml(vehicles)}
           </tbody>
         </table>
       </div>
@@ -1662,6 +1726,80 @@ function generatePerkDescriptionsHtml(vehicles: any[], sponsorPerks: any): strin
 }
 
 /**
+ * Generate HTML table rows for vehicle special rules descriptions
+ */
+function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
+  if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
+    return '<tr><td colspan="2">No special rules found</td></tr>';
+  }
+  
+  // Collect all unique special rules
+  const specialRulesMap = new Map();
+  
+  vehicles.forEach(vehicle => {
+    // Get the vehicle type object (which contains the specialRules string)
+    const vehicleType = vehicle.vehicleType || {};
+    
+    if (vehicleType && vehicleType.specialRules) {
+      // Split the comma-separated rules
+      const rulesArray = vehicleType.specialRules.split(',').map(rule => rule.trim());
+      
+      rulesArray.forEach(ruleName => {
+        if (!specialRulesMap.has(ruleName)) {
+          // Find rule description if it exists
+          let ruleDescription = 'Description not available';
+          
+          if (vehicle.vehicleRules && Array.isArray(vehicle.vehicleRules)) {
+            // First, try with exact case matching
+            let ruleDetails = vehicle.vehicleRules.find(r => r.ruleName === ruleName);
+            
+            // If not found, try case-insensitive matching
+            if (!ruleDetails) {
+              ruleDetails = vehicle.vehicleRules.find(r => 
+                r.ruleName.toLowerCase() === ruleName.toLowerCase()
+              );
+            }
+            
+            // If found and has rule text, use it
+            if (ruleDetails && ruleDetails.rule) {
+              ruleDescription = ruleDetails.rule;
+            }
+            
+            // Debug info
+            console.log(`[PrintService] Looking for rule ${ruleName}, found: ${Boolean(ruleDetails)}`);
+          }
+          
+          specialRulesMap.set(ruleName, {
+            name: ruleName,
+            description: ruleDescription
+          });
+        }
+      });
+    }
+  });
+  
+  if (specialRulesMap.size === 0) {
+    return '<tr><td colspan="2">No special rules found</td></tr>';
+  }
+  
+  // Convert map to array and sort by rule name
+  const specialRulesArray = Array.from(specialRulesMap.values())
+    .sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Generate HTML for each rule
+  let rulesHtml = '';
+  specialRulesArray.forEach(rule => {
+    rulesHtml += `
+    <tr style="border-bottom: 1px solid #ddd;">
+      <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${rule.name}</td>
+      <td style="padding: 8px; text-align: left;">${rule.description && rule.description.includes('<p>') ? rule.description : `<p>${rule.description}</p>`}</td>
+    </tr>`;
+  });
+  
+  return rulesHtml || '<tr><td colspan="2">No special rules available</td></tr>';
+}
+
+/**
  * Main print function that generates and opens printable content in a new window
  */
 /**
@@ -1682,7 +1820,8 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
       firstVehicle: draft.vehicles?.[0] ? Object.keys(draft.vehicles[0]) : null,
       printStyle: draft.printStyle,
       showEquipmentDescriptions: draft.showEquipmentDescriptions,
-      showPerkDescriptions: draft.showPerkDescriptions
+      showPerkDescriptions: draft.showPerkDescriptions,
+      showSpecialRules: draft.showSpecialRules
     });
     
     // Basic validation
@@ -1712,7 +1851,10 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
       sponsorName: printData.sponsorName,
       vehicleCount: printData.vehicles.length,
       showEquipmentDescriptions: printData.showEquipmentDescriptions,
-      showPerkDescriptions: printData.showPerkDescriptions
+      showPerkDescriptions: printData.showPerkDescriptions,
+      showSpecialRules: printData.showSpecialRules,
+      vehicleRulesAvailable: printData.vehicles[0]?.vehicleRules ? true : false,
+      firstVehicleId: printData.vehicles[0]?.id || 'none'
     });
     
     // Call the generateDashboardHtml function to create the full dashboard HTML
@@ -1848,16 +1990,25 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       maxCans: draft.maxCans || 50,
       sponsorName: draft.sponsorName || 'No Sponsor',
       sponsor: draft.sponsor || null,
-      sponsorPerks: showPerkDescriptions ? (draft.sponsorPerks || null) : null,
+      // Always include sponsorPerks data, but control visibility in the templates
+      sponsorPerks: draft.sponsorPerks || null,
       vehicles: draft.vehicles,
       qrCode: qrCode,
       showEquipmentDescriptions: showEquipmentDescriptions,
-      showPerkDescriptions: showPerkDescriptions
+      showPerkDescriptions: showPerkDescriptions,
+      showSpecialRules: draft.showSpecialRules ?? true
     };
     
     // Make sure printStyle is passed correctly to the data
     printData.printStyle = printStyle;
     console.log("[PrintService-new] Using print style for HTML generation:", printStyle);
+    console.log("[PrintService-new] Print data settings:", {
+      showEquipmentDescriptions: printData.showEquipmentDescriptions,
+      showPerkDescriptions: printData.showPerkDescriptions,
+      showSpecialRules: printData.showSpecialRules,
+      vehicleRulesAvailable: printData.vehicles[0]?.vehicleRules ? true : false,
+      firstVehicleId: printData.vehicles[0]?.id || 'none'
+    });
     
     // Generate printable HTML
     const printHtml = generatePrintableHtml(printData);

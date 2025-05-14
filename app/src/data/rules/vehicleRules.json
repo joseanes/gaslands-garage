@@ -46,5 +46,15 @@
   {
     "ruleName": "TURRET",
     "rule": "<p>This vehicle may count one weapon as turret-mounted without paying for the upgrade.</p>"
+  },
+  {
+    "ruleName": "ROLL CAGE",
+    "rule": "<p>When this vehicle suffers a flip, this vehicle may choose to ignore 2 hits received from the flip.</p>"
+  },
+  {
+    "ruleName": "SLIP AWAY",
+    "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
   }
+  
+
 ]
