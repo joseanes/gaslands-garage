@@ -1622,55 +1622,21 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		sponsorId = noSponsorId;
 	}
 	
-	// When sponsor changes, check if any vehicles are no longer allowed with the new sponsor
-	$: {
+	// When sponsor changes, validate restrictions and clean up invalid components
+	$: if (sponsorId) {
 		// This reactive block will run whenever sponsorId changes
-		const invalidVehicles = vehicles.filter(v => {
-			const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
-			
-			// Vehicle is only invalid if:
-			// 1. We have a vehicle type definition, AND
-			// 2. It has a sponsors list, AND
-			// 3. The current sponsor is not in that list
-			if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
-				// Check if current sponsor is NOT in the list
-				return !vehicleType.sponsors.includes(sponsorId);
-			}
-			
-			// Vehicle type has no sponsor restrictions or doesn't exist
-			return false;
-		});
+		console.log(`Sponsor changed to: ${sponsorId}`);
 		
-		// If we found invalid vehicles, remove them and inform the user
-		if (invalidVehicles.length > 0) {
-			console.log(`Removing ${invalidVehicles.length} vehicles not available with sponsor ${sponsorId}`);
-			
-			// Get the names of the removed vehicles for the alert
-			const removedVehicleNames = invalidVehicles.map(v => {
-				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
-				return vehicleType ? vehicleType.name : v.type;
-			});
-			
-			// Remove the invalid vehicles
-			vehicles = vehicles.filter(v => {
-				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
-				
-				// Only filter if the vehicle has sponsor restrictions
-				if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
-					return vehicleType.sponsors.includes(sponsorId);
-				}
-				
-				// Keep vehicles with no sponsor restrictions
-				return true;
-			});
-			
-			// Force validation after removing vehicles
+		// Call our validation function which does all the checking and cleanup
+		// Always run validation on sponsor change
+		const changesRequired = validateSponsorRestrictions();
+		
+		// Force validation after any modifications
+		if (changesRequired) {
+			console.log("Changes were made during sponsor validation - updating validation");
 			forceValidation();
-			
-			// Inform the user about removed vehicles - but only if this isn't initial load
-			if (vehicles.length > 0) {
-				alert(`The following vehicles were removed because they're not available with the selected sponsor: ${removedVehicleNames.join(', ')}`);
-			}
+		} else {
+			console.log("No changes required for this sponsor");
 		}
 	}
 	
@@ -1873,6 +1839,219 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		}
 		
 		return totalCost;
+	}
+	
+	// Create a function to validate sponsor restrictions and clean up invalid components
+	function validateSponsorRestrictions() {
+		// Get the current sponsor object for capability checks
+		const currentSponsorObj = sponsors.find(s => s.id === sponsorId);
+		let changesRequired = false;
+		let removalMessages = [];
+		
+		console.log(`Validating for sponsor: ${currentSponsorObj?.name} (${sponsorId})`);
+		console.log(`Sponsor trailer support: ${currentSponsorObj?.trailer ? 'Yes' : 'No'}`);
+		console.log(`Sponsor electrical support: ${currentSponsorObj?.electrical ? 'Yes' : 'No'}`);
+		
+		// 1. Check for invalid vehicles based on sponsor restrictions
+		const invalidVehicles = vehicles.filter(v => {
+			const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+			
+			// Vehicle is only invalid if:
+			// 1. We have a vehicle type definition, AND
+			// 2. It has a sponsors list, AND
+			// 3. The current sponsor is not in that list
+			if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
+				// Check if current sponsor is NOT in the list
+				return !vehicleType.sponsors.includes(sponsorId);
+			}
+			
+			// Vehicle type has no sponsor restrictions or doesn't exist
+			return false;
+		});
+		
+		// If we found invalid vehicles, remove them and track for user notification
+		if (invalidVehicles.length > 0) {
+			console.log(`Removing ${invalidVehicles.length} vehicles not available with sponsor ${sponsorId}`);
+			changesRequired = true;
+			
+			// Get the names of the removed vehicles for the alert
+			const removedVehicleNames = invalidVehicles.map(v => {
+				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+				return vehicleType ? vehicleType.name : v.type;
+			});
+			
+			removalMessages.push(`Vehicles removed: ${removedVehicleNames.join(', ')}`);
+			
+			// Remove the invalid vehicles
+			vehicles = vehicles.filter(v => {
+				const vehicleType = vehicleTypes.find(vt => vt.id === v.type);
+				
+				// Only filter if the vehicle has sponsor restrictions
+				if (vehicleType && vehicleType.sponsors && vehicleType.sponsors.length > 0) {
+					return vehicleType.sponsors.includes(sponsorId);
+				}
+				
+				// Keep vehicles with no sponsor restrictions
+				return true;
+			});
+		}
+		
+		// 2. For remaining vehicles, check for invalid upgrades, weapons, and perks
+		let vehiclesWithChanges = [];
+		
+		const updatedVehicles = vehicles.map(vehicle => {
+			let vehicleChanged = false;
+			let vehicleTrailerRemoved = false;
+			const invalidUpgrades = [];
+			
+			// Check for electrical upgrades if sponsor doesn't support electrical
+			if (currentSponsorObj && !currentSponsorObj.electrical) {
+				const electricalUpgrades = vehicle.upgrades.filter(upId => {
+					const upgrade = upgrades.find(u => u.id === upId);
+					return upgrade && upgrade.electrical;
+				});
+				
+				if (electricalUpgrades.length > 0) {
+					vehicleChanged = true;
+					electricalUpgrades.forEach(upId => {
+						const upgrade = upgrades.find(u => u.id === upId);
+						if (upgrade) {
+							invalidUpgrades.push(upgrade.name);
+						}
+					});
+					
+					// Remove electrical upgrades
+					vehicle.upgrades = vehicle.upgrades.filter(upId => {
+						const upgrade = upgrades.find(u => u.id === upId);
+						return !(upgrade && upgrade.electrical);
+					});
+				}
+			}
+			
+			// Check for trailer upgrades if sponsor doesn't support trailers
+			if (currentSponsorObj && !currentSponsorObj.trailer) {
+				console.log(`Checking vehicle ${vehicle.name} for trailer upgrades (sponsor doesn't support trailers)`);
+				
+				// First, find any actual trailer upgrades
+				const actualTrailers = vehicle.upgrades.filter(upId => {
+					const upgrade = upgrades.find(u => u.id === upId);
+					return upgrade && (upgrade.trailer === true || upgrade.trailer === "true");
+				});
+				
+				// Then find trailer-specific upgrades
+				const trailerSpecificUpgrades = vehicle.upgrades.filter(upId => {
+					const upgrade = upgrades.find(u => u.id === upId);
+					return upgrade && upgrade.trailerUpgrade;
+				});
+				
+				const allTrailerUpgrades = [...actualTrailers, ...trailerSpecificUpgrades];
+				
+				console.log(`Found ${actualTrailers.length} trailer(s) and ${trailerSpecificUpgrades.length} trailer-specific upgrade(s)`);
+				
+				if (allTrailerUpgrades.length > 0) {
+					vehicleChanged = true;
+					if (actualTrailers.length > 0) vehicleTrailerRemoved = true;
+					
+					allTrailerUpgrades.forEach(upId => {
+						const upgrade = upgrades.find(u => u.id === upId);
+						if (upgrade) {
+							invalidUpgrades.push(upgrade.name);
+						}
+					});
+					
+					// Remove trailer-related upgrades
+					vehicle.upgrades = vehicle.upgrades.filter(upId => {
+						const upgrade = upgrades.find(u => u.id === upId);
+						return !(upgrade && 
+							((upgrade.trailer === true || upgrade.trailer === "true") || upgrade.trailerUpgrade));
+					});
+				}
+			}
+			
+			// Check for sponsor-limited upgrades
+			const limitedUpgrades = vehicle.upgrades.filter(upId => {
+				const upgrade = upgrades.find(u => u.id === upId);
+				return upgrade && upgrade.limited_sponsor && upgrade.limited_sponsor !== currentSponsorObj?.id;
+			});
+			
+			if (limitedUpgrades.length > 0) {
+				vehicleChanged = true;
+				limitedUpgrades.forEach(upId => {
+					const upgrade = upgrades.find(u => u.id === upId);
+					if (upgrade) {
+						invalidUpgrades.push(upgrade.name);
+					}
+				});
+				
+				// Remove sponsor-limited upgrades
+				vehicle.upgrades = vehicle.upgrades.filter(upId => {
+					const upgrade = upgrades.find(u => u.id === upId);
+					return !(upgrade && upgrade.limited_sponsor && upgrade.limited_sponsor !== currentSponsorObj?.id);
+				});
+			}
+			
+			// Check for electrical weapons if sponsor doesn't support electrical
+			if (currentSponsorObj && !currentSponsorObj.electrical) {
+				const electricalWeapons = vehicle.weapons.filter(weaponId => {
+					const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId;
+					const weapon = weapons.find(w => w.id === baseWeaponId);
+					return weapon && weapon.electrical;
+				});
+				
+				if (electricalWeapons.length > 0) {
+					vehicleChanged = true;
+					changesRequired = true;
+					const invalidWeaponNames = electricalWeapons.map(weaponId => {
+						const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId;
+						const weapon = weapons.find(w => w.id === baseWeaponId);
+						return weapon ? weapon.name : baseWeaponId;
+					});
+					
+					// Record weapon removal message
+					if (invalidWeaponNames.length > 0) {
+						removalMessages.push(`Electrical weapons removed from ${vehicle.name || "a vehicle"}: ${invalidWeaponNames.join(', ')}`);
+					}
+					
+					// Remove electrical weapons
+					vehicle.weapons = vehicle.weapons.filter(weaponId => {
+						const baseWeaponId = weaponId.includes('_') ? weaponId.split('_').slice(0, -1).join('_') : weaponId;
+						const weapon = weapons.find(w => w.id === baseWeaponId);
+						return !(weapon && weapon.electrical);
+					});
+				}
+			}
+			
+			// If we removed upgrades or made changes, track the vehicle and add to messages
+			if (vehicleChanged) {
+				changesRequired = true;
+				vehiclesWithChanges.push(vehicle.name || `Vehicle ${vehicle.id}`);
+				
+				if (vehicleTrailerRemoved) {
+					removalMessages.push(`Trailer removed from ${vehicle.name || "a vehicle"} (this sponsor doesn't support trailers)`);
+				}
+				
+				if (invalidUpgrades.length > 0) {
+					removalMessages.push(`Upgrades removed from ${vehicle.name || "a vehicle"}: ${invalidUpgrades.join(', ')}`);
+				}
+			}
+			
+			return vehicleChanged ? {...vehicle} : vehicle;
+		});
+		
+		// Update vehicles if any changes were needed
+		if (changesRequired) {
+			console.log(`Updating ${vehiclesWithChanges.length} vehicles with sponsor restriction changes`);
+			vehicles = updatedVehicles;
+			
+			// Inform the user about removed items
+			if (removalMessages.length > 0) {
+				alert(`The following items were removed because they're not available with the selected sponsor:\n\n${removalMessages.join('\n')}`);
+			}
+			
+			return true; // Return true to indicate changes were made
+		}
+		
+		return false; // Return false to indicate no changes were needed
 	}
 	
 	// Create a non-reactive function to update validation
@@ -2383,6 +2562,10 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 							<select
 								id="sponsor-select"
 								bind:value={sponsorId}
+								on:change={() => {
+									// Every time sponsor changes, validate restrictions
+									setTimeout(() => validateSponsorRestrictions(), 0);
+								}}
 								class="form-select h-[32px] flex items-center"
 								style="height: 32px !important; min-height: 32px !important; max-height: 32px !important;"
 							>
@@ -2397,6 +2580,22 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 								{/each}
 							</select>
 						</div>
+						
+						{#if vehicles.length > 0}
+							<button 
+								class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded text-xs"
+								title="Check your team against this sponsor's restrictions"
+								on:click|preventDefault={() => {
+									if (validateSponsorRestrictions()) {
+										forceValidation();
+									} else {
+										alert('Team is valid with current sponsor!');
+									}
+								}}
+							>
+								Validate Team
+							</button>
+						{/if}
 					</div>
 
 					{#if classPerksList.length > 0}
