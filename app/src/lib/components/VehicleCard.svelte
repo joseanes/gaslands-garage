@@ -10,6 +10,8 @@
     // Load weapon special rules
     const weaponSpecialRules = loadWeaponSpecialRules();
     
+    // Props are declared below, don't try to use them here
+    
     // Props
     export let vehicle: {
         id: string;
@@ -38,6 +40,11 @@
     export let filteredUpgrades = [];
     export let filteredPerks = [];
     export let usedBuildSlots: number = 0;
+    
+    // Now we can safely access the props
+    $: if (vehicleRules) {
+        console.log("VehicleCard received vehicleRules:", vehicleRules.length);
+    }
 
     // Local state for hazard tokens that can be immediately updated
     let localHazardCount = hazardCount;
@@ -312,7 +319,22 @@
     }
     
     function getVehicleRuleDetails(ruleName: string) {
-        return vehicleRules.find(rule => rule.ruleName === ruleName);
+        if (!ruleName) return null;
+
+        // Clean the ruleName to handle potential variations
+        const cleanedRuleName = ruleName.trim();
+
+        // Try to find exact match first
+        const exactMatch = vehicleRules.find(rule => rule.ruleName === cleanedRuleName);
+        if (exactMatch) return exactMatch;
+
+        // If no exact match, try case-insensitive match
+        const caseInsensitiveMatch = vehicleRules.find(rule =>
+            rule.ruleName.toLowerCase() === cleanedRuleName.toLowerCase());
+        if (caseInsensitiveMatch) return caseInsensitiveMatch;
+        
+        // If still no match, return null
+        return null;
     }
 
     function getWeaponSpecialRuleDetails(ruleId: string) {
@@ -665,7 +687,8 @@
                     <!-- Special rules in Play Mode -->
                     {#if vehicleTypes.find(vt => vt.id === vehicle.type)?.specialRules}
                         {@const vType = vehicleTypes.find(vt => vt.id === vehicle.type)}
-                        {@const specialRules = vType?.specialRules?.split(',') || []}
+                        {@const specialRulesStr = vType?.specialRules || ''}
+                        {@const specialRules = specialRulesStr.split(',').map(rule => rule.trim()) || []}
 
                         {#each specialRules as ruleName}
                             {@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
@@ -674,7 +697,7 @@
                                 {#if ruleDetails}
                                     <div class="text-xs text-stone-500 dark:text-gray-400">{@html ruleDetails.rule}</div>
                                 {:else}
-                                    <div class="text-xs text-stone-500 dark:text-gray-400 italic">Unknown rule.</div>
+                                    <div class="text-xs text-stone-500 dark:text-gray-400 italic">Rule details not found for "{ruleName.trim()}".</div>
                                 {/if}
                             </div>
                         {/each}
@@ -987,7 +1010,8 @@
             <!-- Special Rules Section - Only in Edit Mode -->
             {#if vehicleTypes.find(vt => vt.id === vehicle.type)?.specialRules}
                 {@const vType = vehicleTypes.find(vt => vt.id === vehicle.type)}
-                {@const specialRules = vType?.specialRules?.split(',') || []}
+                {@const specialRulesStr = vType?.specialRules || ''}
+                {@const specialRules = specialRulesStr.split(',').map(rule => rule.trim()) || []}
                 <div class="mt-4">
                     <h3 class="text-sm font-bold text-stone-800 dark:text-gray-200 mb-1 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
                         <span class="bg-stone-300 dark:bg-gray-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Special Rules</span>
@@ -1005,7 +1029,7 @@
                                         {#if ruleDetails}
                                             <div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
                                         {:else}
-                                            <div class="text-stone-500 dark:text-gray-400 text-sm italic mt-1">Rule details not found.</div>
+                                            <div class="text-stone-500 dark:text-gray-400 text-sm italic mt-1">Rule details not found for "{ruleName.trim()}".</div>
                                         {/if}
                                     </div>
                                 </li>

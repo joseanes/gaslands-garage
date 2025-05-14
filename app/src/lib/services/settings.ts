@@ -20,6 +20,7 @@ export interface UserSettings {
   location?: string; // User's location for the players map
   showEquipmentDescriptions?: boolean; // Whether to show equipment descriptions in printouts
   showPerkDescriptions?: boolean; // Whether to show perk descriptions in printouts
+  showSpecialRules?: boolean; // Whether to show vehicle special rules in printouts
 }
 
 // Default settings
@@ -37,7 +38,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   allowContactFromPlayers: false, // Default to not allowing contact
   location: '', // Default to empty location
   showEquipmentDescriptions: true, // Default to showing equipment descriptions
-  showPerkDescriptions: true // Default to showing perk descriptions
+  showPerkDescriptions: true, // Default to showing perk descriptions
+  showSpecialRules: true // Default to showing special rules
 };
 
 /**

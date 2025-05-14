@@ -13,6 +13,7 @@
   export let printStyle = 'classic';
   export let showEquipmentDescriptions = false;
   export let showPerkDescriptions = false;
+  export let showSpecialRules = false;
   export let showExperimentalFeatures = false;
   export let showOnPlayersMap = false;
   export let allowContactFromPlayers = false;
@@ -45,10 +46,12 @@
         window.localStorage.setItem('user_print_style', printStyle);
         window.localStorage.setItem('user_show_equipment', showEquipmentDescriptions ? '1' : '0');
         window.localStorage.setItem('user_show_perks', showPerkDescriptions ? '1' : '0');
+        window.localStorage.setItem('user_show_special_rules', showSpecialRules ? '1' : '0');
         console.log("Print settings reactively saved to localStorage:", { 
           printStyle, 
           showEquipmentDescriptions, 
-          showPerkDescriptions 
+          showPerkDescriptions,
+          showSpecialRules 
         });
       } catch (e) {
         console.error("Error saving print settings to localStorage:", e);
@@ -88,18 +91,21 @@
               console.log("[SettingsMenu] Print settings: ", {
                 printStyle,
                 showEquipmentDescriptions,
-                showPerkDescriptions
+                showPerkDescriptions,
+                showSpecialRules
               });
               
               // EXPLICITLY SAVE MOST IMPORTANT SETTINGS TO LOCALSTORAGE
               localStorage.setItem('printStyle', printStyle);
               localStorage.setItem('showEquipmentDescriptions', String(showEquipmentDescriptions));
               localStorage.setItem('showPerkDescriptions', String(showPerkDescriptions));
+              localStorage.setItem('showSpecialRules', String(showSpecialRules));
               
               // ALSO SAVE WITH ALTERNATE NAMING FOR COMPATIBILITY
               localStorage.setItem('user_print_style', printStyle);
               localStorage.setItem('user_show_equipment', showEquipmentDescriptions ? '1' : '0');
               localStorage.setItem('user_show_perks', showPerkDescriptions ? '1' : '0');
+              localStorage.setItem('user_show_special_rules', showSpecialRules ? '1' : '0');
               
               // SAVE OTHER SETTINGS
               localStorage.setItem('darkMode', String(darkMode));
@@ -118,6 +124,7 @@
                     printStyle,
                     showEquipmentDescriptions,
                     showPerkDescriptions,
+                    showSpecialRules,
                     hasRules,
                     darkMode,
                     enableSponsorships,
@@ -262,11 +269,11 @@
                 class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
               />
               <label for="show-gaslands-math" class="ml-3 text-stone-800 dark:text-white font-medium">
-                Show Gaslands Math
+                Show Gaslands Coach
               </label>
             </div>
             <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-              Show or hide the Gaslands Math section at the bottom of the page.
+              Show or hide the Gaslands Coach section with team analysis and suggestions.
             </p>
           </div>
 
@@ -375,8 +382,23 @@
                   Show Perk Descriptions
                 </label>
               </div>
-              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8 mb-3">
                 Include descriptions of perks in the printout.
+              </p>
+
+              <div class="flex items-center">
+                <input
+                  type="checkbox"
+                  id="show-special-rules"
+                  bind:checked={showSpecialRules}
+                  class="w-5 h-5 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 rounded focus:ring-amber-500"
+                />
+                <label for="show-special-rules" class="ml-3 text-stone-800 dark:text-white font-medium">
+                  Show Special Rules
+                </label>
+              </div>
+              <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
+                Include descriptions of vehicle special rules in the printout.
               </p>
             </div>
           </div>

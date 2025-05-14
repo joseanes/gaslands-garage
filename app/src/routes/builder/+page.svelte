@@ -9,6 +9,7 @@
 	import Auth from '$lib/components/Auth.svelte';
 import SettingsMenu from '$lib/components/SettingsMenu.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
+	import Coach from '$lib/components/Coach.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	// Using new print approach - fixed import to avoid module collision with the function name
 	import { printTeam as printServiceFunc, printTeamDashboard } from '$lib/components/printing/PrintService-new';
@@ -2269,72 +2270,18 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	{/if}
 </div>
 {/if}
-<!-- Gaslands Math -->
+<!-- Gaslands Coach -->
 {#if showGaslandsMath && vehicles.length > 0}
-<div class="mt-6 bg-stone-100 dark:bg-gray-700 p-4 rounded-lg">
-	<h3 class="text-lg font-bold text-stone-800 dark:text-white mb-3">Gaslands Math:</h3>
-	<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Hull (Min/Avg/Max/Total)</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{#if vehicles.length > 0}
-					{Math.min(...vehicles.map(v => calculateMaxHull(v)))} /
-					{Math.round(vehicles.reduce((sum, v) => sum + calculateMaxHull(v), 0) / vehicles.length)} /
-					{Math.max(...vehicles.map(v => calculateMaxHull(v)))} /
-					{vehicles.reduce((total, v) => total + calculateMaxHull(v), 0)}
-				{:else}
-					0 / 0 / 0 / 0
-				{/if}
-			</div>
-		</div>
-
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Vehicle Attack Dice Per Turn (Min/Avg/Max/Total)</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{#if vehicles.length > 0}
-					{Math.min(...vehicles.map(v => calculateTotalAttackDice(v)))} /
-					{Math.round(vehicles.reduce((sum, v) => sum + calculateTotalAttackDice(v), 0) / vehicles.length)} /
-					{Math.max(...vehicles.map(v => calculateTotalAttackDice(v)))} /
-					{vehicles.reduce((total, v) => total + calculateTotalAttackDice(v), 0)}
-				{:else}
-					0 / 0 / 0 / 0
-				{/if}
-			</div>
-		</div>
-
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Gear (Min/Avg/Max)</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{#if vehicles.length > 0}
-					{Math.min(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0))} /
-					{Math.round(vehicles.reduce((sum, v) => sum + (vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0), 0) / vehicles.length)} /
-					{Math.max(...vehicles.map(v => vehicleTypes.find(vt => vt.id === v.type)?.maxGear || 0))}
-				{:else}
-					0 / 0 / 0
-				{/if}
-			</div>
-		</div>
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Weapons (Min/Avg/Max/Total)</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{#if vehicles.length > 0}
-					{Math.min(...vehicles.map(v => v.weapons.length))} /
-					{Math.round(vehicles.reduce((sum, v) => sum + v.weapons.length, 0) / vehicles.length)} /
-					{Math.max(...vehicles.map(v => v.weapons.length))} /
-					{vehicles.reduce((total, v) => total + v.weapons.length, 0)}
-				{:else}
-					0 / 0 / 0 / 0
-				{/if}
-			</div>
-		</div>
-		<div class="bg-stone-200 dark:bg-gray-600 p-3 rounded-lg text-center">
-			<div class="text-xs text-stone-600 dark:text-gray-300 uppercase font-semibold">Total Vehicles</div>
-			<div class="text-xl font-bold text-amber-600 dark:text-amber-400">
-				{vehicles.length}
-			</div>
-		</div>
-	</div>
-</div>
+    <Coach 
+        {vehicles}
+        {vehicleTypes}
+        {weapons}
+        {upgrades}
+        {perks}
+        currentSponsor={currentSponsor}
+        {totalCans}
+        {maxCans}
+    />
 {/if}
 
 <!-- QR Modal -->
