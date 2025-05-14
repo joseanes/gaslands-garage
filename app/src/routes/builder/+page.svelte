@@ -106,6 +106,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	// Find "No Sponsor" ID or use first sponsor as fallback
 	let sponsorId: string = sponsors.find(s => s.id === 'no_sponsor')?.id ?? sponsors[0]?.id ?? '';
 	let validation: Validation = { cans: 0, errors: [], vehicleReports: [] };
+	let totalCans = 0;
 	type Veh = { 
 		id: string; 
 		type: string; 
@@ -207,6 +208,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		
 		// Add to vehicles list - ensure reactivity by creating a new array
 		vehicles = [...vehicles, newVehicle];
+		
+		// Update totalCans immediately for better responsiveness
+		totalCans = calculateTotalCansDirectly();
 		console.log('vehicles', vehicles);
 		
 		// For immediate UI feedback, manually update the validation
@@ -242,6 +246,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		collapsedVehicles.delete(id);
 		collapsedVehicles = collapsedVehicles; // Trigger reactivity
 
+		// Update totalCans immediately for better responsiveness
+		totalCans = calculateTotalCansDirectly();
+		
 		// Force full validation to ensure consistency
 		// This will recalculate all costs properly
 		forceValidation();
@@ -270,6 +277,21 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 			return newWeaponId;
 		});
+        
+		// Start with the source vehicle's perks
+		const clonedPerks = [...sourceVehicle.perks];
+		
+		// Add any perks from upgrades that aren't already included
+		sourceVehicle.upgrades.forEach(upgradeId => {
+			const upgradeObj = upgrades.find(u => u.id === upgradeId);
+			if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+				upgradeObj.perks.forEach(perkId => {
+					if (!clonedPerks.includes(perkId)) {
+						clonedPerks.push(perkId);
+					}
+				});
+			}
+		});
 
 		// Create the cloned vehicle
 		const clonedVehicle = {
@@ -279,11 +301,14 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			weapons: clonedWeapons,
 			weaponFacings: clonedWeaponFacings,
 			upgrades: [...sourceVehicle.upgrades],
-			perks: [...sourceVehicle.perks]
+			perks: clonedPerks
 		};
 
 		// Add the cloned vehicle to the vehicles array
 		vehicles = [...vehicles, clonedVehicle];
+		
+		// Update totalCans immediately for better responsiveness
+		totalCans = calculateTotalCansDirectly();
 		
 		// For immediate UI feedback, manually update the validation
 		// Find the source vehicle report to copy its values
@@ -384,6 +409,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			}
 			return v;
 		});
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	function removeWeapon(vehicleId: string, weaponIndex: number) {
@@ -404,6 +432,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			}
 			return v;
 		});
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	function addUpgrade(vehicleId: string, upgradeId: string) {
@@ -423,6 +454,57 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			return; // Do not add the upgrade if it's electrical but sponsor doesn't support it
 		}
 		
+		// Validate trailer upgrades - only allow if sponsor supports them
+		if (upgradeObj.trailer && !(currentSponsor?.trailer)) {
+			console.warn(`Cannot add trailer upgrade ${upgradeObj.name} - current sponsor doesn't support trailers`);
+			return; // Do not add the upgrade if it's a trailer but sponsor doesn't support it
+		}
+		
+		// STRICT validation: Check if the vehicle already has a trailer upgrade (limit to one trailer per vehicle)
+		// This is a critical business rule: a vehicle can have at most ONE trailer upgrade
+		if (upgradeObj.trailer === true || upgradeObj.trailer === "true") {
+			// Search for ANY existing trailer upgrades on this vehicle
+			const existingTrailers = vehicle.upgrades.filter(upId => {
+				const up = upgrades.find(u => u.id === upId);
+				return up && (up.trailer === true || up.trailer === "true");
+			});
+			
+			// If ANY trailer upgrade exists, prevent adding another one
+			if (existingTrailers.length > 0) {
+				const trailerNames = existingTrailers.map(upId => {
+					const up = upgrades.find(u => u.id === upId);
+					return up ? up.name : upId;
+				});
+				console.warn(`Cannot add another trailer to vehicle ${vehicle.name || vehicle.id} - vehicle already has trailer: ${trailerNames.join(', ')}`);
+				return; // Strictly enforce: Do not add the upgrade if vehicle already has a trailer
+			}
+		}
+		
+		// Validate trailerUpgrade - only allow if vehicle has a trailer upgrade
+		if (upgradeObj.trailerUpgrade) {
+			// Check if the vehicle has any trailer upgrade
+			const hasTrailer = vehicle.upgrades.some(upId => {
+				const up = upgrades.find(u => u.id === upId);
+				return up && (up.trailer === "true" || up.trailer === true);
+			});
+			
+			if (!hasTrailer) {
+				console.warn(`Cannot add trailer-only upgrade ${upgradeObj.name} - vehicle does not have a trailer`);
+				return; // Do not add the upgrade if it's a trailer upgrade but vehicle has no trailer
+			}
+			
+			// Check if the vehicle already has a trailer upgrade (limit to one)
+			const hasTrailerUpgrade = vehicle.upgrades.some(upId => {
+				const up = upgrades.find(u => u.id === upId);
+				return up && up.trailerUpgrade;
+			});
+			
+			if (hasTrailerUpgrade) {
+				console.warn(`Cannot add trailer-only upgrade ${upgradeObj.name} - vehicle already has a trailer upgrade`);
+				return; // Do not add the upgrade if vehicle already has a trailer upgrade
+			}
+		}
+		
 		const currentBuildSlots = calculateUsedBuildSlots(vehicle);
 		const upgradeSlots = upgradeObj.slots;
 		
@@ -435,11 +517,35 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			return; // Do not add the upgrade if it would exceed build slots
 		}
 		
-		vehicles = vehicles.map(v =>
-			v.id === vehicleId ?
-			{ ...v, upgrades: [...v.upgrades, upgradeId] } :
-			v
-		);
+		// Process additional perks granted by this upgrade
+		let additionalPerks: string[] = [];
+		if (upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+			additionalPerks = upgradeObj.perks;
+		}
+		
+		vehicles = vehicles.map(v => {
+			if (v.id === vehicleId) {
+				const updatedVehicle = {
+					...v,
+					upgrades: [...v.upgrades, upgradeId]
+				};
+				
+				// If the upgrade has perks, add them to the vehicle
+				if (additionalPerks.length > 0) {
+					// Filter out any perks that the vehicle already has
+					const newPerks = additionalPerks.filter(perkId => !v.perks.includes(perkId));
+					if (newPerks.length > 0) {
+						updatedVehicle.perks = [...v.perks, ...newPerks];
+					}
+				}
+				
+				return updatedVehicle;
+			}
+			return v;
+		});
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	function removeUpgrade(vehicleId: string, upgradeIndex: number) {
@@ -450,6 +556,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		// Get the upgrade being removed
 		const upgradeId = vehicle.upgrades[upgradeIndex];
 		const upgradeObj = upgrades.find(u => u.id === upgradeId);
+		if (!upgradeObj) return;
 		
 		// Check if this is a 360 degree upgrade that's being removed
 		const is360Upgrade = upgradeObj && upgradeObj["360"] === true;
@@ -459,6 +566,27 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			...vehicle,
 			upgrades: vehicle.upgrades.filter((_, idx) => idx !== upgradeIndex)
 		};
+		
+		// Remove any perks granted by this upgrade
+		if (upgradeObj.perks && Array.isArray(upgradeObj.perks) && upgradeObj.perks.length > 0) {
+			// Check if other remaining upgrades also provide these perks
+			const remainingUpgradePerks = new Set<string>();
+			
+			// Collect all perks from remaining upgrades
+			updatedVehicle.upgrades.forEach(upId => {
+				const up = upgrades.find(u => u.id === upId);
+				if (up && up.perks && Array.isArray(up.perks)) {
+					up.perks.forEach(perkId => remainingUpgradePerks.add(perkId));
+				}
+			});
+			
+			// Remove perks that were provided by this upgrade and are not provided by any other upgrade
+			const perksToRemove = upgradeObj.perks.filter(perkId => !remainingUpgradePerks.has(perkId));
+			
+			if (perksToRemove.length > 0) {
+				updatedVehicle.perks = updatedVehicle.perks.filter(perkId => !perksToRemove.includes(perkId));
+			}
+		}
 		
 		// If removing a 360 upgrade, check remaining upgrades to see if vehicle still has any 360 capability
 		if (is360Upgrade) {
@@ -517,6 +645,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		vehicles = vehicles.map(v => 
 			v.id === vehicleId ? updatedVehicle : v
 		);
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	function addPerk(vehicleId: string, perkId: string) {
@@ -525,6 +656,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			{ ...v, perks: [...v.perks, perkId] } :
 			v
 		);
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	function removePerk(vehicleId: string, perkIndex: number) {
@@ -533,6 +667,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			{ ...v, perks: v.perks.filter((_, idx) => idx !== perkIndex) } :
 			v
 		);
+		
+		// Manual trigger validation update to ensure costs are recalculated
+		setTimeout(() => updateValidation(), 0);
 	}
 
 	// Calculate max hull points including modifiers from upgrades and perks
@@ -906,6 +1043,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 					console.error('[printWithRulesCheck] Error printing:', err);
 					isPrinting = false;
 				});
+			
+			// Manual trigger validation update to ensure costs are recalculated
+			setTimeout(() => updateValidation(), 0);
 		} else {
 			// Show the rules acknowledgment modal
 			console.log('[printWithRulesCheck] Rules not acknowledged, showing modal');
@@ -1314,7 +1454,32 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			window.importDraftFn = (draft) => {
 				if (draft) {
 					sponsorId = draft.sponsor;
-					vehicles = draft.vehicles;
+					
+					// Process imported vehicles to ensure perks from upgrades are included
+					const processedVehicles = draft.vehicles.map(vehicle => {
+						// Start with the vehicle's explicit perks
+						const allPerks = [...vehicle.perks];
+						
+						// Add any perks from the vehicle's upgrades
+						vehicle.upgrades.forEach(upgradeId => {
+							const upgradeObj = upgrades.find(u => u.id === upgradeId);
+							if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+								upgradeObj.perks.forEach(perkId => {
+									if (!allPerks.includes(perkId)) {
+										allPerks.push(perkId);
+									}
+								});
+							}
+						});
+						
+						// Return the vehicle with possibly updated perks
+						return {
+							...vehicle,
+							perks: allPerks
+						};
+					});
+					
+					vehicles = processedVehicles;
 
 					// Import team name if available
 					if (draft.teamName) {
@@ -1366,7 +1531,32 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		const draft = decodeDraft(importString.trim());
 		if (draft) {
 			sponsorId = draft.sponsor;
-			vehicles = draft.vehicles as Veh[];
+			
+			// Process imported vehicles to ensure perks from upgrades are included
+			const processedVehicles = (draft.vehicles as Veh[]).map(vehicle => {
+				// Start with the vehicle's explicit perks
+				const allPerks = [...vehicle.perks];
+				
+				// Add any perks from the vehicle's upgrades
+				vehicle.upgrades.forEach(upgradeId => {
+					const upgradeObj = upgrades.find(u => u.id === upgradeId);
+					if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+						upgradeObj.perks.forEach(perkId => {
+							if (!allPerks.includes(perkId)) {
+								allPerks.push(perkId);
+							}
+						});
+					}
+				});
+				
+				// Return the vehicle with possibly updated perks
+				return {
+					...vehicle,
+					perks: allPerks
+				};
+			});
+			
+			vehicles = processedVehicles;
 			
 			// Import team name if available
 			if (draft.teamName) {
@@ -1563,6 +1753,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 	// Function to force validation to run immediately
 	function forceValidation() {
+		// Calculate cans directly first for immediate feedback
+		totalCans = calculateTotalCansDirectly();
+		
 		// Create a complete draft object to ensure validation runs correctly
 		const updatedDraft: Draft = {
 			sponsor: sponsorId,
@@ -1582,10 +1775,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 		// Update currentDraft to trigger the reactive validation
 		currentDraft = updatedDraft;
-
-		// Let the validateDraft function handle the calculation
-		// This creates consistency between the UI and the validation system
-		// We'll get the updated values in the reactive declaration below
+		
+		// Explicitly run validation to ensure it completes
+		updateValidation();
 	}
 
 	// Function to handle vehicle type changes
@@ -1638,32 +1830,176 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 		return totalCost;
 	}
-	$: validateDraft(currentDraft).then((r) => {
-		// Create a copy of the validation result
-		const validationCopy = { ...r };
-
-		// Replace the max cans error with custom max cans if it exists
-		if (validationCopy.errors.length > 0) {
-			validationCopy.errors = validationCopy.errors.map(err => {
-				if (err.includes("cans limit") || err.includes("can limit")) {
-					return `Team exceeds ${maxCans} cans limit`;
+	// Create a non-reactive function to calculate current total cans directly
+	function calculateTotalCansDirectly() {
+		let totalCost = 0;
+		
+		// Calculate cost vehicle by vehicle
+		for (const vehicle of vehicles) {
+			// Get vehicle base cost
+			const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
+			if (!vehicleType) continue;
+			
+			// Add base vehicle cost
+			totalCost += vehicleType.baseCost || 0;
+			
+			// Add weapon costs
+			for (const weaponInstanceId of vehicle.weapons) {
+				const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
+				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
+					weaponInstanceId.substring(0, lastUnderscoreIndex) : 
+					weaponInstanceId;
+				const weaponObj = weapons.find(w => w.id === baseWeaponId);
+				if (weaponObj && weaponObj.cost) {
+					totalCost += weaponObj.cost;
 				}
-				return err;
+			}
+			
+			// Add upgrade costs
+			for (const upgradeId of vehicle.upgrades) {
+				const upgradeObj = upgrades.find(u => u.id === upgradeId);
+				if (upgradeObj && upgradeObj.cost) {
+					totalCost += upgradeObj.cost;
+				}
+			}
+			
+			// Add perk costs
+			for (const perkId of vehicle.perks) {
+				const perkObj = perks.find(p => p.id === perkId);
+				if (perkObj && perkObj.level) {
+					totalCost += perkObj.level; // Perk cost is its level
+				}
+			}
+		}
+		
+		return totalCost;
+	}
+	
+	// Create a non-reactive function to update validation
+	function updateValidation() {
+		// First calculate cans directly for immediate feedback
+		totalCans = calculateTotalCansDirectly();
+		
+		// Then run the full validation for rules checks
+		validateDraft(currentDraft).then((r) => {
+			// Create a copy of the validation result
+			const validationCopy = { ...r };
+
+			// Replace the max cans error with custom max cans if it exists
+			if (validationCopy.errors.length > 0) {
+				validationCopy.errors = validationCopy.errors.map(err => {
+					if (err.includes("cans limit") || err.includes("can limit")) {
+						return `Team exceeds ${maxCans} cans limit`;
+					}
+					return err;
+				});
+			}
+
+			// Check against custom max cans
+			if (validationCopy.cans > maxCans && !validationCopy.errors.some(e => e.includes("cans limit"))) {
+				validationCopy.errors.push(`Team exceeds ${maxCans} cans limit`);
+			}
+
+			// Update the validation object (non-reactively) but keep our directly calculated totalCans
+			validation = validationCopy;
+			
+			// Double-check if the direct calculation matches validation
+			if (Math.abs(totalCans - validationCopy.cans) > 0.1) {
+				console.warn(`Direct cans calculation (${totalCans}) differs from validation (${validationCopy.cans})`);
+			}
+
+			// Explicitly update the totalCans value for display and debug
+			console.log(`Team validation completed - Total cans: ${totalCans}`);
+		}).catch(err => {
+			console.error("Error in validation:", err);
+		});
+	}
+	
+	// Function to enforce the one-trailer-per-vehicle rule across the entire team
+	function enforceOneTrailerPerVehicle() {
+		let madeChanges = false;
+		
+		// Check each vehicle
+		vehicles = vehicles.map(vehicle => {
+			// Find trailer upgrades
+			const trailerUpgrades = vehicle.upgrades.filter(upId => {
+				const up = upgrades.find(u => u.id === upId);
+				return up && (up.trailer === true || up.trailer === "true");
 			});
+			
+			// If multiple trailers found, keep only the first one
+			if (trailerUpgrades.length > 1) {
+				console.warn(`Fixing invalid vehicle ${vehicle.name || vehicle.id} - detected ${trailerUpgrades.length} trailers`);
+				
+				// Keep only the first trailer upgrade
+				const keepTrailer = trailerUpgrades[0];
+				
+				// Create new upgrades array without the excess trailers
+				const filteredUpgrades = vehicle.upgrades.filter(upId => {
+					// Keep non-trailer upgrades
+					const up = upgrades.find(u => u.id === upId);
+					if (!up || !(up.trailer === true || up.trailer === "true")) return true;
+					
+					// Only keep the first trailer upgrade
+					return upId === keepTrailer;
+				});
+				
+				// Return fixed vehicle
+				madeChanges = true;
+				return {
+					...vehicle,
+					upgrades: filteredUpgrades
+				};
+			}
+			
+			return vehicle;
+		});
+		
+		// If changes were made, update validation
+		if (madeChanges) {
+			updateValidation();
 		}
-
-		// Check against custom max cans
-		if (validationCopy.cans > maxCans && !validationCopy.errors.some(e => e.includes("cans limit"))) {
-			validationCopy.errors.push(`Team exceeds ${maxCans} cans limit`);
+	}
+	
+	// Function to check vehicle sponsor restrictions (for debugging)
+	function checkVehicleSponsors() {
+		// Get the current sponsor
+		const currentSponsorObj = sponsors.find(s => s.id === sponsorId);
+		if (!currentSponsorObj) {
+			console.warn("No current sponsor found!");
+			return;
 		}
-
-		// Update the validation object
-		validation = validationCopy;
-
-		// Explicitly update the totalCans value for display and debug
-		console.log(`Team validation completed - Total cans: ${validationCopy.cans}`);
-	});
-	$: totalCans = validation.cans;
+		
+		console.log(`Checking vehicle restrictions for sponsor: ${currentSponsorObj.name} (${currentSponsorObj.id})`);
+		
+		// Check war rig specifically
+		const warRig = vehicleTypes.find(v => v.id === 'war_rig');
+		if (warRig) {
+			const canUseWarRig = !warRig.sponsors || warRig.sponsors.includes(currentSponsorObj.id);
+			console.log(`Can ${currentSponsorObj.name} use War Rig? ${canUseWarRig}`);
+			if (!canUseWarRig) {
+				console.log(`War Rig sponsors: ${warRig.sponsors?.join(', ')}`);
+			}
+		}
+		
+		// List all available vehicles for current sponsor
+		const availableVehicles = vehicleTypes.filter(v => 
+			!v.sponsors || v.sponsors.includes(currentSponsorObj.id)
+		);
+		
+		console.log(`Available vehicles for ${currentSponsorObj.name}: ${availableVehicles.map(v => v.name).join(', ')}`);
+	}
+	
+	// Run sponsor check once to verify
+	checkVehicleSponsors();
+	
+	// Set up a reactive trigger that calls our function when currentDraft changes
+	$: { 
+		const triggerValidation = JSON.stringify(currentDraft);
+		updateValidation();
+		// Also enforce the one-trailer rule
+		enforceOneTrailerPerVehicle();
+	}
 	$: teamErrors = validation.errors;
 
 	/* ---------- filtered assets based on settings ---------- */
@@ -1681,7 +2017,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		return true;
 	});
 
-	// Filter upgrades based on includeAdvanced setting and electrical property
+	// Filter upgrades based on includeAdvanced setting, electrical property, and trailer compatibility
 	$: filteredUpgrades = upgrades.filter(u => {
 		// Filter by advanced setting
 		if (!includeAdvanced && u.advanced) return false;
@@ -1691,6 +2027,29 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 		// Filter by sponsor restriction if applicable
 		if (u.limited_sponsor && u.limited_sponsor !== currentSponsor?.id) return false;
+
+		// Filter by trailer compatibility
+		if (u.trailer && !(currentSponsor?.trailer)) return false;
+
+		// Filter trailer-only upgrades (don't show in main list)
+		if (u.trailerUpgrade) return false;
+
+		return true;
+	});
+	
+	// Filter trailer upgrades - only for use on trailers
+	$: filteredTrailerUpgrades = upgrades.filter(u => {
+		// Filter by advanced setting
+		if (!includeAdvanced && u.advanced) return false;
+
+		// Filter by electrical property
+		if (u.electrical && !(currentSponsor?.electrical)) return false;
+
+		// Filter by sponsor restriction if applicable
+		if (u.limited_sponsor && u.limited_sponsor !== currentSponsor?.id) return false;
+		
+		// Only show trailer upgrades and only if sponsor supports trailers
+		if (!u.trailerUpgrade || !(currentSponsor?.trailer)) return false;
 
 		return true;
 	});
@@ -2171,6 +2530,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						{maxCans}
 						{filteredWeapons}
 						{filteredUpgrades}
+						filteredTrailerUpgrades={filteredTrailerUpgrades}
 						filteredPerks={availablePerks}
 						on:remove={e => removeVehicle(e.detail.id)}
 						on:clone={e => cloneVehicle(e.detail.id)}

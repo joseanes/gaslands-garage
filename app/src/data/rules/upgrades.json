@@ -6,7 +6,9 @@
     "slots": 1,
     "specialRules": "+2 HULL POINTS",
     "type": "upgrade",
-    "advanced": false, "hull": 2
+    "advanced": false,
+    "hull": 2,
+    "trailer": false
   },
   {
     "id": "experimental_nuclear_engine",
@@ -17,7 +19,8 @@
     "type": "upgrade",
     "advanced": false,
     "limited_sponsor": "mishkin",
-    "electrical":true
+    "electrical": true,
+    "trailer": false
   },
   {
     "id": "experimental_teleporter",
@@ -28,7 +31,8 @@
     "type": "upgrade",
     "advanced": false,
     "limited_sponsor": "mishkin",
-    "electrical":true
+    "electrical": true,
+    "trailer": false
   },
   {
     "id": "exploding_ram",
@@ -37,7 +41,8 @@
     "slots": 0,
     "specialRules": "AMMO 1, SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false
+    "advanced": false,
+    "trailer": false
   },
   {
     "id": "extra_crewmember",
@@ -46,7 +51,9 @@
     "slots": 0,
     "specialRules": "+1 CREW, UP TO A MAXIMUM OF TWICE THE VEHICLE’S STARTING CREW VALUE",
     "type": "upgrade",
-    "advanced": false, "crew": 1
+    "advanced": false,
+    "crew": 1,
+    "trailer": false
   },
   {
     "id": "improvised_sludge_thrower",
@@ -55,7 +62,8 @@
     "slots": 1,
     "specialRules": "SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false
+    "advanced": false,
+    "trailer": false
   },
   {
     "id": "nitro_booster",
@@ -64,7 +72,8 @@
     "slots": 0,
     "specialRules": "AMMO 1, SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false
+    "advanced": false,
+    "trailer": false
   },
   {
     "id": "ram",
@@ -73,7 +82,8 @@
     "slots": 1,
     "specialRules": "SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false
+    "advanced": false,
+    "trailer": false
   },
   {
     "id": "roll_cage",
@@ -82,7 +92,8 @@
     "slots": 1,
     "specialRules": "SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false
+    "advanced": false,
+    "trailer": false
   },
   {
     "id": "tank_tracks",
@@ -91,15 +102,119 @@
     "slots": 1,
     "specialRules": "-1 MAX GEAR, +1 HANDLING, SEE SPECIAL RULES",
     "type": "upgrade",
-    "advanced": false, "gear": -1, "handling": 1
+    "advanced": false,
+    "gear": -1,
+    "handling": 1,
+    "trailer": false
   },
   {
+    "360": true,
     "id": "turret_mounting",
     "name": "Turret Mounting for Weapon",
     "cost": 3,
     "slots": 0,
     "specialRules": "WEAPON GAINS 360 ARC OF FIRE",
     "type": "upgrade",
-    "advanced": false, "360": true
+    "advanced": false,
+    "trailer": false
+  },
+  {
+    "id": "trailerlw",
+    "name": "Trailer (Lightweight)",
+    "cost": 4,
+    "slots": 0,
+    "specialRules": "TRAILER, RESTRICTED, STOWAGE",
+    "type": "upgrade",
+    "advanced": false,
+    "trailer": "true",
+    "perks": [
+      "STOWAGE"
+    ]
+  },
+  {
+    "id": "trailermw",
+    "name": "Trailer (Mediumweight)",
+    "cost": 8,
+    "slots": -1,
+    "specialRules": "TRAILER, RESTRICTED, STOWAGE",
+    "type": "upgrade",
+    "advanced": false,
+    "trailer": "true",
+    "perks": [
+      "STOWAGE"
+    ]
+  },
+  {
+    "id": "trailerhw",
+    "name": "Trailer (Heavyweight)",
+    "cost": 12,
+    "slots": -3,
+    "specialRules": "TRAILER, RESTRICTED, STOWAGE",
+    "type": "upgrade",
+    "advanced": false,
+    "trailer": "true",
+    "perks": [
+      "STOWAGE"
+    ]
+  },
+  {
+    "id": "peach-moonshine",
+    "name": "Peach Moonshine",
+    "cost": 4,
+    "slots": 1,
+    "type": "upgrade",
+    "trailerUpgrade": true,
+    "advanced": false,
+    "effect": "This vehicle’s Molotov Cocktails count as having an infinite number of Ammo Tokens.",
+    "specialRules": "This vehicle’s Molotov Cocktails count as having an infinite number of Ammo Tokens.",
+    "trailer": false
+  },
+  {
+    "id": "sourmash-jet-booster",
+    "name": "Sourmash Jet Booster",
+    "cost": 4,
+    "slots": 1,
+    "type": "upgrade",
+    "trailerUpgrade": true,
+    "advanced": false,
+    "effect": "End of this vehicle’s Movement Step: if it has 5 + Hazard Tokens, immediately make a forced Long Straight forward move (ignores Over the Limit).",
+    "specialRules": "End of this vehicle’s Movement Step: if it has 5 + Hazard Tokens, immediately make a forced Long Straight forward move (ignores Over the Limit).",
+    "trailer": false
+  },
+  {
+    "id": "siphon-pump",
+    "name": "Siphon Pump",
+    "cost": 3,
+    "slots": 1,
+    "type": "upgrade",
+    "advanced": false,
+    "trailerUpgrade": true,
+    "effect": "Start of this vehicle’s Attack Step: may take up to one Hazard Token from each vehicle within Short range (even if Distracted) and place it on this vehicle.",
+    "specialRules": "Start of this vehicle’s Attack Step: may take up to one Hazard Token from each vehicle within Short range (even if Distracted) and place it on this vehicle.",
+    "trailer": false
+  },
+  {
+    "id": "old-fashioned-corn-liquor",
+    "name": "Old Fashioned Corn Liquor",
+    "cost": 2,
+    "slots": 1,
+    "type": "upgrade",
+    "advanced": false,
+    "trailerUpgrade": true,
+    "effect": "Whenever a vehicle within Medium range gains one or more Hazard Tokens, it gains one additional Hazard Token.",
+    "specialRules": "Whenever a vehicle within Medium range gains one or more Hazard Tokens, it gains one additional Hazard Token.",
+    "trailer": false
+  },
+  {
+    "id": "cattle-hammer",
+    "name": "Cattle-Hammer",
+    "cost": 3,
+    "slots": 1,
+    "type": "upgrade",
+    "advanced": false,
+    "trailerUpgrade": true,
+    "effect": "During the Wipeout Step, this vehicle may treat its current Gear as any value up to its max Gear (applies to collisions resolved in the Wipeout Step as well).",
+    "specialRules": "During the Wipeout Step, this vehicle may treat its current Gear as any value up to its max Gear (applies to collisions resolved in the Wipeout Step as well).",
+    "trailer": false
   }
 ]

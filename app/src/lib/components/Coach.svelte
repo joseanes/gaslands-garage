@@ -118,14 +118,19 @@
         if (!vehicles || !vehicles.length) return 0;
         
         let usedSlots = 0;
-        let totalSlots = 0;
+        let vehicleBaseSlots = 0; // Base slots from vehicle types
+        let slotModifiers = 0;   // Modifiers from upgrades with negative slots
         
         for (const vehicle of vehicles) {
             const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
             if (!vehicleType) continue;
             
-            totalSlots += vehicleType.buildSlots || 0;
+            // Track base vehicle slots
+            const baseSlots = vehicleType.buildSlots || 0;
+            vehicleBaseSlots += baseSlots;
+            
             let vehicleUsedSlots = 0;
+            let vehicleSlotModifiers = 0;
             
             // Add weapon slots
             if (vehicle.weapons) {
@@ -146,7 +151,7 @@
                 }
             }
             
-            // Add upgrade slots
+            // Process upgrade slots
             if (vehicle.upgrades) {
                 for (const upgradeId of vehicle.upgrades) {
                     if (['grenades'].includes(upgradeId)) {
@@ -155,13 +160,23 @@
                     
                     const upgradeObj = upgrades.find(u => u.id === upgradeId);
                     if (upgradeObj && upgradeObj.slots) {
-                        vehicleUsedSlots += upgradeObj.slots;
+                        // If slots are negative, it's a modifier that increases total slots
+                        if (upgradeObj.slots < 0) {
+                            vehicleSlotModifiers += Math.abs(upgradeObj.slots);
+                        } else {
+                            // Positive slots count as used
+                            vehicleUsedSlots += upgradeObj.slots;
+                        }
                     }
                 }
             }
             
             usedSlots += vehicleUsedSlots;
+            slotModifiers += vehicleSlotModifiers;
         }
+        
+        // Total available slots = base slots + slot modifiers from upgrades
+        const totalSlots = vehicleBaseSlots + slotModifiers;
         
         return totalSlots > 0 ? Math.round((usedSlots / totalSlots) * 100) : 0;
     }
@@ -401,7 +416,7 @@
             <div class="text-xl font-bold text-amber-600 dark:text-amber-400">
                 <Tooltip 
                     text={getSlotEfficiency() + '%'}
-                    content="<strong>Slot Efficiency</strong><p>Percentage of available weapon/upgrade slots used. Higher is better.</p><p>Improve by filling empty slots with weapons or upgrades.</p><p>Aim for: 70%+ (decent) or 90%+ (excellent)</p>"
+                    content="<strong>Slot Efficiency</strong><p>Percentage of available weapon/upgrade slots used. Higher is better.</p><p>Upgrade slots are modified by certain upgrades that provide additional slots (shown with negative slot values).</p><p>Improve by filling empty slots with weapons or upgrades.</p><p>Aim for: 70%+ (decent) or 90%+ (excellent)</p>"
                 />
             </div>
         </div>

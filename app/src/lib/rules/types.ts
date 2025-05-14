@@ -9,7 +9,8 @@ export const Sponsor = z.object({
   perksClasses: z.string().array().optional(), // New field for perk classes
   color: z.string().regex(/^#([0-9a-f]{3}){1,2}$/i),
   source: z.string().optional(),
-  electrical: z.boolean().optional().default(false) // Whether sponsor can use electrical items
+  electrical: z.boolean().optional().default(false), // Whether sponsor can use electrical items
+  trailer: z.boolean().optional().default(false) // Whether sponsor allows trailers
 });
 
 export type Sponsor = z.infer<typeof Sponsor>;
@@ -58,14 +59,18 @@ export const Upgrade = z.object({
   id: z.string(),
   name: z.string(),
   cost: z.number().int().nonnegative(),
-  slots: z.number().int().nonnegative(), // Changed from positive() to nonnegative() to allow 0
-  buildSlots: z.number().int().nonnegative().default(1), // Changed to match slots
-  specialRules: z.string(),
+  slots: z.number().int(), // Allowing negative values as they indicate additional build slots for trailers
+  buildSlots: z.number().int().default(1), // Allowing negative values to match slots behavior
+  specialRules: z.string().optional().default(""), // Make specialRules optional with empty default
   type: z.literal('upgrade'),
   advanced: z.boolean().optional().default(false),
   source: z.string().optional(),
   electrical: z.boolean().optional().default(false), // New field for electrical upgrades
   360: z.boolean().optional().default(false), // Whether the upgrade provides 360-degree firing arc
+  trailer: z.union([z.boolean(), z.string()]).optional(), // Whether this is a trailer upgrade
+  trailerUpgrade: z.union([z.boolean(), z.string()]).optional(), // Whether this upgrade can only be installed on trailers
+  perks: z.string().array().optional(), // List of perks that the upgrade grants to the vehicle
+  effect: z.string().optional(), // Description of the upgrade effect (alternative to specialRules)
   // Vehicle stat modifiers
   hull: z.number().int().optional(), // Hull points modifier
   gear: z.number().int().optional(), // Max gear modifier

@@ -60,7 +60,7 @@
     "advanced": false,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   },
   {
     "id": "heavy_truck",
@@ -92,7 +92,7 @@
     "advanced": false,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   },
 {
     "id": "drag_racer",
@@ -157,7 +157,7 @@
     "source": "Gaslands Refueled",
     "handling": 2,
     "specialRules": "INFURIATING JINGLE",
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   },
   {
     "id": "gyrocopter",
@@ -174,7 +174,7 @@
     "source": "Gaslands Refueled",
     "handling": 4,
     "specialRules": "AIRWOLF, AIRBORNE",
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   },
   {
     "id": "ambulance",
@@ -191,7 +191,7 @@
     "source": "Gaslands Refueled",
     "handling": 2,
     "specialRules": "UPPERS, DOWNERS",  
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   },
   {
     "id": "monster_truck",
@@ -257,7 +257,7 @@
     "advanced": true,
     "source": "Gaslands Refueled",
     "handling": 2,
-    "specialRules": "SEE WAR RIG RULES",
-    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rusty", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
+    "specialRules": "TANKER_ANCHOR, SLIDES, WIPEOUTS, PILEDRIVER_ATTACK, SEE WAR RIG RULES",
+    "sponsors": ["beverly", "idris", "inferno", "maxxine", "mishkin", "no_sponsor", "rustys", "rutherford", "scarlett", "highway_patrol", "verney", "warden"]
   }
 ]

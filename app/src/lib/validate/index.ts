@@ -136,8 +136,16 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
     });
     const weaponsCost = weaponDetails.reduce((s, w) => s + w.cost, 0);
 
-    // Calculate upgrade costs
-    const upgradesCost = (v.upgrades || []).reduce((s, u) => s + (u ? upgradeCost(u) : 0), 0);
+    // Calculate upgrade costs with detailed logging for trailer-related upgrades
+    const upgradeDetails = (v.upgrades || []).map(u => {
+      if (!u) return { id: 'unknown', cost: 0, isTrailer: false, isTrailerUpgrade: false };
+      const cost = upgradeCost(u);
+      const isTrailer = u.trailer === true || u.trailer === "true";
+      const isTrailerUpgrade = u.trailerUpgrade === true || u.trailerUpgrade === "true";
+      console.log(`Upgrade cost for ${u.name} (${u.id}): ${cost}, isTrailer: ${isTrailer}, isTrailerUpgrade: ${isTrailerUpgrade}`);
+      return { id: u.id, name: u.name, cost, isTrailer, isTrailerUpgrade };
+    });
+    const upgradesCost = upgradeDetails.reduce((s, u) => s + u.cost, 0);
 
     // Calculate perk costs
     const perksCost = v.perks.reduce((s, p) => s + (p ? perkCost(p) : 0), 0);
@@ -151,6 +159,7 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
       weaponsCost,
       weaponDetails,
       upgradesCost,
+      upgradeDetails,
       perksCost,
       totalCost: totalVehicleCost,
       weapons: v.instance.weapons,

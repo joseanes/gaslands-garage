@@ -54,6 +54,22 @@
   {
     "ruleName": "SLIP AWAY",
     "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
+  },
+  {
+    "ruleName": "TANKER_ANCHOR",
+    "rule": "<p>At the start of its activation, a Ponderous vehicle may gain 1 Hazard Token to skip its Movement Step. The massive vehicle may then increase its current Gear by 1.</p>"
+  },
+  {
+    "ruleName": "SLIDES",
+    "rule": "<p>When a Ponderous vehicle resolves a Slide result, it must ignore the Slide template: do not place it. Each Slide result provides a Hazard Token as normal.</p>"
+  },
+  {
+    "ruleName": "WIPEOUTS",
+    "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
+  },
+  {
+    "ruleName": "PILEDRIVER_ATTACK",
+    "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
   }
   
 

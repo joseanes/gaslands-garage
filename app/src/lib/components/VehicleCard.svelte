@@ -38,6 +38,7 @@
     export let hazardCount: number = 0;
     export let filteredWeapons = [];
     export let filteredUpgrades = [];
+    export let filteredTrailerUpgrades = [];
     export let filteredPerks = [];
     export let usedBuildSlots: number = 0;
     
@@ -679,7 +680,7 @@
                                 {/if}
                             </div>
                             {#if perk?.text}
-                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-2">{perk.text}</div>
+                                <div class="text-xs text-stone-500 dark:text-gray-400 mt-2">{@html perk.text}</div>
                             {/if}
                         </div>
                     {/each}
@@ -878,6 +879,9 @@
                                     {#if upgrade?.electrical}
                                         <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
                                     {/if}
+                                    {#if upgrade?.trailer === true || upgrade?.trailer === "true"}
+                                        <span class="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded ml-2">🚚 Trailer</span>
+                                    {/if}
                                 </div>
                                 {#if upgrade?.specialRules}
                                     <div class="text-stone-500 dark:text-gray-400 text-xs">
@@ -952,6 +956,106 @@
             </div>
         </div>
         
+        <!-- Trailer Upgrades section - Only shown when vehicle has a trailer -->
+        {#if vehicle.upgrades && vehicle.upgrades.some(upgradeId => {
+            const upgrade = upgrades.find(u => u.id === upgradeId);
+            return upgrade && (upgrade.trailer === true || upgrade.trailer === "true");
+        }) && !playMode}
+            <div class="mb-4 mt-6">
+                <h3 class="text-sm font-bold text-stone-800 dark:text-gray-200 mb-1 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+                    <span class="bg-amber-300 dark:bg-amber-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Trailer Upgrade</span>
+                    <span class="text-xs text-stone-500 dark:text-gray-400 ml-1">(limit 1)</span>
+                </h3>
+                
+                <!-- List current trailer upgrades -->
+                <ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
+                    {#each vehicle.upgrades.filter(upgradeId => {
+                        const upgrade = upgrades.find(u => u.id === upgradeId);
+                        return upgrade && upgrade.trailerUpgrade;
+                    }) as trailerUpgradeId, i}
+                        {@const upgrade = upgrades.find(u => u.id === trailerUpgradeId)}
+                        <li class="flex items-center justify-between bg-stone-50 px-3 py-2">
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <b><span class="text-stone-700 dark:text-gray-200 font-bold">
+                                        {upgrade?.name || trailerUpgradeId}
+                                    </span></b>
+                                    {#if upgrade?.electrical}
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
+                                    {/if}
+                                </div>
+                                {#if upgrade?.specialRules}
+                                    <div class="text-stone-500 dark:text-gray-400 text-xs">
+                                        {#each parseSpecialRules(upgrade.specialRules) as ruleId}
+                                            {@const ruleDetails = getWeaponSpecialRuleDetails(ruleId)}
+                                            <span class="inline-block mr-1">
+                                                <Tooltip
+                                                    text="{ruleDetails?.ruleName || ruleId}{parseSpecialRules(upgrade.specialRules).indexOf(ruleId) < parseSpecialRules(upgrade.specialRules).length - 1 ? ',' : ''}"
+                                                    content="{ruleDetails?.rule || `No description available for ${ruleDetails?.ruleName || ruleId}`}"
+                                                />
+                                            </span>
+                                        {/each}
+                                    </div>
+                                {/if}
+                                {#if upgrade?.effect}
+                                    <div class="text-stone-500 dark:text-gray-400 text-xs mt-1">{upgrade.effect}</div>
+                                {/if}
+                            </div>
+                            <button
+                                class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"
+                                on:click={() => {
+                                    // Find index in the main upgrades array and remove
+                                    const mainIndex = vehicle.upgrades.findIndex(id => id === trailerUpgradeId);
+                                    if (mainIndex >= 0) {
+                                        removeUpgrade(mainIndex);
+                                    }
+                                }}
+                                aria-label="Remove trailer upgrade"
+                            >
+                                <span>× Remove</span>
+                            </button>
+                        </li>
+                    {/each}
+                </ul>
+                
+                <!-- Add trailer upgrade dropdown -->
+                <!-- Only show add dropdown if no trailer upgrade is present -->
+                {#if !vehicle.upgrades.some(upgradeId => {
+                    const upgrade = upgrades.find(u => u.id === upgradeId);
+                    return upgrade && upgrade.trailerUpgrade;
+                })}
+                    <div class="relative">
+                        <label for="add-trailer-upgrade-{vehicle.id}" class="sr-only">Add a trailer upgrade</label>
+                        <select
+                            id="add-trailer-upgrade-{vehicle.id}"
+                            class="w-full py-1 px-2 border border-stone-300 rounded bg-white text-stone-800 appearance-none pr-10 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 text-sm"
+                            on:change={e => {
+                                const target = e.target as HTMLSelectElement;
+                                const upgradeId = target.value;
+                                if (upgradeId) {
+                                    addUpgrade(upgradeId);
+                                    // Reset selection and blur to force UI refresh
+                                    target.value = "";
+                                    target.blur();
+                                    setTimeout(() => {
+                                        // Force reactivity by recalculating slots
+                                        usedBuildSlots = calculateUsedBuildSlots(vehicle);
+                                    }, 50);
+                                }
+                            }}
+                        >
+                            <option value="" disabled selected>+ Add trailer upgrade</option>
+                            {#each filteredTrailerUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
+                                <option value={u.id}>{u.name}</option>
+                            {/each}
+                        </select>
+                    </div>
+                {:else}
+                    <p class="text-xs text-stone-500 dark:text-gray-400 italic px-2 mt-1">Only one trailer upgrade allowed per vehicle.</p>
+                {/if}
+            </div>
+        {/if}
+        
         <!-- Perks section - Hidden in Play Mode -->
         <div class="mb-4 mt-6" class:hidden={playMode}>
             <h3 class="text-sm font-bold text-stone-800 dark:text-gray-200 mb-1 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
@@ -972,7 +1076,7 @@
                                         <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
                                     {/if}
                                 </div>
-                                <span class="text-stone-500 dark:text-gray-400 text-xs block mt-1">{perk?.text || ""}</span>
+                                <span class="text-stone-500 dark:text-gray-400 text-xs block mt-1">{@html perk?.text || ""}</span>
                             </div>
                             <button
                                 class="py-0.25 px-2 flex items-center justify-center rounded transition-colors ml-2 flex-shrink-0 text-xs h-[1.5rem] red-button"
