@@ -25,8 +25,27 @@
   $: {
     if (showModal && !previousModalState) {
       // Modal was just opened
-      if (currentDraft && currentDraft.teamName) {
-        newTeamName = currentDraft.teamName;
+      console.log("Modal opened with currentDraft:", currentDraft);
+      
+      // Get the team name directly from window.teamName if available, or from currentDraft
+      if (typeof window !== 'undefined') {
+        try {
+          if (typeof window.teamName === 'string') {
+            newTeamName = window.teamName;
+            console.log("Got team name from window:", newTeamName);
+          } else if (currentDraft && currentDraft.teamName) {
+            newTeamName = currentDraft.teamName;
+            console.log("Got team name from currentDraft:", newTeamName);
+          } else {
+            // Set a default team name if none exists
+            newTeamName = "My Gaslands Team";
+            console.log("Using default team name");
+          }
+        } catch (e) {
+          console.error("Error getting team name:", e);
+          // Set a default team name if there's an error
+          newTeamName = "My Gaslands Team";
+        }
       }
     }
     previousModalState = showModal;
@@ -54,6 +73,8 @@
   // Save current team
   async function saveCurrentTeam() {
     if (!$user || !newTeamName.trim()) return;
+    
+    console.log("About to save team");
 
     // First check if a team with this name already exists
     const existingTeam = userTeams.find(team => team.teamName === newTeamName.trim());
@@ -64,36 +85,197 @@
       if (!confirmOverwrite) {
         return; // User canceled the overwrite
       }
-
-      // If user confirmed, delete the existing team first
+      
+      // Set isSaving flag
       isSaving = true;
-      try {
-        const deleteResult = await deleteTeam(existingTeam.id);
-        if (!deleteResult.success) {
-          console.error("Failed to delete existing team:", deleteResult.error);
-          alert(`Failed to overwrite team: ${deleteResult.error}`);
-          isSaving = false;
-          return;
-        }
-      } catch (error) {
-        console.error("Exception deleting existing team:", error);
-        alert(`Error overwriting team: ${error instanceof Error ? error.message : "Unknown error"}`);
-        isSaving = false;
-        return;
-      }
+      
+      // Note: We'll pass the existing team ID to saveTeam later
+      console.log(`User confirmed overwrite of team "${existingTeam.teamName}" with ID: ${existingTeam.id}`);
     } else {
       isSaving = true;
     }
 
     try {
+      let draftToSave = null;
+      
+      // Try to create a team with the most detailed data we can extract from the DOM
+      // This is the most reliable approach that doesn't depend on any window functions
+      const vehicleCards = document.querySelectorAll('.vehicle-card');
+      
+      if (vehicleCards && vehicleCards.length > 0) {
+        console.log("Found vehicle cards in DOM:", vehicleCards.length);
+        
+        // Get sponsor from any select we can find
+        const allSelects = document.querySelectorAll('select');
+        let sponsorId = 'miyazaki'; // Default fallback
+        
+        // Look for sponsor selects
+        for (const select of allSelects) {
+          const selectedOption = select.options[select.selectedIndex];
+          if (selectedOption && select.id && select.id.includes('sponsor')) {
+            sponsorId = select.value;
+            break;
+          }
+        }
+        
+        // Try to extract detailed vehicle information from the cards
+        const vehicles = [];
+        
+        // Process each vehicle card to extract as much info as possible
+        vehicleCards.forEach((card, index) => {
+          try {
+            // Basic vehicle structure
+            const vehicle = {
+              id: `vehicle_${index + 1}`,
+              type: 'car', // Default
+              weapons: [],
+              upgrades: [],
+              perks: [],
+              name: `Vehicle ${index + 1}`
+            };
+            
+            // Try to get vehicle type from select boxes within this card
+            const typeSelects = card.querySelectorAll('select');
+            for (const select of typeSelects) {
+              if (select.id && select.id.toLowerCase().includes('type')) {
+                vehicle.type = select.value || 'car';
+                break;
+              }
+            }
+            
+            // Try to find vehicle name from inputs
+            const nameInputs = card.querySelectorAll('input');
+            for (const input of nameInputs) {
+              if (input.placeholder && input.placeholder.toLowerCase().includes('name')) {
+                vehicle.name = input.value || `Vehicle ${index + 1}`;
+                break;
+              }
+            }
+            
+            // Look for weapon, upgrade, and perk lists
+            const weaponElements = card.querySelectorAll('.weapon-item, [data-weapon-id]');
+            if (weaponElements && weaponElements.length > 0) {
+              for (const element of weaponElements) {
+                // Try to extract weapon ID from data attribute or class
+                const weaponId = element.dataset.weaponId || element.id;
+                if (weaponId) {
+                  vehicle.weapons.push(weaponId);
+                }
+              }
+            }
+            
+            // Add this vehicle to our list
+            vehicles.push(vehicle);
+          } catch (error) {
+            console.error(`Error extracting data for vehicle ${index}:`, error);
+            // Add a basic vehicle as fallback
+            vehicles.push({
+              id: `vehicle_${index + 1}`,
+              type: 'car',
+              weapons: [],
+              upgrades: [],
+              perks: [],
+              name: `Vehicle ${index + 1}`
+            });
+          }
+        });
+        
+        // Get maxCans from input if available
+        let maxCans = 50; // Default
+        const maxCansInputs = document.querySelectorAll('input[type="number"]');
+        for (const input of maxCansInputs) {
+          if (input.id && input.id.toLowerCase().includes('cans')) {
+            maxCans = parseInt(input.value) || 50;
+            break;
+          }
+        }
+        
+        // Try to get window values as they are likely more accurate if available
+        if (typeof window !== 'undefined') {
+          // Use window global data if available
+          if (window.vehicles && Array.isArray(window.vehicles) && window.vehicles.length > 0) {
+            console.log("Found window.vehicles, using that instead of DOM extraction");
+            vehicles.length = 0; // Clear the array
+            window.vehicles.forEach(v => vehicles.push(JSON.parse(JSON.stringify(v))));
+          }
+          
+          if (window.sponsorId) {
+            sponsorId = window.sponsorId;
+          }
+          
+          if (window.maxCans) {
+            maxCans = window.maxCans;
+          }
+        }
+        
+        // Create the draft with the data we collected
+        draftToSave = {
+          sponsor: sponsorId,
+          vehicles: vehicles,
+          teamName: newTeamName.trim(),
+          maxCans: maxCans,
+          darkMode: document.documentElement.classList.contains('dark-mode')
+        };
+        
+        console.log("Created draft with visible vehicle cards:", draftToSave);
+      }
+      
+      // If no vehicles were found in DOM, offer to save a basic empty team
+      if (!draftToSave) {
+        if (confirm("Unable to detect existing vehicles. Would you like to save a basic team with a single empty vehicle?")) {
+          draftToSave = {
+            sponsor: "miyazaki",
+            vehicles: [
+              {
+                id: "vehicle_1",
+                type: "car",
+                weapons: [],
+                upgrades: [],
+                perks: [],
+                name: "Vehicle 1"
+              }
+            ],
+            teamName: newTeamName.trim(),
+            maxCans: 50,
+            darkMode: document.documentElement.classList.contains('dark-mode')
+          };
+        } else {
+          isSaving = false;
+          return;
+        }
+      }
+      
+      // Always use the new team name
+      draftToSave.teamName = newTeamName.trim();
+      
+      // Check that required properties exist, handling both sponsor and sponsorId
+      const hasSponsor = draftToSave.sponsor || draftToSave.sponsorId;
+      
+      if (!hasSponsor || !Array.isArray(draftToSave.vehicles)) {
+        console.error("Current draft is missing required fields:", draftToSave);
+        alert("Cannot save team: Team data is incomplete (missing sponsor or vehicles)");
+        isSaving = false;
+        return;
+      }
+      
+      // Make sure the draft has a sponsor property (for consistency)
+      if (!draftToSave.sponsor && draftToSave.sponsorId) {
+        draftToSave.sponsor = draftToSave.sponsorId;
+      }
+      
+      // Add the team name to the draft
+      draftToSave.teamName = newTeamName.trim();
+
       // Log info that might help identify issues
       console.log("Saving team with name:", newTeamName);
-      console.log("Current draft type:", typeof currentDraft);
-      console.log("Current draft has vehicles:",
-        currentDraft && Array.isArray(currentDraft.vehicles) ?
-        currentDraft.vehicles.length : "N/A");
+      console.log("Draft to save:", JSON.stringify(draftToSave, null, 2));
 
-      const result = await saveTeam(currentDraft, newTeamName);
+      // Pass the existing team ID if we're overwriting
+      const result = await saveTeam(
+        draftToSave, 
+        newTeamName,
+        existingTeam ? existingTeam.id : undefined
+      );
 
       if (result.success) {
         // Keep the name field populated with the team name for convenience
@@ -114,8 +296,175 @@
   
   // Load selected team
   function loadTeam(team) {
-    importDraft(team.teamData);
-    closeModal();
+    console.log('loadTeam called with:', team);
+    console.log('teamData structure:', JSON.stringify(team.teamData, null, 2));
+    
+    // Just log if functions are missing, but continue anyway
+    if (typeof window === 'undefined') {
+      console.error('Window object not available');
+    } else if (typeof window.importDraftFn !== 'function') {
+      console.error('importDraftFn not available on window object, will try prop-based method');
+    }
+    
+    // Make sure we have valid data before proceeding
+    if (!team || !team.teamData) {
+      console.error('Invalid team data:', team);
+      alert('Unable to load team: Invalid team data');
+      return;
+    }
+    
+    // Check the team structure - handle both sponsor and sponsorId (for backwards compatibility)
+    const sponsor = team.teamData.sponsor || team.teamData.sponsorId;
+    
+    if (!sponsor || !Array.isArray(team.teamData.vehicles)) {
+      console.error('Invalid team structure:', team.teamData);
+      alert('Unable to load team: Team data is missing required information');
+      return;
+    }
+    
+    // Create a normalized version of the team data with deep clone to avoid reference issues
+    const normalizedTeamData = JSON.parse(JSON.stringify({
+      ...team.teamData,
+      sponsor: sponsor,  // Ensure we always use 'sponsor' as the property name
+      teamName: team.teamName || "My Gaslands Team" // Include team name in normalized data
+    }));
+    
+    console.log("Prepared normalized team data for import:", normalizedTeamData);
+    
+    // Try direct page replacement approach
+    try {
+      console.log("Using direct vehicle injection technique");
+      
+      // Simulate a user selecting a sponsor and adding vehicles
+      if (typeof document !== 'undefined') {
+        // 1. First close the modal to get back to the main view
+        closeModal();
+        
+        // 2. Find the sponsor selection dropdown and set it to the team's sponsor
+        setTimeout(() => {
+          try {
+            // Find and select the sponsor
+            const sponsorSelects = document.querySelectorAll('select');
+            for (const select of sponsorSelects) {
+              if (select.id && select.id.toLowerCase().includes('sponsor')) {
+                // Set the sponsor value
+                select.value = normalizedTeamData.sponsor;
+                // Trigger change event
+                const event = new Event('change', { bubbles: true });
+                select.dispatchEvent(event);
+                console.log("Set sponsor to:", normalizedTeamData.sponsor);
+                break;
+              }
+            }
+            
+            // 3. Use the "Add Vehicle" button to add vehicles
+            const buttons = document.querySelectorAll('button');
+            let addVehicleButton = null;
+            
+            for (const button of buttons) {
+              if (button.textContent && button.textContent.toLowerCase().includes('add vehicle')) {
+                addVehicleButton = button;
+                break;
+              }
+            }
+            
+            // Add the vehicles one by one
+            if (addVehicleButton) {
+              const vehicleCount = normalizedTeamData.vehicles.length;
+              console.log(`Adding ${vehicleCount} vehicles...`);
+              
+              // Remove existing vehicles first (find and click 'Remove' buttons)
+              const removeButtons = document.querySelectorAll('button');
+              for (const button of removeButtons) {
+                if (button.textContent && button.textContent.toLowerCase().includes('remove') && 
+                    !button.textContent.toLowerCase().includes('remove weapon') &&
+                    !button.textContent.toLowerCase().includes('remove upgrade') &&
+                    !button.textContent.toLowerCase().includes('remove perk')) {
+                  button.click();
+                }
+              }
+              
+              // Add new vehicles and also set up a custom event to provide full vehicle details
+              for (let i = 0; i < vehicleCount; i++) {
+                addVehicleButton.click();
+              }
+              
+              console.log("Team loaded with basic structure");
+              
+              // Create and dispatch a custom event with the full team data
+              // This allows any listener to pick up the complete team data
+              try {
+                const teamDataEvent = new CustomEvent('gaslands-load-team-data', {
+                  detail: normalizedTeamData,
+                  bubbles: true
+                });
+                document.dispatchEvent(teamDataEvent);
+                console.log("Dispatched team data event with full details");
+              } catch (e) {
+                console.error("Failed to dispatch team data event:", e);
+              }
+              
+              // Find the team name input and set it
+              setTimeout(() => {
+                const teamNameInputs = document.querySelectorAll('input');
+                for (const input of teamNameInputs) {
+                  if (input.id && input.id.toLowerCase().includes('team')) {
+                    input.value = normalizedTeamData.teamName || "My Gaslands Team";
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                    break;
+                  }
+                }
+                
+                // Dispatch window event as fallback - do this in a timeout
+                // to avoid any jQuery event conflicts
+                if (typeof window !== 'undefined') {
+                  try {
+                    // Use a timeout to ensure this runs in a clean JS event cycle
+                    // This helps avoid jQuery conflicts
+                    setTimeout(() => {
+                      try {
+                        const event = new CustomEvent('gaslands-team-loaded', {
+                          detail: normalizedTeamData,
+                          bubbles: false // Avoid bubbling to prevent jQuery interference
+                        });
+                        window.dispatchEvent(event);
+                        console.log("Dispatched window team loaded event");
+                      } catch (innerError) {
+                        console.error("Error in delayed event dispatch:", innerError);
+                      }
+                    }, 10);
+                  } catch (e) {
+                    console.error("Failed to dispatch window event:", e);
+                  }
+                }
+              }, 200);
+            } else {
+              console.error("Could not find Add Vehicle button");
+              
+              // Fallback - just try the prop method
+              importDraft(normalizedTeamData);
+            }
+          } catch (e) {
+            console.error("Error during direct vehicle injection:", e);
+            
+            // Final fallback - use the prop-based approach
+            closeModal();
+            setTimeout(() => {
+              importDraft(normalizedTeamData);
+            }, 100);
+          }
+        }, 100);
+      } else {
+        // If document is not available, fall back to prop method
+        importDraft(normalizedTeamData);
+        closeModal();
+      }
+    } catch (error) {
+      console.error("Error importing team:", error);
+      alert("Error loading team. Please try again.");
+      closeModal();
+    }
   }
   
   // Delete team

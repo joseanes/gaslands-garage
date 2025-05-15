@@ -90,6 +90,43 @@
     "id": "smoke_dropper",
     "ruleName": "Smoke Dropper",
     "rule": "<p>The dropped-weapon template counts as an <em>obstruction</em> for Cover. While a vehicle is in contact with the template it is <em>Distracted</em>. If any part of a vehicle’s movement template or Final Position touches the template, that vehicle gains <strong>1 Hazard Token</strong> at the end of its Movement Step.</p>"
-  }
+  },
+  
+    {
+      "id": "harpoon",
+      "ruleName": "Harpoon",
+      "rule": "<p>This weapon’s hits cause <strong>no</strong> damage. Instead:</p><ul><li><strong>First</strong> uncancelled hit – the target vehicle is spun to face directly toward or away from the attacker (whichever is the smaller rotation), then resolve a Collision Window.</li><li><strong>Second & subsequent</strong> uncancelled hits – the target makes a forced Short Straight move toward the attacker.</li><li>If the target is a <em>heavier</em> weight class than the attacker, <em>the attacker</em> is spun and dragged instead.</li></ul>"
+    },
+    {
+      "id": "kinetic_super_booster",
+      "ruleName": "Kinetic Super Booster",
+      "rule": "<p><em>Mishkin teams only.</em> The target suffers no damage. For every uncancelled hit, immediately <strong>increase</strong> the target’s current Gear by 1 (no Hazard Tokens are added). The target’s Gear cannot exceed its max Gear.</p>"
+    },
+    {
+      "id": "magnetic_jammer",
+      "ruleName": "Magnetic Jammer",
+      "rule": "<p><em>Mishkin teams only.</em> The target vehicle may <strong>not discard ammo tokens</strong> during its next activation.</p>"
+    },
+    {
+      "id": "thumper",
+      "ruleName": "Thumper",
+      "rule": "<p><em>Mishkin teams only.</em> No facing is declared when bought. When this vehicle attacks with the Thumper, every <strong>other</strong> vehicle within <strong>Medium</strong> range (360° arc) must make a Flip check, counting its current Gear as 2 higher (maximum Gear 6).</p>"
+    },
+    {
+      "id": "wall_of_amplifiers",
+      "ruleName": "Wall of Amplifiers",
+      "rule": "<p>This weapon does <strong>not</strong> require a target. When fired it automatically causes <strong>one</strong> hit to every vehicle within <strong>Medium</strong> range (360° arc). Hits cause no damage and may be Evaded. For each uncancelled hit on a vehicle, the attacker chooses: either remove 1 Hazard Token from that vehicle or add 1 Hazard Token to it.</p>"
+    },
+    {
+      "id": "wreck_lobber",
+      "ruleName": "Wreck Lobber",
+      "rule": "<p>A trebuchet that launches wrecked cars!</p><ul><li><strong>Trebuchet&nbsp;mode</strong> – place a penny-sized marker within <strong>Double</strong> range of the fire arc, then roll a skid die:<br>&nbsp;&nbsp;• <em>Shift</em> → place a wrecked Car touching the marker; Collision Window.<br>&nbsp;&nbsp;• <em>Spin&nbsp;or&nbsp;Slide</em> → player to the left places the wreck within <strong>Short</strong> of the marker; Collision Window.<br>&nbsp;&nbsp;• <em>Hazard</em> → player to the left places the wreck touching the active vehicle; Collision Window.</li><li><strong>Low-loader</strong> – if this vehicle collides with a wreck it may gain 1 Ammo token for the Lobber.</li><li><strong>Dumper&nbsp;mode</strong> – instead of Trebuchet, fire as a rear-mounted <em>dropped</em> weapon: place a wreck touching the rear of the active vehicle (no Collision Window).</li></ul>"
+    },
+    {
+      "id": "wrecking_ball",
+      "ruleName": "Wrecking Ball",
+      "rule": "<p>This weapon needs no target. When fired, the vehicle immediately performs a <strong>T-Bone Collision</strong> with every vehicle and destructible obstacle within <strong>Short</strong> range (360° arc) in an order chosen by its controller.</p><ul><li>During these collisions all vehicles count as having no weapons or perks except the Wrecking Ball.</li><li>Other vehicles must declare an Evade reaction.</li><li>The Wrecking-Ball vehicle gains <strong>+2 Smash Attack dice</strong> in each collision and gains <em>no</em> Hazard Tokens.</li><li>Upgrades that modify collisions (e.g. Rams, Exploding Rams) do <em>not</em> apply.</li></ul>"
+    }
   ]
+  
   

@@ -1,0 +1,331 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/lib/draft/qr.ts</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/lib/draft</a> qr.ts</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/60</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">100% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>1/1</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/60</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a>
+<a name='L77'></a><a href='#L77'>77</a>
+<a name='L78'></a><a href='#L78'>78</a>
+<a name='L79'></a><a href='#L79'>79</a>
+<a name='L80'></a><a href='#L80'>80</a>
+<a name='L81'></a><a href='#L81'>81</a>
+<a name='L82'></a><a href='#L82'>82</a>
+<a name='L83'></a><a href='#L83'>83</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// app/src/lib/draft/qr.ts
+<span class="cstat-no" title="statement not covered" >import QRCode from 'qrcode';</span>
+<span class="cstat-no" title="statement not covered" >import { encodeDraft } from '$lib/draft/io';</span>
+import type { Draft } from '$lib/validate/model';
+&nbsp;
+<span class="cstat-no" title="statement not covered" >export async function draftToDataURL(draft: Draft): Promise&lt;string&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    if (!draft) {</span>
+<span class="cstat-no" title="statement not covered" >      console.error("[QR] Error: Draft is undefined or null");</span>
+<span class="cstat-no" title="statement not covered" >      throw new Error("Draft is undefined or null");</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+&nbsp;
+    // Create a simplified version of the draft to reduce URL size
+<span class="cstat-no" title="statement not covered" >    const simplifiedDraft = {</span>
+<span class="cstat-no" title="statement not covered" >      sponsor: draft.sponsor?.id || 'no_sponsor',</span>
+<span class="cstat-no" title="statement not covered" >      teamName: draft.teamName || 'Gaslands Team',</span>
+<span class="cstat-no" title="statement not covered" >      vehicles: (draft.vehicles || []).map(v =&gt; ({</span>
+<span class="cstat-no" title="statement not covered" >        id: v.id,</span>
+<span class="cstat-no" title="statement not covered" >        type: v.type,</span>
+<span class="cstat-no" title="statement not covered" >        name: v.name || 'Vehicle',</span>
+<span class="cstat-no" title="statement not covered" >        weapons: v.weapons || [],</span>
+<span class="cstat-no" title="statement not covered" >        upgrades: v.upgrades || [],</span>
+<span class="cstat-no" title="statement not covered" >        perks: v.perks || [],</span>
+<span class="cstat-no" title="statement not covered" >        weaponFacings: v.weaponFacings || {}</span>
+<span class="cstat-no" title="statement not covered" >      }))</span>
+<span class="cstat-no" title="statement not covered" >    };</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    const encoded = encodeDraft(simplifiedDraft);</span>
+<span class="cstat-no" title="statement not covered" >    if (!encoded) {</span>
+<span class="cstat-no" title="statement not covered" >      console.error("[QR] Error: Failed to encode draft");</span>
+<span class="cstat-no" title="statement not covered" >      throw new Error("Failed to encode draft");</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+&nbsp;
+    // Ensure location is available (web context)
+<span class="cstat-no" title="statement not covered" >    if (typeof location === 'undefined' || !location.origin) {</span>
+<span class="cstat-no" title="statement not covered" >      console.error("[QR] Error: Location not available");</span>
+      // Use a fallback URL base for server-side rendering contexts
+<span class="cstat-no" title="statement not covered" >      const baseUrl = "https://gaslandsgarage.com";</span>
+<span class="cstat-no" title="statement not covered" >      const url = `${baseUrl}/?draft=${encoded}`;</span>
+<span class="cstat-no" title="statement not covered" >      console.log("[QR] Using fallback base URL:", baseUrl);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      const qrDataUrl = await QRCode.toDataURL(url, {</span>
+<span class="cstat-no" title="statement not covered" >        margin: 1,</span>
+<span class="cstat-no" title="statement not covered" >        scale: 6,</span>
+<span class="cstat-no" title="statement not covered" >        errorCorrectionLevel: 'M'</span>
+<span class="cstat-no" title="statement not covered" >      });</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return qrDataUrl;</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    const url = `${location.origin}${location.pathname}?draft=${encoded}`;</span>
+<span class="cstat-no" title="statement not covered" >    console.log("[QR] Generating QR code for URL:", url.substring(0, 50) + "...");</span>
+<span class="cstat-no" title="statement not covered" >    console.log("[QR] Full URL length:", url.length);</span>
+&nbsp;
+    // Check if URL is too long (QR codes have data limitations)
+<span class="cstat-no" title="statement not covered" >    if (url.length &gt; 2000) {</span>
+<span class="cstat-no" title="statement not covered" >      console.warn("[QR] URL is very long (&gt; 2000 chars), which may affect QR code readability");</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    const qrDataUrl = await QRCode.toDataURL(url, {</span>
+<span class="cstat-no" title="statement not covered" >      margin: 1,</span>
+<span class="cstat-no" title="statement not covered" >      scale: 6,</span>
+<span class="cstat-no" title="statement not covered" >      errorCorrectionLevel: 'M' // Medium error correction level</span>
+<span class="cstat-no" title="statement not covered" >    });</span>
+&nbsp;
+    // Verify the data URL is valid
+<span class="cstat-no" title="statement not covered" >    if (!qrDataUrl || typeof qrDataUrl !== 'string' || !qrDataUrl.startsWith('data:image/')) {</span>
+<span class="cstat-no" title="statement not covered" >      console.error("[QR] Generated QR code is not a valid data URL");</span>
+<span class="cstat-no" title="statement not covered" >      throw new Error("Invalid QR code data URL");</span>
+<span class="cstat-no" title="statement not covered" >    }</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    console.log("[QR] Successfully generated QR code, data URL length:", qrDataUrl.length);</span>
+<span class="cstat-no" title="statement not covered" >    return qrDataUrl;</span>
+<span class="cstat-no" title="statement not covered" >  } catch (error) {</span>
+<span class="cstat-no" title="statement not covered" >    console.error("[QR] Error generating QR code:", error);</span>
+&nbsp;
+    // Return a fallback image - a visible "QR Error" image instead of 1x1 transparent pixel
+    // This creates an image with text "QR Error"
+<span class="cstat-no" title="statement not covered" >    return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAMAAAAOusbgAAAAe1BMVEUAAAAAAADd3d0AAAD///8KCgoWFhbZ2dmFhYX5+fnq6uru7u7i4uLW1tbNzc3Jycm6urqurq6lpaWZmZlmZmZdXV1VVVVMTEw+Pj42NjYuLi4mJiYeHh7Ly8uenp6NjY17e3txcXFeXl5AQEAzMzMhISGBgYFtbW1LS0tMX4CjAAAAAXRSTlMAQObYZgAAAtRJREFUaN7tmtFuo0AMRWcmjgkhGzqVV8qjEEL//wtrO5sCrWirVHl57oNl+TgexzZh53LkyJEjR478W3mz22Qrcrft9iLN3P4y7K5EjGVZ+p/LF7G8m/Pvr5cN8sXMw1Tsa2iijA5Z/lJQwT8k2QU4eSnOK3CyB+CUUlZ0Yw6yTxYtzkrn+Xhw6VJs/GBnPR/HPjg+2TzYB49Ey4gUfB/s+2CbM4JLh/kETtZpCe4McuhCYFqnafIupcSGxJSS9/hM2jHJSfr9WjGWnJTEK7Hnxa9Q7JbS7ZWCDVa2DQpb0N8QLN0+FvAWDLpHCMF+9uD3g8vG4J+LH0d3HEcEDxyDx2QE77keXFkXXJ6eBZe/D1NKFHwAcHN6FNx+DSw/A8yHAVtVXaItaStQFapcN8HRl2gm5yLlXBwYTU4+MxnqcHCWo3bG0QKAlaO2xlECWCxHJbEeHGQTGFg/BwbWAMA5ufyEDJPLz0hR56QFY2PcKnFZXnNQqVZXEm+qerTmCQxWvWLt0YJBVnI2cFB7qwUH65pqG4m1oVn1DK70BtKDh+aZXO0FXAIsa8FD8wwO2gsYwbPmkd03sIM1gEP7TI7WARj0HjwgGMBRe7AEvQPD+jtgVh8MDPXNQDUDqU8GVh/AVZHhGhhWfwDzAYH1HsyqI6s/gFn1FXDdBrM0OBpYNoG5DWZW3YNZ9RqY2mBWvQZm1asutALmJliaYFadVG+CpQ1m1dnAUR+C9QfgOzAMFFY9ENipQ/Bt98aqx3rlQfV5l3QXzKrn+n1bqc59kkQTTM3L1gNYPnrfluZFO+e7baqXgz03wNUCOBq4LNGTNsHVAngAmxtgXwGjFSz1e6tNMC2AsQXGJlgWwNCeJPOKON+9uZy/B04urcHT9YrE4j2CXY4cOXLkyP9TfgDWzY0+5OyK2QAAAABJRU5ErkJggg==';</span>
+<span class="cstat-no" title="statement not covered" >  }</span>
+<span class="cstat-no" title="statement not covered" >}</span>
+&nbsp;
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2025-05-14T23:52:10.925Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    

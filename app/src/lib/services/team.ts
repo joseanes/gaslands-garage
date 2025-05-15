@@ -30,8 +30,9 @@ interface DeleteTeamResult {
 
 /**
  * Save a team to the user's account
+ * If existingTeamId is provided, it will overwrite that team instead of creating a new one
  */
-export async function saveTeam(teamData: Draft, teamName: string): Promise<SaveTeamResult> {
+export async function saveTeam(teamData: Draft, teamName: string, existingTeamId?: string): Promise<SaveTeamResult> {
   if (!browser) return { success: false, error: "Cannot run on server" };
   if (!auth?.currentUser) return { success: false, error: "User not authenticated" };
   
@@ -56,7 +57,7 @@ export async function saveTeam(teamData: Draft, teamName: string): Promise<SaveT
     };
     
     // Dynamically import Firestore functions
-    const { collection, addDoc, setDoc, doc } = await import('firebase/firestore');
+    const { collection, addDoc, setDoc, doc, query, where, getDocs } = await import('firebase/firestore');
     
     // Make sure Firebase is properly initialized before proceeding
     if (!db) {
@@ -66,20 +67,73 @@ export async function saveTeam(teamData: Draft, teamName: string): Promise<SaveT
     
     console.log("Firebase initialized, attempting to save document...");
     
-    // Try to ensure we have a valid collection reference
-    let teamsCollectionRef;
-    try {
-      teamsCollectionRef = collection(db, TEAMS_COLLECTION);
-    } catch (e) {
-      console.error("Failed to get collection reference:", e);
-      return { success: false, error: "Failed to access teams collection" };
+    // Check for existing team with same name (if we're not updating an existing team)
+    if (!existingTeamId) {
+      try {
+        console.log("Checking for existing teams with name:", teamName);
+        const teamsCollectionRef = collection(db, TEAMS_COLLECTION);
+        const q = query(
+          teamsCollectionRef, 
+          where("userId", "==", userId),
+          where("teamName", "==", teamName)
+        );
+        const existingTeamsSnapshot = await getDocs(q);
+        
+        if (!existingTeamsSnapshot.empty) {
+          console.log(`Found ${existingTeamsSnapshot.size} existing teams with name "${teamName}"`);
+          
+          // Get the first existing team and use its ID for the update
+          const existingTeam = existingTeamsSnapshot.docs[0];
+          existingTeamId = existingTeam.id;
+          console.log("Will update existing team with ID:", existingTeamId);
+          
+          // If there are additional teams with the same name, log a warning
+          if (existingTeamsSnapshot.size > 1) {
+            console.warn(`Multiple teams (${existingTeamsSnapshot.size}) with name "${teamName}" found. Using first one.`);
+          }
+        }
+      } catch (e) {
+        console.error("Error checking for existing teams:", e);
+        // Continue with regular save if this fails
+      }
     }
     
-    // Add the document to the teams collection
-    const docRef = await addDoc(teamsCollectionRef, teamDoc);
-    console.log("Team saved successfully with ID:", docRef.id);
-    
-    return { success: true, teamId: docRef.id };
+    // If we have an existing team ID, update it instead of creating a new one
+    if (existingTeamId) {
+      console.log("Updating existing team with ID:", existingTeamId);
+      const teamDocRef = doc(db, TEAMS_COLLECTION, existingTeamId);
+      
+      // For updates, we keep the original createdAt time
+      try {
+        const existingTeamDoc = await getDocs(doc(db, TEAMS_COLLECTION, existingTeamId));
+        if (existingTeamDoc.exists() && existingTeamDoc.data().createdAt) {
+          teamDoc.createdAt = existingTeamDoc.data().createdAt;
+        }
+      } catch (e) {
+        console.warn("Could not get original createdAt time, using current time instead:", e);
+      }
+      
+      // Update the existing document
+      await setDoc(teamDocRef, teamDoc);
+      console.log("Team updated successfully with ID:", existingTeamId);
+      return { success: true, teamId: existingTeamId };
+    } else {
+      // Create a new team document
+      // Try to ensure we have a valid collection reference
+      let teamsCollectionRef;
+      try {
+        teamsCollectionRef = collection(db, TEAMS_COLLECTION);
+      } catch (e) {
+        console.error("Failed to get collection reference:", e);
+        return { success: false, error: "Failed to access teams collection" };
+      }
+      
+      // Add the document to the teams collection
+      const docRef = await addDoc(teamsCollectionRef, teamDoc);
+      console.log("Team saved successfully with ID:", docRef.id);
+      
+      return { success: true, teamId: docRef.id };
+    }
   } catch (error) {
     console.error("Error saving team:", error);
     console.error("Error details:", error instanceof Error ? error.message : JSON.stringify(error));
@@ -122,10 +176,14 @@ export async function getUserTeams(): Promise<GetTeamsResult> {
     const teamsSnapshot = await getDocs(q);
     
     if (!teamsSnapshot.empty) {
-      const teams = teamsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const teams = teamsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log("Team data from Firestore:", data);
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
       
       // Sort by updated time, newest first
       teams.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());

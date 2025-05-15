@@ -183,7 +183,7 @@
     
     // Weapon analysis
     function getWeaponRanges() {
-        const ranges = { short: 0, medium: 0, long: 0, template: 0, dropped: 0 };
+        const ranges = { short: 0, medium: 0, long: 0, double: 0, template: 0, dropped: 0, burst: 0 };
         
         if (!vehicles || !vehicles.length) return ranges;
         
@@ -202,12 +202,16 @@
                         ranges.template++;
                     } else if (weaponObj.range?.includes('Dropped')) {
                         ranges.dropped++;
+                    } else if (weaponObj.range?.includes('Burst')) {
+                        ranges.burst++;
                     } else if (weaponObj.range?.includes('Short')) {
                         ranges.short++;
                     } else if (weaponObj.range?.includes('Medium')) {
                         ranges.medium++;
                     } else if (weaponObj.range?.includes('Long')) {
                         ranges.long++;
+                    } else if (weaponObj.range?.includes('Double')) {
+                        ranges.double++;
                     }
                 }
             }
@@ -472,6 +476,16 @@
                         {#if getWeaponRanges().long > 0}
                             <div class="py-1 px-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded text-xs">
                                 Long: {getWeaponRanges().long}
+                            </div>
+                        {/if}
+                        {#if getWeaponRanges().double > 0}
+                            <div class="py-1 px-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded text-xs">
+                                Double: {getWeaponRanges().double}
+                            </div>
+                        {/if}
+                        {#if getWeaponRanges().burst > 0}
+                            <div class="py-1 px-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded text-xs">
+                                Burst: {getWeaponRanges().burst}
                             </div>
                         {/if}
                         {#if getWeaponRanges().template > 0}

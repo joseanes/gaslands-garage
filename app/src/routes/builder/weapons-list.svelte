@@ -20,6 +20,9 @@
 			<li class="flex items-center justify-between bg-stone-50 px-3 py-2">
 				<div class="flex-1">
 					<span class="text-stone-700 font-medium">{weaponObj?.name || weaponId}</span>
+					{#if weaponObj?.attackDice}
+						<span class="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded ml-2">🎲 {weaponObj.attackDice}</span>
+					{/if}
 					<div class="flex items-center mt-1">
 						<span class="text-stone-500 text-xs mr-2">Facing:</span>
 						<select 

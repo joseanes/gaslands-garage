@@ -87,6 +87,30 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	onMount(async () => {
 		console.log("[Builder] IMMEDIATE onMount - Loading settings");
 		await initializeSettings();
+		
+		// Check if we have stored team data from a failed load attempt
+		try {
+			const storedTeamData = localStorage.getItem('gaslands-team-data');
+			if (storedTeamData) {
+				console.log("[Builder] Found stored team data, attempting to load");
+				// Parse the team data
+				const teamData = JSON.parse(storedTeamData);
+				
+				// Clear the storage immediately to prevent loops
+				localStorage.removeItem('gaslands-team-data');
+				
+				// Wait a moment for the page to fully initialize
+				setTimeout(() => {
+					// Dispatch an event to load this team data
+					document.dispatchEvent(new CustomEvent('gaslands-load-team-data', {
+						detail: teamData,
+						bubbles: true
+					}));
+				}, 300);
+			}
+		} catch (error) {
+			console.error("[Builder] Error loading stored team data:", error);
+		}
 	});
 
 	// Filter vehicle types based on includeAdvanced setting and sponsor restrictions
@@ -1212,7 +1236,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		const enhancedDraft = {
 			...currentDraft,
 			// Add extra data needed for printing
-			teamName: teamName,
+			teamName: teamName || "My Gaslands Team",
 			totalCans: validation.cans, // Use validation.cans directly for consistency
 			maxCans: maxCans,
 			sponsorName: currentSponsor?.name || 'No Sponsor',
@@ -1375,6 +1399,88 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	onMount(() => {
 		if (typeof window !== 'undefined') {
 			// Set up a custom event listener for menu commands
+			// Listen for custom team loading events
+			document.addEventListener('gaslands-load-team-data', (event) => {
+				console.log('[Event] Received gaslands-load-team-data event with full team data:', event.detail);
+				
+				if (event.detail) {
+					if (window.importDraftFn) {
+						console.log('[Event] Using window.importDraftFn to load team');
+						window.importDraftFn(event.detail);
+					} else {
+						console.log('[Event] importDraftFn not available, setting team data manually');
+						try {
+							// Set team properties directly
+							if (event.detail.sponsor) {
+								sponsorId = event.detail.sponsor;
+							}
+							
+							if (event.detail.teamName) {
+								teamName = event.detail.teamName;
+							}
+							
+							if (Array.isArray(event.detail.vehicles)) {
+								// Process vehicles - this is partial since we need to rebuild the vehicle UI
+								vehicles = event.detail.vehicles.map(v => ({
+									...v,
+									// Ensure these arrays always exist
+									weapons: Array.isArray(v.weapons) ? v.weapons : [],
+									upgrades: Array.isArray(v.upgrades) ? v.upgrades : [],
+									perks: Array.isArray(v.perks) ? v.perks : []
+								}));
+							}
+							
+							// Update maxCans if specified
+							if (event.detail.maxCans && typeof event.detail.maxCans === 'number') {
+								maxCans = event.detail.maxCans;
+							}
+							
+							// Update dark mode if specified
+							if (typeof event.detail.darkMode === 'boolean') {
+								darkMode = event.detail.darkMode;
+								if (darkMode) {
+									document.documentElement.classList.add('dark-mode');
+								} else {
+									document.documentElement.classList.remove('dark-mode');
+								}
+							}
+						} catch (error) {
+							console.error('[Event] Error setting team data manually:', error);
+						}
+					}
+				}
+			});
+			
+			// Also listen on window for backup
+			window.addEventListener('gaslands-team-loaded', (event) => {
+				console.log('[Event] Received gaslands-team-loaded window event:', event.detail);
+				if (event.detail && !window.importDraftFn) {
+					// Try to reload the page with the team data stored in localStorage
+					try {
+						// Ensure we're not being called from jQuery which might not have the right context
+						if (event.type !== 'gaslands-team-loaded') {
+							console.warn('Called with wrong event type, ignoring:', event.type);
+							return;
+						}
+						
+						// Store the data
+						localStorage.setItem('gaslands-team-data', JSON.stringify(event.detail));
+						
+						// Avoid using jQuery's reload or any method that might cause errors
+						console.log("Redirecting to same page to reload...");
+						
+						// Use a simple redirect instead of reload() to avoid any jQuery conflicts
+						if (typeof window !== 'undefined' && window.location) {
+							const currentUrl = window.location.href.split('#')[0]; // Remove any hash
+							window.location.replace(currentUrl);
+						}
+					} catch (error) {
+						console.error('[Event] Error storing team data for reload:', error);
+					}
+				}
+			});
+			
+			// Normal menu action listener
 			window.addEventListener('gaslands-menu-action', (event) => {
 				console.log('[Event] Received gaslands-menu-action event:', event.detail);
 				const { action } = event.detail || {};
@@ -1382,6 +1488,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				if (action === 'importBuild') {
 					console.log('[Event] Showing import modal from event');
 					showImportModal = true;
+				} else if (action === 'importDraft' && event.detail.draft) {
+					console.log('[Event] Importing draft from event');
+					// Call importDraftFn directly with the draft data
+					if (window.importDraftFn) {
+						window.importDraftFn(event.detail.draft);
+					}
 				} else if (action === 'generateQRCode') {
 					console.log('[Event] Showing QR modal from event');
 					generateQRCode();
@@ -1472,13 +1584,79 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			});
 
 			// Add functions for the Teams Modal in the layout
-			window.currentDraftFn = () => currentDraft;
+			// Make teamName available on the window object for other components to use
+			// Make all team variables available globally for other components
+			window.teamName = teamName;
+			window.sponsorId = sponsorId;
+			window.vehicles = vehicles;
+			window.maxCans = maxCans;
+			window.darkMode = darkMode;
+			
+			window.currentDraftFn = () => {
+				// Make sure we check for actual content, not just empty arrays
+				if (!sponsorId || !vehicles || vehicles.length === 0) {
+					console.log("currentDraftFn: No valid team data available yet");
+					return null;
+				}
+				// Create a current draft object with the current state
+				const currentState = {
+					sponsor: sponsorId,
+					vehicles: vehicles,
+					teamName: teamName || "My Gaslands Team",
+					maxCans: maxCans,
+					darkMode: darkMode
+				};
+				console.log("currentDraftFn returning:", currentState);
+				return currentState;
+			};
 			window.importDraftFn = (draft) => {
+				console.log("importDraftFn called with:", JSON.stringify(draft, null, 2));
+				
+				// Clear the current state to make sure we don't mix old and new data
 				if (draft) {
-					sponsorId = draft.sponsor;
-					
-					// Process imported vehicles to ensure perks from upgrades are included
-					const processedVehicles = draft.vehicles.map(vehicle => {
+					try {
+						// Make sure we have valid draft data
+						let draftData = draft;
+						
+						// If draft is wrapped in a teamData property, unwrap it
+						if (draft.teamData && typeof draft.teamData === 'object') {
+							console.log("Found nested teamData, using that instead");
+							draftData = draft.teamData;
+						}
+						
+						// Handle the case where we have sponsorId instead of sponsor (backward compatibility)
+						if (draftData && draftData.sponsorId && typeof draftData.sponsor === 'undefined') {
+							console.log("Found sponsorId instead of sponsor, normalizing");
+							draftData.sponsor = draftData.sponsorId;
+						}
+						
+						console.log("Draft structure check:", {
+							sponsorExists: draftData && (typeof draftData.sponsor !== "undefined" || typeof draftData.sponsorId !== "undefined"),
+							vehiclesExists: draftData && Array.isArray(draftData.vehicles),
+							vehiclesLength: draftData && draftData.vehicles ? draftData.vehicles.length : "N/A"
+						});
+						
+						// Ensure draft has all required properties
+						if (typeof draftData.sponsor === 'undefined' && typeof draftData.sponsorId === 'undefined') {
+							console.error("Missing sponsor in draft data");
+							return;
+						}
+						
+						// If we only have sponsorId, use that as sponsor
+						if (typeof draftData.sponsor === 'undefined' && typeof draftData.sponsorId !== 'undefined') {
+							draftData.sponsor = draftData.sponsorId;
+						}
+						
+						if (!Array.isArray(draftData.vehicles)) {
+							console.error("Vehicles is not an array in draft data");
+							return;
+						}
+						
+						// Set sponsor ID
+						sponsorId = draftData.sponsor;
+						
+						// Process imported vehicles to ensure perks from upgrades are included
+						const processedVehicles = draftData.vehicles.map(vehicle => {
 						// Start with the vehicle's explicit perks
 						const allPerks = [...vehicle.perks];
 						
@@ -1504,18 +1682,23 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 					vehicles = processedVehicles;
 
 					// Import team name if available
-					if (draft.teamName) {
-						teamName = draft.teamName;
+					if (draftData.teamName) {
+						teamName = draftData.teamName;
 					}
 
 					// Import maxCans if available
-					if (draft.maxCans) {
-						maxCans = draft.maxCans;
+					if (draftData.maxCans) {
+						maxCans = draftData.maxCans;
 					}
 
 					// Import darkMode if available
-					if (draft.darkMode !== undefined) {
-						darkMode = draft.darkMode;
+					if (draftData.darkMode !== undefined) {
+						darkMode = draftData.darkMode;
+					}
+					
+					// Close the try block
+					} catch (error) {
+						console.error("Error importing draft:", error);
 					}
 				}
 			};
@@ -1536,6 +1719,13 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				window.openTeamsModalFn = undefined;
 				window.currentDraftFn = undefined;
 				window.importDraftFn = undefined;
+				
+				// Clean up global team variables
+				window.teamName = undefined;
+				window.sponsorId = undefined;
+				window.vehicles = undefined;
+				window.maxCans = undefined;
+				window.darkMode = undefined;
 				
 				// Clean up direct function references
 				window.copyDraft = undefined;
@@ -1581,17 +1771,17 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			vehicles = processedVehicles;
 			
 			// Import team name if available
-			if (draft.teamName) {
+			if (draftData.teamName) {
 				teamName = draft.teamName;
 			}
 			
 			// Import maxCans if available
-			if (draft.maxCans) {
+			if (draftData.maxCans) {
 				maxCans = draft.maxCans;
 			}
 			
 			// Import darkMode if available
-			if (draft.darkMode !== undefined) {
+			if (draftData.darkMode !== undefined) {
 				darkMode = draft.darkMode;
 			}
 			

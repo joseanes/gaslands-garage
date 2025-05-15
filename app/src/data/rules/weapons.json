@@ -333,7 +333,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 5,
-    "specialRules": "SEE SPECIAL RULES",
+    "specialRules": "harpoon",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -345,7 +345,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 6,
-    "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, ELECTRICAL, kinetic_super_booster",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },
@@ -357,7 +357,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 0,
-    "specialRules": "ELECTRICAL, SEE SPECIAL RULES",
+    "specialRules": "ELECTRICAL, magnetic_jammer",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },
@@ -393,7 +393,7 @@
     "type": "weapon",
     "range": "Medium",
     "attackDice": 0,
-    "specialRules": "AMMO 1, ELECTRICAL, INDIRECT, 360-DEGREE, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, ELECTRICAL, INDIRECT, 360-DEGREE, thumper",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },
@@ -405,7 +405,7 @@
     "type": "weapon",
     "range": "Medium",
     "attackDice": 0,
-    "specialRules": "360-DEGREE ARC OF FIRE, SEE SPECIAL RULES",
+    "specialRules": "360-DEGREE ARC OF FIRE, wall_of_amplifiers",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -417,7 +417,7 @@
     "type": "weapon",
     "range": "Double/Dropped",
     "attackDice": 0,
-    "specialRules": "AMMO 3, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, wreck_lobber",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -429,7 +429,7 @@
     "type": "weapon",
     "range": "Short",
     "attackDice": 0,
-    "specialRules": "SEE SPECIAL RULES",
+    "specialRules": "wrecking_ball",
     "advanced": true,
     "source": "Gaslands Refueled"
   }

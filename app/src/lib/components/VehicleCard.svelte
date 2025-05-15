@@ -383,7 +383,7 @@
     }
 </script>
 
-<div class="bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-1" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
+<div class="vehicle-card bg-stone-200 dark:bg-gray-800 rounded-lg shadow-md overflow-hidden border-2 p-1 mb-1" style="border-color: {vehicleTypes.find(vt => vt.id === vehicle.type)?.color || '#f59e0b'};">
     <div class="px-4 py-3 bg-stone-100 dark:bg-gray-800 flex flex-wrap justify-between items-center">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-2 flex-grow w-full">
             <div class="form-group mb-0 flex-grow">
@@ -617,6 +617,12 @@
                             <div class="flex items-center">
                                 <span class="font-bold text-stone-700 dark:text-gray-300">{weaponObj?.name || baseWeaponId}</span>
                                 <span class="text-xs text-stone-500 dark:text-gray-400 ml-2">({facing})</span>
+                                {#if weaponObj?.range}
+                                    <span class="text-xs bg-stone-100 dark:bg-gray-600 text-stone-700 dark:text-gray-300 px-1.5 py-0.5 rounded ml-2">{weaponObj.range}</span>
+                                {/if}
+                                {#if weaponObj?.attackDice}
+                                    <span class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded ml-2">🎲 {weaponObj.attackDice}</span>
+                                {/if}
                                 {#if weaponObj?.electrical}
                                     <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
                                 {/if}
@@ -735,6 +741,12 @@
                                         <b><span class="text-stone-700 dark:text-gray-200 font-bold">
                                             {weaponObj?.name || baseWeaponId}
                                         </span></b>
+                                        {#if weaponObj?.range}
+                                            <span class="text-xs bg-stone-100 dark:bg-gray-600 text-stone-700 dark:text-gray-300 px-1.5 py-0.5 rounded ml-2">{weaponObj.range}</span>
+                                        {/if}
+                                        {#if weaponObj?.attackDice}
+                                            <span class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded ml-2">🎲 {weaponObj.attackDice}</span>
+                                        {/if}
                                         {#if weaponObj?.electrical}
                                             <span class="text-xs bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded ml-2">⚡ Electrical</span>
                                         {/if}
@@ -771,8 +783,6 @@
                                             
                                             <!-- Weapon facing controls -->
                                             <div class="flex items-center">
-                                                <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Dice:</span>
-                                                <span class="text-stone-700 dark:text-gray-200 text-xs mr-4">{weaponObj?.attackDice || 0}</span>
                                                 <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
                                                 
                                                 <select
@@ -834,7 +844,27 @@
                     disabled={!filteredWeapons.some(w => w.slots === 0) && usedBuildSlots >= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                 >
                     <option value="" disabled selected>+ Add weapon</option>
-                    {#each filteredWeapons.slice().sort((a, b) => a.name.localeCompare(b.name)) as w}
+                    
+                    <!-- Move Machine Gun to the top of the list -->
+                    {#if true}
+                        {@const machineGun = filteredWeapons.find(w => w.id === 'machine_gun')}
+                        {#if machineGun}
+                            {@const weaponSlots = machineGun.slots}
+                            {@const canAddWeapon = weaponSlots === 0 || usedBuildSlots + weaponSlots <= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
+                            <option
+                                value={machineGun.id}
+                                disabled={!canAddWeapon}
+                                class={!canAddWeapon ? 'text-gray-400' : ''}
+                            >
+                                {machineGun.name}
+                                {weaponSlots === 0 ? " (0 Slots)" : ` (${weaponSlots} slot${weaponSlots > 1 ? 's' : ''})`}
+                                {machineGun.cost ? ` (${machineGun.cost} cans)` : ""}
+                                {!canAddWeapon ? " - Insufficient slots" : ""}
+                            </option>
+                        {/if}
+                    {/if}
+                    
+                    {#each filteredWeapons.filter(w => w.id !== 'machine_gun').slice().sort((a, b) => a.name.localeCompare(b.name)) as w}
                         {@const weaponSlots = w.slots}
                         {@const canAddWeapon = weaponSlots === 0 || usedBuildSlots + weaponSlots <= (vehicleTypes.find(vt => vt.id === vehicle.type)?.buildSlots || 2)}
                         <option
@@ -844,6 +874,7 @@
                         >
                             {w.name}
                             {weaponSlots === 0 ? " (0 Slots)" : ` (${weaponSlots} slot${weaponSlots > 1 ? 's' : ''})`}
+                            {w.cost ? ` (${w.cost} cans)` : ""}
                             {!canAddWeapon ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
@@ -949,6 +980,7 @@
                         >
                             {u.name}
                             {upgradeSlots === 0 ? " (0 Slots)" : ` (${upgradeSlots} slot${upgradeSlots > 1 ? 's' : ''})`}
+                            {u.cost ? ` (${u.cost} cans)` : ""}
                             {!canAddUpgrade ? " - Insufficient slots" : ""}
                         </option>
                     {/each}
@@ -1046,7 +1078,7 @@
                         >
                             <option value="" disabled selected>+ Add trailer upgrade</option>
                             {#each filteredTrailerUpgrades.slice().sort((a, b) => a.name.localeCompare(b.name)) as u}
-                                <option value={u.id}>{u.name}</option>
+                                <option value={u.id}>{u.name}{u.cost ? ` (${u.cost} cans)` : ""}</option>
                             {/each}
                         </select>
                     </div>
@@ -1106,7 +1138,7 @@
                 >
                     <option value="" disabled selected>+ Add perk</option>
                     {#each filteredPerks.slice().sort((a, b) => a.name.localeCompare(b.name)) as p}
-                        <option value={p.id}>{p.name}</option>
+                        <option value={p.id}>{p.name}{p.cost ? ` (${p.cost} cans)` : ""}</option>
                     {/each}
                 </select>
             </div>

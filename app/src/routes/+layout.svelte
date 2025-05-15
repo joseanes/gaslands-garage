@@ -43,6 +43,11 @@
   // Hook for My Teams functionality
   function openTeamsModal() {
     if (typeof window !== 'undefined' && window.location.pathname.includes('/builder')) {
+      // Force re-creation of functions if they don't exist - will be defined in the Builder page
+      if (typeof window.currentDraftFn !== 'function' || typeof window.importDraftFn !== 'function') {
+        console.log("Functions not available, will proceed anyway");
+      }
+      
       // Directly open the Teams modal in the layout
       showTeamsModal = true;
     } else {
@@ -922,17 +927,40 @@
 
 <!-- Teams Modal -->
 {#if showTeamsModal && typeof window !== 'undefined' && window.location.pathname.includes('/builder')}
-  <!-- Log for debugging -->
+  <!-- Get the current draft data -->
   {@const draftValue = window.currentDraftFn ? window.currentDraftFn() : null}
   {@const _ = console.log('Opening Teams Modal with draft:', draftValue)}
+  {@const __ = console.log('importDraftFn exists:', typeof window.importDraftFn === 'function')}
 
   <TeamsModal
     bind:showModal={showTeamsModal}
     currentDraft={draftValue}
     importDraft={(draft) => {
-      if (typeof window !== 'undefined' && window.importDraftFn && draft) {
-        window.importDraftFn(draft);
-        console.log('Importing draft in TeamsModal:', draft);
+      console.log("importDraft prop called with:", JSON.stringify(draft, null, 2));
+      
+      // Try using custom event first (most reliable method)
+      if (typeof window !== 'undefined' && draft) {
+        try {
+          console.log("Using custom event to import draft");
+          window.dispatchEvent(new CustomEvent('gaslands-menu-action', {
+            detail: { 
+              action: 'importDraft',
+              draft: draft
+            }
+          }));
+          console.log('Draft import event dispatched');
+          
+          // Also try direct function call as fallback
+          if (window.importDraftFn) {
+            console.log("Also trying direct function call");
+            window.importDraftFn(draft);
+          }
+        } catch (error) {
+          console.error('Error importing draft:', error);
+          alert('There was an error loading the team. Please try again.');
+        }
+      } else {
+        console.error('Cannot import draft - window object not available or draft is null');
       }
     }}
   />
