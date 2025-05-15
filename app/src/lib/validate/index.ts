@@ -18,11 +18,21 @@ import {
 const DEFAULT_TEAM_CAP = 50;
 
 // Cached rule data to avoid repeated loading
+// Use explicit initialization to avoid test environment issues
 let cachedSponsors: any[] | null = null;
 let cachedVehicles: any[] | null = null;
 let cachedWeapons: any[] | null = null;
 let cachedUpgrades: any[] | null = null;
 let cachedPerks: any[] | null = null;
+
+// For testing - allows cache to be reset (not currently needed with new test approach)
+export function resetCache() {
+  cachedSponsors = null;
+  cachedVehicles = null;
+  cachedWeapons = null;
+  cachedUpgrades = null;
+  cachedPerks = null;
+}
 
 export async function validateDraft(draft: Draft): Promise<Validation> {
   // Use custom maxCans if provided, otherwise use default
