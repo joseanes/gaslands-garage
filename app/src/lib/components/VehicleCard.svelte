@@ -719,8 +719,9 @@
         
         <!-- Weapons section - Hidden in Play Mode -->
         <div class="mb-4" class:hidden={playMode}>
-            <h3 class="text-sm font-bold text-stone-800 dark:text-gray-200 mb-1 flex items-center border-b border-stone-300 dark:border-gray-600 pb-1">
+            <h3 class="text-sm font-bold text-stone-800 dark:text-gray-200 mb-1 flex items-center justify-between border-b border-stone-300 dark:border-gray-600 pb-1">
                 <span class="bg-stone-300 dark:bg-gray-600 px-2 py-0.5 rounded-t mr-2 text-xs uppercase">Weapons</span>
+                <span class="text-xs text-stone-500 dark:text-gray-400 md:hidden">📍= facing</span>
             </h3>
             
             {#if vehicle.weapons && vehicle.weapons.length === 0}
@@ -781,28 +782,29 @@
                                             ))}
                                             {@const isDropped = weaponObj?.dropped || (weaponObj?.range && weaponObj?.range.includes('Dropped'))}
                                             
-                                            <!-- Weapon facing controls -->
+                                            <!-- Weapon facing controls - Mobile optimized -->
                                             <div class="flex items-center">
-                                                <span class="text-stone-600 dark:text-gray-300 text-xs font-semibold uppercase mr-2">Facing:</span>
                                                 
                                                 <select
                                                     bind:value={vehicle.weaponFacings[weaponId]}
                                                     class="text-xs py-0.5 px-1 border border-stone-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-stone-800 dark:text-gray-200"
                                                     disabled={weaponObj?.facing === 'fixed' || isCrewFired || playMode}
+                                                    aria-label="Weapon facing direction"
+                                                    title="Weapon facing direction"
                                                 >
                                                     {#if isCrewFired}
                                                         <!-- Crew fired weapons must be 360° -->
-                                                        <option value="360">360°</option>
+                                                        <option value="360">📍 360°</option>
                                                     {:else if isDropped}
                                                         <!-- Dropped weapons can only be side or rear -->
-                                                        <option value="side">Side</option>
-                                                        <option value="rear">Rear</option>
+                                                        <option value="side">📍 Side</option>
+                                                        <option value="rear">📍 Rear</option>
                                                     {:else}
                                                         <!-- Standard weapons -->
-                                                        <option value="front">Front</option>
-                                                        <option value="side">Side</option>
-                                                        <option value="rear">Rear</option>
-                                                        <option value="360" disabled={!has360Upgrade}>360°</option>
+                                                        <option value="front">📍 Front</option>
+                                                        <option value="side">📍 Side</option>
+                                                        <option value="rear">📍 Rear</option>
+                                                        <option value="360" disabled={!has360Upgrade}>📍 360°</option>
                                                     {/if}
                                                 </select>
                                             </div>

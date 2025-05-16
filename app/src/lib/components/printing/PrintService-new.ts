@@ -99,7 +99,7 @@ export function generatePrintableHtml(data: {
     if (perksClasses.length > 0) {
       sponsorPerksHtml += `
       <div class="sponsor-perks-section">
-        <h3>${sponsorName} Perk Classes</h3>
+        <h3>Available Perk Classes</h3>
         <p>${perksClasses.join(', ')}</p>
       </div>`;
     }
@@ -156,7 +156,7 @@ export function generatePrintableHtml(data: {
     if (filteredClassPerksList.length > 0) {
       sponsorPerksHtml += `
       <div class="sponsor-perks-section">
-        <h3>Purchased Perk Classes</h3>
+        <h3>Purchased Perks</h3>
         <ul class="perks-list">`;
 
       filteredClassPerksList.forEach((perk: any) => {
@@ -179,7 +179,7 @@ export function generatePrintableHtml(data: {
     if (sponsorPerksList.length > 0) {
       sponsorPerksHtml += `
       <div class="sponsor-perks-section">
-        <h3>${sponsorName} Specific Perks</h3>
+        <h3>Sponsor Perks</h3>
         <ul class="perks-list">`;
 
       sponsorPerksList.forEach((perk: any) => {
@@ -1179,10 +1179,12 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
         const weaponName = weapon.name || 'Unknown Weapon';
         const facing = weapon.facing || 'Front';
         
-        // Format range based on weapon type
-        let range = weapon.range || '-';
+        // Get range directly from the weapon data
+        let range = weapon.range || 'Short';
+        
+        // Clean up empty values
         if (typeof range === 'string' && range.trim().length === 0) {
-          range = '-';
+          range = 'Short';
         }
         
         // Format attack dice
@@ -1192,30 +1194,37 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
           attackDice = `${attackDice}D6`;
         }
         
-        // Generate ammo boxes (get correct number based on weapon type)
+        // Generate ammo boxes based on weapon special rules
         let ammoBoxes = 0;
-        // Determine ammo count based on weapon type, matching reference image
-        if (
-          weaponName.includes('Machine Gun') || 
-          weaponName.includes('Minigun') || 
-          weaponName.includes('Napalm') ||
-          weaponName.includes('Flamethrower')
-        ) {
-          ammoBoxes = 3;
-        } else if (
-          weaponName.includes('Rockets') || 
-          weaponName.includes('Missile') || 
-          weaponName.includes('Oil') || 
-          weaponName.includes('Slick') ||
-          weaponName.includes('Dropper')
-        ) {
-          ammoBoxes = 3;
-        } else if (
-          weaponName.includes('Mine') || 
-          weaponName.includes('Bomb') || 
-          weaponName.includes('Smoke') ||
-          weaponName.includes('Glue') ||
-          weaponName.includes('Caltrop')
+        
+        // First check if weapon has AMMO special rule
+        if (weapon.specialRules && weapon.specialRules.includes('AMMO')) {
+          // Extract the ammo count from the AMMO X rule
+          const ammoMatch = weapon.specialRules.match(/AMMO\s+(\d+)/i);
+          if (ammoMatch && ammoMatch[1]) {
+            ammoBoxes = parseInt(ammoMatch[1], 10);
+          } else {
+            // Default to 3 if AMMO is present but count can't be determined
+            ammoBoxes = 3;
+          }
+        } 
+        // Fallback to determining ammo count based on weapon type for compatibility
+        else if (
+          !weaponName.includes('Machine Gun') && // Explicitly exclude Machine Guns from having ammo boxes
+          (
+            weaponName.includes('Napalm') ||
+            weaponName.includes('Flamethrower') ||
+            weaponName.includes('Rockets') || 
+            weaponName.includes('Missile') || 
+            weaponName.includes('Oil') || 
+            weaponName.includes('Slick') ||
+            weaponName.includes('Dropper') ||
+            weaponName.includes('Mine') || 
+            weaponName.includes('Bomb') || 
+            weaponName.includes('Smoke') ||
+            weaponName.includes('Glue') ||
+            weaponName.includes('Caltrop')
+          )
         ) {
           ammoBoxes = 3;
         }
@@ -1666,7 +1675,7 @@ function generatePerkDescriptionsHtml(vehicles: any[], sponsorPerks: any): strin
   // Collect all unique perks
   const perkMap = new Map();
   
-  // Process vehicle perks
+  // Process vehicle perks - these are explicitly purchased
   vehicles.forEach(vehicle => {
     if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
       vehicle.perkObjects.forEach((perk: any) => {
@@ -1674,7 +1683,8 @@ function generatePerkDescriptionsHtml(vehicles: any[], sponsorPerks: any): strin
           perkMap.set(perk.name, {
             name: perk.name,
             text: perk.text || '',
-            level: perk.level || 1
+            level: perk.level || 1,
+            type: 'vehicle' // These are vehicle-specific perks
           });
         }
       });
@@ -1683,44 +1693,127 @@ function generatePerkDescriptionsHtml(vehicles: any[], sponsorPerks: any): strin
   
   // Process sponsor perks if available
   if (sponsorPerks) {
-    // Class perks list
+    // Build a set of all purchased perk IDs and names
+    const purchasedPerkClasses = new Set();
+    vehicles.forEach(vehicle => {
+      // First try perkObjects (enhanced format)
+      if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
+        vehicle.perkObjects.forEach((perk: any) => {
+          // Try id, or if not available, try name
+          if (perk) {
+            if (perk.id) {
+              purchasedPerkClasses.add(perk.id);
+            } else if (perk.name) {
+              purchasedPerkClasses.add(perk.name);
+            }
+          }
+        });
+      }
+      // Fallback to perks array if perkObjects not available
+      else if (vehicle.perks && Array.isArray(vehicle.perks)) {
+        vehicle.perks.forEach((perk: any) => {
+          if (typeof perk === 'string') {
+            purchasedPerkClasses.add(perk);
+          } else if (perk && perk.id) {
+            purchasedPerkClasses.add(perk.id);
+          } else if (perk && perk.name) {
+            purchasedPerkClasses.add(perk.name);
+          }
+        });
+      }
+    });
+    
+    // Only include class perks that have been purchased
     if (sponsorPerks.classPerksList && Array.isArray(sponsorPerks.classPerksList)) {
       sponsorPerks.classPerksList.forEach((perk: any) => {
-        if (perk && perk.name && !perkMap.has(perk.name)) {
+        // Only include if it's been purchased
+        if (perk && perk.name && !perkMap.has(perk.name) && 
+            (purchasedPerkClasses.has(perk.id) || purchasedPerkClasses.has(perk.name))) {
           perkMap.set(perk.name, {
             name: perk.name,
             text: perk.text || '',
-            level: perk.level || 1
+            level: perk.level || 1,
+            type: 'purchased' // Mark as purchased perk
           });
         }
       });
     }
     
-    // Sponsor perks list
+    // Always include sponsor-specific perks
     if (sponsorPerks.sponsorPerksList && Array.isArray(sponsorPerks.sponsorPerksList)) {
       sponsorPerks.sponsorPerksList.forEach((perk: any) => {
         if (perk && perk.name && !perkMap.has(perk.name)) {
           perkMap.set(perk.name, {
             name: perk.name,
             text: perk.text || '',
-            level: perk.level || 1
+            level: perk.level || 1,
+            type: 'sponsor' // Mark as sponsor perk
           });
         }
       });
     }
   }
   
-  // Create HTML rows
-  let rowsHtml = '';
+  // Create HTML rows - separate into sponsor perks and purchased perks
+  let sponsorPerksHtml = '';
+  let purchasedPerksHtml = '';
+  let otherPerksHtml = '';  // For any perks that don't have a type
   
   perkMap.forEach(perk => {
     const levelText = perk.level > 1 ? ` (Level ${perk.level})` : '';
-    rowsHtml += `
+    const perkRow = `
     <tr style="border-bottom: 1px solid #ddd;">
       <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${perk.name}${levelText}</td>
       <td style="padding: 8px; text-align: left;">${perk.text || 'No description available'}</td>
     </tr>`;
+    
+    if (perk.type === 'sponsor') {
+      sponsorPerksHtml += perkRow;
+    } else if (perk.type === 'purchased') {
+      purchasedPerksHtml += perkRow;
+    } else {
+      // Vehicle-specific perks or untyped perks
+      otherPerksHtml += perkRow;
+    }
   });
+  
+  // Combine sections with headers
+  let rowsHtml = '';
+  
+  // Add sponsor perks section if any exist
+  if (sponsorPerksHtml) {
+    rowsHtml += `
+    <tr>
+      <td colspan="2" style="padding: 12px 8px; text-align: left; font-weight: bold; background-color: #f3f3f3; border-bottom: 2px solid #ddd; font-size: 1.1em;">
+        Sponsor Perks
+      </td>
+    </tr>
+    ${sponsorPerksHtml}`;
+  }
+  
+  // Add purchased perks section if any exist
+  if (purchasedPerksHtml) {
+    rowsHtml += `
+    ${rowsHtml ? '<tr><td colspan="2" style="height: 20px;"></td></tr>' : ''}
+    <tr>
+      <td colspan="2" style="padding: 12px 8px; text-align: left; font-weight: bold; background-color: #f3f3f3; border-bottom: 2px solid #ddd; font-size: 1.1em;">
+        Purchased Perks
+      </td>
+    </tr>
+    ${purchasedPerksHtml}`;
+  }
+  
+  // Add other perks section if any exist
+  if (otherPerksHtml) {
+    rowsHtml += `
+    ${rowsHtml ? '<tr><td colspan="2" style="height: 20px;"></td></tr>' : ''}
+    <tr>
+      <td colspan="2" style="padding: 12px 8px; text-align: left; font-weight: bold; background-color: #f3f3f3; border-bottom: 2px solid #ddd; font-size: 1.1em;">
+        Purchased Perks
+      </td>
+    </tr>
+    ${otherPerksHtml}`;
+  }
   
   return rowsHtml || '<tr><td colspan="2">No perk descriptions available</td></tr>';
 }
