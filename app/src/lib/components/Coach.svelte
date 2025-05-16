@@ -36,16 +36,35 @@
         return maxHull;
     }
 
+    // Helper function to find base weapon ID from instance ID
+    function findBaseWeaponId(weaponInstanceId) {
+        const parts = weaponInstanceId.split('_');
+        
+        // Handle case with no underscores
+        if (parts.length === 1) {
+            return weaponInstanceId;
+        }
+        
+        // Try increasingly longer potential base IDs until we find a match
+        for (let i = parts.length - 1; i >= 1; i--) {
+            const potentialBaseId = parts.slice(0, i).join('_');
+            const match = weapons.find(w => w.id === potentialBaseId);
+            if (match) {
+                return potentialBaseId;
+            }
+        }
+        
+        // If no match found, use the default approach (all but last part)
+        return parts.slice(0, -1).join('_');
+    }
+
     function calculateTotalAttackDice(vehicle) {
         if (!vehicle || !vehicle.weapons || !vehicle.weapons.length) return 0;
 
         let totalAttackDice = 0;
 
         for (const weaponInstanceId of vehicle.weapons) {
-            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
-            const baseWeaponId = lastUnderscoreIndex !== -1 ? 
-                weaponInstanceId.substring(0, lastUnderscoreIndex) : 
-                weaponInstanceId;
+            const baseWeaponId = findBaseWeaponId(weaponInstanceId);
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (weaponObj && weaponObj.attackDice) {
                 totalAttackDice += weaponObj.attackDice;
@@ -135,10 +154,7 @@
             // Add weapon slots
             if (vehicle.weapons) {
                 for (const weaponId of vehicle.weapons) {
-                    const lastUnderscoreIndex = weaponId.lastIndexOf('_');
-                    const baseWeaponId = lastUnderscoreIndex !== -1 ? 
-                        weaponId.substring(0, lastUnderscoreIndex) : 
-                        weaponId;
+                    const baseWeaponId = findBaseWeaponId(weaponId);
                         
                     if (['handgun', 'molotov', 'grenades', 'ram', 'oil_slick', 'smokescreen'].includes(baseWeaponId)) {
                         continue;
@@ -191,10 +207,7 @@
             if (!vehicle.weapons) continue;
             
             for (const weaponId of vehicle.weapons) {
-                const lastUnderscoreIndex = weaponId.lastIndexOf('_');
-                const baseWeaponId = lastUnderscoreIndex !== -1 ? 
-                    weaponId.substring(0, lastUnderscoreIndex) : 
-                    weaponId;
+                const baseWeaponId = findBaseWeaponId(weaponId);
                 const weaponObj = weapons.find(w => w.id === baseWeaponId);
                 
                 if (weaponObj) {
@@ -230,10 +243,7 @@
             if (!vehicle.weapons) continue;
             
             for (const weaponId of vehicle.weapons) {
-                const lastUnderscoreIndex = weaponId.lastIndexOf('_');
-                const baseWeaponId = lastUnderscoreIndex !== -1 ? 
-                    weaponId.substring(0, lastUnderscoreIndex) : 
-                    weaponId;
+                const baseWeaponId = findBaseWeaponId(weaponId);
                 const weaponObj = weapons.find(w => w.id === baseWeaponId);
                 
                 if (weaponObj) {

@@ -9,12 +9,33 @@
 		});
 	}}
 	
+	{@const findBaseWeaponId = (weaponInstanceId, parts) => {
+		if (!parts) {
+			parts = weaponInstanceId.split('_');
+		}
+		
+		// Handle case with no underscores
+		if (parts.length === 1) {
+			return weaponInstanceId;
+		}
+		
+		// Try increasingly longer potential base IDs until we find a match
+		for (let i = parts.length - 1; i >= 1; i--) {
+			const potentialBaseId = parts.slice(0, i).join('_');
+			const match = weapons.find(w => w.id === potentialBaseId);
+			if (match) {
+				return potentialBaseId;
+			}
+		}
+		
+		// If no match found, use the default approach (all but last part)
+		return parts.slice(0, -1).join('_');
+	}}
+	
 	<ul class="space-y-1 mb-3 border border-stone-300 rounded overflow-hidden divide-y divide-stone-300">
 		{#each v.weapons as weaponId, i}
-			{@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
-				{@const baseWeaponId = lastUnderscoreIndex !== -1 ?
-					weaponId.substring(0, lastUnderscoreIndex) :
-					weaponId}
+			{@const parts = weaponId.split('_')}
+			{@const baseWeaponId = findBaseWeaponId(weaponId, parts)}
 			{@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
 			{@const facing = v.weaponFacings?.[weaponId] || 'front'}
 			<li class="flex items-center justify-between bg-stone-50 px-3 py-2">

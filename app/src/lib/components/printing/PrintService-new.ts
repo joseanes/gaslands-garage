@@ -36,6 +36,7 @@ export function generatePrintableHtml(data: {
   showPerkDescriptions?: boolean;
   showSpecialRules?: boolean;
   printStyle?: string;
+  weaponAndUpgradeSpecialRules?: any[];
 }): string {
   const {
     teamName,
@@ -225,6 +226,59 @@ export function generatePrintableHtml(data: {
       }
     });
 
+    // Use weapon and upgrade special rule descriptions if available
+    const specialRulesMap = new Map();
+    if (draft.weaponAndUpgradeSpecialRules && Array.isArray(draft.weaponAndUpgradeSpecialRules)) {
+      draft.weaponAndUpgradeSpecialRules.forEach(rule => {
+        if (rule && rule.ruleName && rule.rule) {
+          // Store by both rule ID and rule name (lowercase) for better matching
+          specialRulesMap.set(rule.ruleName.toLowerCase(), rule.rule);
+          if (rule.id) {
+            specialRulesMap.set(rule.id.toLowerCase(), rule.rule);
+          }
+        }
+      });
+    }
+
+    // Helper function to get rule description
+    const getRuleDescription = (ruleNames: string) => {
+      if (!ruleNames) return '';
+      
+      const rulesArray = ruleNames.split(',').map(r => r.trim());
+      let fullDescription = '';
+      
+      rulesArray.forEach(ruleName => {
+        // Try to find the rule description - first by name, then by looking for exact ID match
+        const lowerRuleName = ruleName.toLowerCase();
+        let ruleDescription = specialRulesMap.get(lowerRuleName);
+        
+        // If not found by name, try to find by ID
+        if (!ruleDescription) {
+          // Look for any rule with an ID that matches this rule name or its prefix
+          // For example, "caltrop_dropper" in the special rules should match a rule with ID "caltrop_dropper"
+          const matchingRule = draft.weaponAndUpgradeSpecialRules?.find(r => 
+            r.id && (r.id.toLowerCase() === lowerRuleName || lowerRuleName.startsWith(r.id.toLowerCase()))
+          );
+          if (matchingRule) {
+            ruleDescription = matchingRule.rule;
+          }
+        }
+        
+        if (ruleDescription) {
+          fullDescription += `<div class="rule-item">
+            <div class="rule-name">${ruleName}</div>
+            <div class="rule-description">${ruleDescription}</div>
+          </div>`;
+        } else {
+          fullDescription += `<div class="rule-item">
+            <div class="rule-name">${ruleName}</div>
+          </div>`;
+        }
+      });
+      
+      return fullDescription;
+    };
+
     // Generate weapons section
     if (allWeapons.size > 0) {
       equipmentDescriptionsHtml += `
@@ -240,7 +294,11 @@ export function generatePrintableHtml(data: {
             <span class="equipment-stat">Cost: ${weapon.cost} cans</span>
             <span class="equipment-stat">Attack Dice: ${weapon.attackDice !== '-' ? weapon.attackDice : 'N/A'}</span>
             <span class="equipment-stat">Default Facing: ${weapon.facing || 'Front'}</span>
-            ${weapon.specialRules ? `<div class="equipment-rules">${weapon.specialRules}</div>` : ''}
+            ${weapon.specialRules ? `
+            <div class="equipment-rules">
+              <div class="special-rules-header">Special Rules:</div>
+              ${getRuleDescription(weapon.specialRules)}
+            </div>` : ''}
           </div>
         </li>`;
       });
@@ -263,7 +321,11 @@ export function generatePrintableHtml(data: {
           <div class="equipment-name">${upgrade.name}</div>
           <div class="equipment-details">
             <span class="equipment-stat">Cost: ${upgrade.cost} cans</span>
-            ${upgrade.specialRules ? `<div class="equipment-rules">${upgrade.specialRules}</div>` : ''}
+            ${upgrade.specialRules ? `
+            <div class="equipment-rules">
+              <div class="special-rules-header">Special Rules:</div>
+              ${getRuleDescription(upgrade.specialRules)}
+            </div>` : ''}
           </div>
         </li>`;
       });
@@ -476,6 +538,26 @@ export function generatePrintableHtml(data: {
         margin-top: 4px;
         font-size: 0.9em;
         color: #444;
+      }
+      
+      .special-rules-header {
+        font-weight: bold;
+        margin-top: 8px;
+        margin-bottom: 6px;
+      }
+      
+      .rule-item {
+        margin-bottom: 10px;
+      }
+      
+      .rule-name {
+        font-weight: bold;
+        font-size: 0.9em;
+      }
+      
+      .rule-description {
+        margin-top: 2px;
+        padding-left: 10px;
       }
 
       /* Sponsor perks section */
@@ -1317,8 +1399,8 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
         const upgradeName = upgrade.name || 'Unknown Upgrade';
         const upgradeRules = upgrade.specialRules || '';
         
-        // Include the rules if available
-        upgradesHtml += `<div style="margin-bottom: 5px;"><strong>${upgradeName}</strong>${upgradeRules ? `: ${upgradeRules}` : ''}</div>`;
+        // Just show the upgrade name, no rules in the vehicle card
+        upgradesHtml += `<div style="margin-bottom: 5px;"><strong>${upgradeName}</strong></div>`;
       });
     } else {
       upgradesHtml = '<div style="text-align: center;">No upgrades installed</div>';
@@ -1710,7 +1792,8 @@ function generateEquipmentDescriptionsHtml(vehicles: any[]): string {
           weaponMap.set(weapon.name, {
             name: weapon.name,
             specialRules: weapon.specialRules || '',
-            cost: weapon.cost || 0
+            cost: weapon.cost || 0,
+            id: weapon.id || ''
           });
         }
       });
@@ -1723,31 +1806,158 @@ function generateEquipmentDescriptionsHtml(vehicles: any[]): string {
           upgradeMap.set(upgrade.name, {
             name: upgrade.name,
             specialRules: upgrade.specialRules || '',
-            cost: upgrade.cost || 0
+            cost: upgrade.cost || 0,
+            id: upgrade.id || ''
           });
         }
       });
     }
   });
   
+  // Get access to special rule descriptions if available
+  const specialRulesMap = new Map();
+  if (vehicles[0]?.draft?.weaponAndUpgradeSpecialRules && Array.isArray(vehicles[0].draft.weaponAndUpgradeSpecialRules)) {
+    vehicles[0].draft.weaponAndUpgradeSpecialRules.forEach((rule: any) => {
+      if (rule && rule.ruleName && rule.rule) {
+        // Store by both rule ID and rule name (lowercase) for better matching
+        specialRulesMap.set(rule.ruleName.toLowerCase(), rule.rule);
+        if (rule.id) {
+          specialRulesMap.set(rule.id.toLowerCase(), rule.rule);
+        }
+      }
+    });
+  }
+  
+  // Helper function to get full rule descriptions from weaponAndUpgradeSpecialRules
+  const getRuleDescription = (ruleNames: string, weaponId?: string, upgradeName?: string) => {
+    if (!ruleNames) return 'No special rules';
+    
+    const rulesArray = ruleNames.split(',').map(r => r.trim());
+    let fullDescription = '<div style="margin-top: 8px;">';
+    
+    // Always show the full rules text for each special rule
+    rulesArray.forEach(ruleName => {
+      // Try to find the rule description - first by name, then by looking for exact ID match
+      const lowerRuleName = ruleName.toLowerCase();
+      let ruleDescription = specialRulesMap.get(lowerRuleName);
+      
+      // If not found by name, try to find by ID
+      if (!ruleDescription) {
+        // Look for any rule with an ID that matches this rule name
+        const matchingRule = vehicles[0]?.draft?.weaponAndUpgradeSpecialRules?.find((r: any) => 
+          r.id && (r.id.toLowerCase() === lowerRuleName || lowerRuleName.startsWith(r.id.toLowerCase()))
+        );
+        if (matchingRule) {
+          ruleDescription = matchingRule.rule;
+        }
+      }
+      
+      if (ruleDescription) {
+        fullDescription += `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+          <div style="font-weight: bold; margin-bottom: 3px; color: #444;">${ruleName}</div>
+          <div>${ruleDescription}</div>
+        </div>`;
+      } else {
+        fullDescription += `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dotted #ccc;">
+          <div style="font-weight: bold; color: #444;">${ruleName}</div>
+          <div>Special rule description not available.</div>
+        </div>`;
+      }
+    });
+    
+    fullDescription += '</div>';
+    return fullDescription;
+  };
+  
   // Create HTML rows
   let rowsHtml = '';
   
   // Add weapons
   weaponMap.forEach(weapon => {
+    // Find matching special rule directly from weaponAndUpgradeSpecialRules if available
+    let directRuleMatch = '';
+    if (vehicles[0]?.draft?.weaponAndUpgradeSpecialRules) {
+      // For a weapon with id like "caltrop_dropper_h-", look for rules with id "caltrop_dropper"
+      // Try to find a rule that matches any prefix of the weapon ID
+      const weaponParts = weapon.id.split('_');
+      let matchingRule = null;
+      
+      for (let i = weaponParts.length; i > 0; i--) {
+        const partialId = weaponParts.slice(0, i).join('_');
+        const match = vehicles[0].draft.weaponAndUpgradeSpecialRules.find((rule: any) => rule.id === partialId);
+        if (match) {
+          matchingRule = match;
+          break;
+        }
+      }
+      
+      // If no direct ID match, try looking for a rule with matching ruleName
+      if (!matchingRule && weapon.specialRules) {
+        const rulesArray = weapon.specialRules.split(',').map((r: string) => r.trim());
+        for (const ruleName of rulesArray) {
+          const match = vehicles[0].draft.weaponAndUpgradeSpecialRules.find(
+            (rule: any) => rule.ruleName.toLowerCase() === ruleName.toLowerCase()
+          );
+          if (match) {
+            matchingRule = match;
+            break;
+          }
+        }
+      }
+      if (matchingRule && matchingRule.rule) {
+        directRuleMatch = matchingRule.rule;
+      }
+    }
+    
     rowsHtml += `
     <tr style="border-bottom: 1px solid #ddd;">
       <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${weapon.name} (${weapon.cost} cans)</td>
-      <td style="padding: 8px; text-align: left;">${weapon.specialRules || 'No description available'}</td>
+      <td style="padding: 8px; text-align: left;">
+        ${directRuleMatch ? 
+          `<div style="margin-bottom: 10px;">${directRuleMatch}</div>` : 
+          (weapon.specialRules ? getRuleDescription(weapon.specialRules, weapon.id) : 'No special rules')
+        }
+      </td>
     </tr>`;
   });
   
   // Add upgrades
   upgradeMap.forEach(upgrade => {
+    // Find matching special rule directly from weaponAndUpgradeSpecialRules if available
+    let directRuleMatch = '';
+    if (vehicles[0]?.draft?.weaponAndUpgradeSpecialRules) {
+      // Try to find a rule that matches the upgrade ID directly
+      let matchingRule = vehicles[0].draft.weaponAndUpgradeSpecialRules.find(
+        (rule: any) => rule.id === upgrade.id
+      );
+      
+      // If no direct ID match, try looking for a rule with matching ruleName from specialRules
+      if (!matchingRule && upgrade.specialRules) {
+        const rulesArray = upgrade.specialRules.split(',').map((r: string) => r.trim());
+        for (const ruleName of rulesArray) {
+          const match = vehicles[0].draft.weaponAndUpgradeSpecialRules.find(
+            (rule: any) => rule.ruleName.toLowerCase() === ruleName.toLowerCase()
+          );
+          if (match) {
+            matchingRule = match;
+            break;
+          }
+        }
+      }
+      if (matchingRule && matchingRule.rule) {
+        directRuleMatch = matchingRule.rule;
+      }
+    }
+    
     rowsHtml += `
     <tr style="border-bottom: 1px solid #ddd;">
       <td style="padding: 8px; text-align: left; vertical-align: top; font-weight: bold;">${upgrade.name} (${upgrade.cost} cans)</td>
-      <td style="padding: 8px; text-align: left;">${upgrade.specialRules || 'No description available'}</td>
+      <td style="padding: 8px; text-align: left;">
+        ${directRuleMatch ? 
+          `<div style="margin-bottom: 10px;">${directRuleMatch}</div>` : 
+          (upgrade.specialRules ? getRuleDescription(upgrade.specialRules, undefined, upgrade.name) : 'No special rules')
+        }
+      </td>
     </tr>`;
   });
   
@@ -1989,6 +2199,12 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
  * Print team in Dashboard style - separate function for clarity
  */
 export async function printTeamDashboard(draft: Draft): Promise<void> {
+  // Add weaponAndUpgradeSpecialRules to vehicles for access in generateEquipmentDescriptionsHtml
+  if (draft.vehicles && Array.isArray(draft.vehicles) && draft.vehicles.length > 0) {
+    draft.vehicles.forEach(vehicle => {
+      vehicle.draft = { weaponAndUpgradeSpecialRules: draft.weaponAndUpgradeSpecialRules };
+    });
+  }
   console.log("[PrintService-new] printTeamDashboard called");
   console.log("[PrintService-new] Draft structure:", Object.keys(draft));
   
@@ -2179,7 +2395,8 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       qrCode: qrCode,
       showEquipmentDescriptions: showEquipmentDescriptions,
       showPerkDescriptions: showPerkDescriptions,
-      showSpecialRules: draft.showSpecialRules ?? true
+      showSpecialRules: draft.showSpecialRules ?? true,
+      weaponAndUpgradeSpecialRules: draft.weaponAndUpgradeSpecialRules || []
     };
     
     // Make sure printStyle is passed correctly to the data

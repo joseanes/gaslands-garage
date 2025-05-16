@@ -16,6 +16,11 @@ export interface Draft {
   teamName?: string;   // Optional for backward compatibility
   maxCans?: number;    // Optional for backward compatibility
   darkMode?: boolean;  // Optional dark mode setting
+  weaponAndUpgradeSpecialRules?: {  // Special rules for weapons and upgrades
+    id: string;
+    ruleName: string;
+    rule: string;
+  }[];
 }
 
 export interface VehicleReport {

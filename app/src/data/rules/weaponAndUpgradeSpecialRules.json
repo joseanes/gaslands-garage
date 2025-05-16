@@ -141,6 +141,61 @@
       "id": "shotgun",
       "ruleName": "Shotgun",
       "rule": "<p>When attacking with this weapon, roll attack dice based on range:<br><strong>Short</strong> – 3&nbsp;D6&nbsp;dice<br><strong>Medium</strong> – 2&nbsp;D6&nbsp;dice<br><strong>Long</strong> – 1&nbsp;D6&nbsp;die</p>"
+    },
+    {
+      "id": "armour_plating",
+      "ruleName": "Armour Plating",
+      "rule": "<p>This vehicle’s Hull Value is permanently <strong>increased by 2</strong>. A single vehicle may buy multiple Armour Platings; each purchase adds +2 Hull.</p>"
+    },
+    {
+      "id": "experimental_nuclear_engine",
+      "ruleName": "Experimental Nuclear Engine",
+      "rule": "<p><em>Mishkin teams only; not for lightweights (one per vehicle).</em></p><ul><li>Add <strong>+2</strong> to this vehicle’s max Gear (max 6).</li><li>The <strong>Long Straight</strong> template is permitted in any Gear and is neither Hazardous nor Trivial.</li><li>If this vehicle ever <strong>fails a Flip check</strong>, it is immediately <strong>Wrecked</strong> and <em>Explodes</em> as a <em>Heavyweight</em>.</li></ul>"
+    },
+    {
+      "id": "experimental_teleporter",
+      "ruleName": "Experimental Teleporter",
+      "rule": "<p><em>Mishkin teams only (one per vehicle).</em> At the start of its activation this vehicle may activate the Teleporter <strong>in addition to</strong> its normal Movement Step:</p><ol><li>Gain <strong>3 Hazard Tokens</strong>.</li><li>Roll 1 Skid die.<br>• Any result except <em>Hazard</em>: controller places the vehicle anywhere within <strong>Medium</strong>, same facing, not touching terrain &ndash; no Collision.<br>• <em>Hazard</em>: player to the left places the vehicle anywhere within <strong>Long</strong> under the same restrictions.</li></ol>Then continue with the normal Movement Step from its new position."
+    },
+    {
+      "id": "exploding_ram",
+      "ruleName": "Exploding Ram",
+      "rule": "<p>Declare a facing when bought (one per vehicle; not for lightweights).</p><p>The <strong>first</strong> time this vehicle is in a Collision on that facing it must declare a <em>Smash Attack</em> (even on a Tailgate). Add <strong>+6 Attack dice</strong> for that Smash. For each <code>1</code> or <code>2</code> rolled, this vehicle loses 1 Hull Point. A Ram and an Exploding Ram on the same facing are cumulative.</p>"
+    },
+    {
+      "id": "extra_crewmember",
+      "ruleName": "Extra Crewmember",
+      "rule": "<p>Each purchase increases the vehicle’s <strong>Crew Value</strong> by 1, increasing the number of attacks it can make. A vehicle may not buy more Extras than its starting Crew. (e.g. Crew 3 pickup may buy up to 3 extras &rarr; Crew 6.)</p>"
+    },
+    {
+      "id": "improvised_sludge_thrower",
+      "ruleName": "Improvised Sludge Thrower",
+      "rule": "<p>This vehicle may place the <em>Burst</em> templates for its dropped weapons <strong>anywhere</strong> that is at least partly within <strong>Medium</strong> range and 360° Arc of Fire.</p>"
+    },
+    {
+      "id": "nitro_booster",
+      "ruleName": "Nitro Booster",
+      "rule": "<p>Once per activation, at the start of the Movement Step:</p><ol><li>Make an immediate forced <strong>Long Straight</strong> forward move.</li><li>Gain Hazard Tokens until the vehicle has <strong>5 Hazards</strong>.</li><li>Proceed with Movement Step (may not reverse).</li><li>After the Step, if the vehicle used Nitro, ensure it ends with 5 Hazards (add tokens if needed).</li></ol>"
+    },
+    {
+      "id": "ram_upgrade",
+      "ruleName": "Ram",
+      "rule": "<p>Declare a facing when bought (max one Ram per facing).</p><p>When this vehicle is in a Collision on that facing it gains <strong>+2 Smash Attack dice</strong> and <em>does not</em> gain Hazards from the Collision.</p>"
+    },
+    {
+      "id": "roll_cage",
+      "ruleName": "Roll Cage",
+      "rule": "<p>When this vehicle suffers a <em>Flip</em>, it may ignore the usual 2 hits received from the Flip.</p>"
+    },
+    {
+      "id": "tank_tracks",
+      "ruleName": "Tank Tracks",
+      "rule": "<p>Replaces wheels with tracks: <strong>+1 Handling</strong>, <strong>&minus;1 max Gear</strong>. The vehicle ignores rough and treacherous surfaces.</p><p>May only be purchased once; Tanks, Helicopters, and Gyrocopters may not buy Tank Tracks.</p>"
+    },
+    {
+      "id": "turret_mounting",
+      "ruleName": "Turret Mounting for Weapon",
+      "rule": "<p>When buying a shooting weapon, you may pay <strong>three times</strong> its normal cost to make it <em>Turret-mounted</em>. A turret has a <strong>360° Arc of Fire</strong>.</p><p>Example: a front-mounted Minigun costs 5&nbsp;Cans; a Turret-mounted Minigun costs 15&nbsp;Cans.</p>"
     }
   ]
   

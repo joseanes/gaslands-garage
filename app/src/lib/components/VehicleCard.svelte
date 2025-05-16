@@ -121,14 +121,34 @@
 
         // Add weapon costs
         for (const weaponInstanceId of vehicle.weapons) {
-            // Extract the base weapon ID by finding the position of the last underscore
-            // This handles weapon IDs like "gas_grenades_abcd123" correctly
-            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
-            const baseWeaponId = lastUnderscoreIndex !== -1 ?
-                weaponInstanceId.substring(0, lastUnderscoreIndex) :
-                weaponInstanceId;
-
-            const weaponObj = weapons.find(w => w.id === baseWeaponId);
+            // Use a more robust method to find the base weapon ID
+            // Try increasingly longer potential base IDs until we find a match
+            const parts = weaponInstanceId.split('_');
+            let baseWeaponId = null;
+            let weaponObj = null;
+            
+            // Handle case with no underscores
+            if (parts.length === 1) {
+                weaponObj = weapons.find(w => w.id === weaponInstanceId);
+            } else {
+                // Try increasingly longer potential base IDs until we find a match
+                for (let i = parts.length - 1; i >= 1; i--) {
+                    const potentialBaseId = parts.slice(0, i).join('_');
+                    const match = weapons.find(w => w.id === potentialBaseId);
+                    if (match) {
+                        baseWeaponId = potentialBaseId;
+                        weaponObj = match;
+                        break;
+                    }
+                }
+                
+                // If no match found, use the default approach (all but last part)
+                if (!baseWeaponId) {
+                    baseWeaponId = parts.slice(0, -1).join('_');
+                    weaponObj = weapons.find(w => w.id === baseWeaponId);
+                }
+            }
+            
             if (weaponObj && weaponObj.cost) {
                 totalCost += weaponObj.cost;
             }
@@ -159,13 +179,35 @@
 
         // Calculate slots used by weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            // Extract the base weapon ID by finding the position of the last underscore
-            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
-            const baseWeaponId = lastUnderscoreIndex !== -1 ?
-                weaponInstanceId.substring(0, lastUnderscoreIndex) :
-                weaponInstanceId;
-
-            const weaponObj = weapons.find(w => w.id === baseWeaponId);
+            // Use a more robust method to find the base weapon ID
+            // Try increasingly longer potential base IDs until we find a match
+            const parts = weaponInstanceId.split('_');
+            let baseWeaponId = null;
+            let weaponObj = null;
+            
+            // Handle case with no underscores
+            if (parts.length === 1) {
+                weaponObj = weapons.find(w => w.id === weaponInstanceId);
+                baseWeaponId = weaponInstanceId;
+            } else {
+                // Try increasingly longer potential base IDs until we find a match
+                for (let i = parts.length - 1; i >= 1; i--) {
+                    const potentialBaseId = parts.slice(0, i).join('_');
+                    const match = weapons.find(w => w.id === potentialBaseId);
+                    if (match) {
+                        baseWeaponId = potentialBaseId;
+                        weaponObj = match;
+                        break;
+                    }
+                }
+                
+                // If no match found, use the default approach (all but last part)
+                if (!baseWeaponId) {
+                    baseWeaponId = parts.slice(0, -1).join('_');
+                    weaponObj = weapons.find(w => w.id === baseWeaponId);
+                }
+            }
+            
             if (weaponObj) {
                 // Special case: Some weapons don't use build slots in Gaslands Refueled
                 if (['handgun', 'molotov', 'grenades', 'ram', 'oil_slick', 'smokescreen'].includes(baseWeaponId)) {
@@ -304,13 +346,34 @@
 
         // Calculate total attack dice from all weapons
         for (const weaponInstanceId of vehicle.weapons) {
-            // Extract the base weapon ID by finding the position of the last underscore
-            const lastUnderscoreIndex = weaponInstanceId.lastIndexOf('_');
-            const baseWeaponId = lastUnderscoreIndex !== -1 ?
-                weaponInstanceId.substring(0, lastUnderscoreIndex) :
-                weaponInstanceId;
-
-            const weaponObj = weapons.find(w => w.id === baseWeaponId);
+            // Use a more robust method to find the base weapon ID
+            // Try increasingly longer potential base IDs until we find a match
+            const parts = weaponInstanceId.split('_');
+            let baseWeaponId = null;
+            let weaponObj = null;
+            
+            // Handle case with no underscores
+            if (parts.length === 1) {
+                weaponObj = weapons.find(w => w.id === weaponInstanceId);
+            } else {
+                // Try increasingly longer potential base IDs until we find a match
+                for (let i = parts.length - 1; i >= 1; i--) {
+                    const potentialBaseId = parts.slice(0, i).join('_');
+                    const match = weapons.find(w => w.id === potentialBaseId);
+                    if (match) {
+                        baseWeaponId = potentialBaseId;
+                        weaponObj = match;
+                        break;
+                    }
+                }
+                
+                // If no match found, use the default approach (all but last part)
+                if (!baseWeaponId) {
+                    baseWeaponId = parts.slice(0, -1).join('_');
+                    weaponObj = weapons.find(w => w.id === baseWeaponId);
+                }
+            }
+            
             if (weaponObj && weaponObj.attackDice) {
                 totalAttackDice += weaponObj.attackDice;
             }
@@ -380,6 +443,35 @@
         }
 
         return specialRulesString.split(',').map(rule => rule.trim());
+    }
+    
+    // Helper function to find base weapon ID from instance ID
+    function findBaseWeaponId(weaponInstanceId: string, parts?: string[]) {
+        if (!parts) {
+            parts = weaponInstanceId.split('_');
+        }
+        
+        // Handle case with no underscores
+        if (parts.length === 1) {
+            return weaponInstanceId;
+        }
+        
+        // Try increasingly longer potential base IDs until we find a match
+        for (let i = parts.length - 1; i >= 1; i--) {
+            const potentialBaseId = parts.slice(0, i).join('_');
+            const match = weapons.find(w => w.id === potentialBaseId);
+            if (match) {
+                return potentialBaseId;
+            }
+        }
+        
+        // If no match found, use the default approach (all but last part)
+        return parts.slice(0, -1).join('_');
+    }
+    
+    // Helper function to find weapon by ID
+    function findWeaponById(baseWeaponId: string) {
+        return weapons.find(w => w.id === baseWeaponId);
     }
 </script>
 
@@ -607,11 +699,8 @@
                 </div>
                 <div class="mb-2">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
-                        {@const baseWeaponId = lastUnderscoreIndex !== -1 ?
-                            weaponId.substring(0, lastUnderscoreIndex) :
-                            weaponId}
-                        {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+                        {@const baseWeaponId = findBaseWeaponId(weaponId)}
+                        {@const weaponObj = findWeaponById(baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <div class="text-sm py-2.5 border-b border-stone-200 dark:border-gray-700">
                             <div class="flex items-center">
@@ -729,11 +818,8 @@
             {:else}
                 <ul class="space-y-1 mb-3 border border-stone-300 dark:border-gray-600 rounded overflow-hidden divide-y divide-stone-300 dark:divide-gray-600">
                     {#each vehicle.weapons as weaponId, i}
-                        {@const lastUnderscoreIndex = weaponId.lastIndexOf('_')}
-                        {@const baseWeaponId = lastUnderscoreIndex !== -1 ?
-                            weaponId.substring(0, lastUnderscoreIndex) :
-                            weaponId}
-                        {@const weaponObj = weapons.find(w => w.id === baseWeaponId)}
+                        {@const baseWeaponId = findBaseWeaponId(weaponId)}
+                        {@const weaponObj = findWeaponById(baseWeaponId)}
                         {@const facing = vehicle.weaponFacings?.[weaponId] || 'front'}
                         <li class="bg-stone-50 dark:bg-gray-700 px-3 py-2">
                             <div class="flex items-center justify-between">

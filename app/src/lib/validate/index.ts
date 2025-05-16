@@ -94,10 +94,36 @@ export async function validateDraft(draft: Draft): Promise<Validation> {
 
             // Extract base weapon ID from instance ID (format: baseId_instanceHash)
             // For weapons with underscores in their base ID (like combat_laser_oYHC),
-            // we need to keep all parts except the last one (which is the unique instance identifier)
-            const baseWeaponId = weaponInstanceId.includes('_')
-              ? weaponInstanceId.split('_').slice(0, -1).join('_')
-              : weaponInstanceId;
+            // we need to identify the actual base ID without the nanoid suffix
+            
+            // Safer approach: Isolate the last part (which is the unique instance identifier)
+            // and then check if a weapon exists with that partial ID
+            const parts = weaponInstanceId.split('_');
+            
+            // Handle case with no underscores
+            if (parts.length === 1) {
+              const weaponObj = weapons.find(w => w.id === weaponInstanceId);
+              if (!weaponObj) {
+                console.warn(`Weapon not found: ${weaponInstanceId}`);
+              }
+              return weaponObj;
+            }
+            
+            // Try increasingly longer potential base IDs until we find a match
+            let baseWeaponId = null;
+            for (let i = parts.length - 1; i >= 1; i--) {
+              const potentialBaseId = parts.slice(0, i).join('_');
+              const match = weapons.find(w => w.id === potentialBaseId);
+              if (match) {
+                baseWeaponId = potentialBaseId;
+                break;
+              }
+            }
+            
+            // If no match found, use the default approach (all but last part)
+            if (!baseWeaponId) {
+              baseWeaponId = parts.slice(0, -1).join('_');
+            }
 
             const weaponObj = weapons.find(w => w.id === baseWeaponId);
             if (!weaponObj) {

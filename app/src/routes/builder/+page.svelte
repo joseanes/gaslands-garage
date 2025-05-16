@@ -1245,6 +1245,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			showEquipmentDescriptions: showEquipmentDescriptions,
 			showPerkDescriptions: showPerkDescriptions,
 			showSpecialRules: showSpecialRules,
+			// Include special rules for weapons and upgrades
+			weaponAndUpgradeSpecialRules: await import('$lib/rules/loadRules').then(module => module.loadWeaponSpecialRules()),
 			// Include sponsor perks information
 			sponsor: currentSponsor,
 			sponsorPerks: {
@@ -1271,10 +1273,25 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				},
 				// Include full weapon objects with names
 				weaponObjects: v.weapons.map(weaponId => {
-					const lastUnderscoreIndex = weaponId.lastIndexOf('_');
-				const baseWeaponId = lastUnderscoreIndex !== -1 ? 
-					weaponId.substring(0, lastUnderscoreIndex) : 
-					weaponId;
+					// Use our robust method to find the base weapon ID
+					const parts = weaponId.split('_');
+					let baseWeaponId = null;
+					
+					// Try increasingly longer potential base IDs until we find a match
+					for (let i = parts.length - 1; i >= 1; i--) {
+						const potentialBaseId = parts.slice(0, i).join('_');
+						const match = weapons.find(w => w.id === potentialBaseId);
+						if (match) {
+							baseWeaponId = potentialBaseId;
+							break;
+						}
+					}
+					
+					// If no match found, use the default approach (all but last part)
+					if (!baseWeaponId) {
+						baseWeaponId = parts.slice(0, -1).join('_');
+					}
+					
 					const weapon = weapons.find(w => w.id === baseWeaponId);
 					return {
 						id: weaponId,
