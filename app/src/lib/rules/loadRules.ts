@@ -40,8 +40,8 @@ export function loadPerks() {
   return Perk.array().parse(perksRaw);
 }
 
-/* ── weaponSpecialRules.json ────────────────────────────────── */
-import weaponSpecialRulesRaw from '../../data/rules/weaponSpecialRules.json';
+/* ── weaponAndUpgradeSpecialRules.json ────────────────────────── */
+import weaponSpecialRulesRaw from '../../data/rules/weaponAndUpgradeSpecialRules.json';
 export function loadWeaponSpecialRules() {
   return WeaponSpecialRule.array().parse(weaponSpecialRulesRaw);
 }

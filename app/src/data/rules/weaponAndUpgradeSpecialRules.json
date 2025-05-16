@@ -1,0 +1,147 @@
+[
+  {
+    "id": "ammo_1",
+    "ruleName": "AMMO 1",
+    "rule": "<p>Some weapons and upgrades have limited fuel or ammunition. A weapon or upgrade with this special rule begins the game with 1&nbsp;Ammo Token on its dashboard for that weapon or upgrade, where&nbsp;1 is the value listed.</p><p>Before making an attack with this weapon or using this upgrade, this vehicle must discard an Ammo Token from this weapon or upgrade. If the vehicle cannot discard an Ammo Token, this weapon or upgrade may not be used.</p><p>Ammo Tokens are specific to a given weapon or upgrade. A vehicle may not discard Ammo Tokens from one weapon or upgrade to attack with another weapon or use another upgrade.</p><p>If you are playing with Audience Votes, you can use Reload to replenish your Ammo Tokens.</p>",
+    "ammo": 1
+  },
+  {
+    "id": "ammo_2",
+    "ruleName": "AMMO 2",
+    "rule": "<p>Some weapons and upgrades have limited fuel or ammunition. A weapon or upgrade with this special rule begins the game with 2&nbsp;Ammo Tokens on its dashboard for that weapon or upgrade, where&nbsp;2 is the value listed.</p><p>Before making an attack with this weapon or using this upgrade, this vehicle must discard an Ammo Token from this weapon or upgrade. If the vehicle cannot discard an Ammo Token, this weapon or upgrade may not be used.</p><p>Ammo Tokens are specific to a given weapon or upgrade. A vehicle may not discard Ammo Tokens from one weapon or upgrade to attack with another weapon or use another upgrade.</p><p>If you are playing with Audience Votes, you can use Reload to replenish your Ammo Tokens.</p>",
+    "ammo": 2
+  },
+  {
+    "id": "ammo_3",
+    "ruleName": "AMMO 3",
+    "rule": "<p>Some weapons and upgrades have limited fuel or ammunition. A weapon or upgrade with this special rule begins the game with 3&nbsp;Ammo Tokens on its dashboard for that weapon or upgrade, where&nbsp;3 is the value listed.</p><p>Before making an attack with this weapon or using this upgrade, this vehicle must discard an Ammo Token from this weapon or upgrade. If the vehicle cannot discard an Ammo Token, this weapon or upgrade may not be used.</p><p>Ammo Tokens are specific to a given weapon or upgrade. A vehicle may not discard Ammo Tokens from one weapon or upgrade to attack with another weapon or use another upgrade.</p><p>If you are playing with Audience Votes, you can use Reload to replenish your Ammo Tokens.</p>",
+    "ammo": 3
+  },  {
+    "id": "blast",
+    "ruleName": "Blast",
+    "rule": "<p>For every un-cancelled hit caused by a weapon or effect with the Blast rule, the target immediately gains 1 Hazard Token.</p>"
+  },
+  {
+    "id": "blitz",
+    "ruleName": "Blitz",
+    "rule": "<p>This vehicle counts as being armed with a number of copies of this weapon equal to the weapon’s remaining Ammo Tokens, where each copy counts as having a single Ammo Token. During its Attack Step, the vehicle may attack with this weapon any number of times, provided it does not attack more times than it has Ammo Tokens or more times than its Crew value.</p>"
+  },
+  {
+    "id": "crew_fired",
+    "ruleName": "Crew Fired",
+    "rule": "<p>A weapon that is Crew Fired benefits from a 360-degree Arc of Fire and does not need to declare a facing when purchased.</p>"
+  },
+  {
+    "id": "fire",
+    "ruleName": "Fire",
+    "rule": "<p>If a vehicle suffers at least one damage from a weapon or effect with the Fire special rule, it gains the On-Fire rule in addition to suffering damage. A vehicle cannot gain the On-Fire rule a second time.</p><p><strong>On Fire:</strong> At the start of this vehicle’s activation, it loses 1 Hull Point. This vehicle’s Smash Attacks count as having the Fire special rule. If this vehicle ever has zero Hazard Tokens, the fire goes out and this vehicle loses the On-Fire rule.</p>"
+  },
+  {
+    "id": "indirect",
+    "ruleName": "Indirect",
+    "rule": "<p>When making a shooting attack with a weapon with this special rule, the vehicle may ignore Terrain and Cover during that attack.</p>"
+  },
+  {
+    "id": "splash",
+    "ruleName": "Splash",
+    "rule": "<p>When a weapon with the Splash rule is used to attack, it must target and attack every vehicle beneath the shooting template, including friendly vehicles. Each target suffers a separate attack from the weapon.</p><p>For example, a truck with a side-mounted Flamethrower drives beside two enemy cars. The player declares an attack against one car, places the Large Burst template perpendicular to the truck’s side, and catches both enemies under the template—rolling a full 6D6 attack against each.</p>"
+  },
+  {
+    "id": "zero_crew",
+    "ruleName": "Zero Crew",
+    "rule": "<p>Certain game effects can reduce a vehicle’s Crew value. When a vehicle with zero Crew is selected to activate, it automatically changes down one Gear (to a minimum of Gear 1). During its Movement Step, only templates that are hazardous in the vehicle’s current Gear are permitted; in Gear Phases 1 and 2 the player must therefore select templates that are not normally permitted.</p>"
+  },
+  {
+    "id": "caltrop_dropper",
+    "ruleName": "Caltrop Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em> (see Terrain). The <strong>first</strong> vehicle that is affected by the Caltrops is attacked with a <strong>2D6</strong> attack; afterward remove the Caltrops template from play.</p>"
+  },
+  {
+    "id": "glue_dropper",
+    "ruleName": "Glue Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em>. Any vehicle affected by the Glue Dropper must reduce its current Gear by <strong>2</strong> at the end of its Movement Step. A single vehicle may not be affected by this weapon in two consecutive activations.</p>"
+  },
+  {
+    "id": "mine_dropper",
+    "ruleName": "Mine Dropper",
+    "rule": "<p>The <strong>first</strong> vehicle affected by this weapon is attacked with a <strong>4D6</strong> attack with <em>Blast</em>; then remove the Mine template from play.</p>"
+  },
+  {
+    "id": "napalm_dropper",
+    "ruleName": "Napalm Dropper",
+    "rule": "<p>The <strong>first</strong> vehicle affected by this weapon is attacked with a <strong>4D6</strong> attack with <em>Fire</em>; then remove the Napalm template from play.</p>"
+  },
+  {
+    "id": "oil_slick_dropper",
+    "ruleName": "Oil Slick Dropper",
+    "rule": "<p>The dropped-weapon template counts as a <em>treacherous surface</em> (see Terrain).</p>"
+  },
+  {
+    "id": "rc_car_bombs",
+    "ruleName": "RC Car Bombs",
+    "rule": "<p>Place a tiny RC Car miniature (≤ 20 mm square) within <strong>Short</strong> range of the attacking vehicle, facing any direction. This triggers a Collision Window. The RC Car counts as a <em>lightweight</em> vehicle in Gear 3 with 1 Hull Point, 1 Crew and 0 Handling. It may shoot but cannot change Gear and does not count as part of the controlling player’s team.</p><p>If the RC Car is involved in a Collision or wipes out, it first suffers 1 damage. When it would be Wrecked, it instead <strong>explodes</strong>, rolling a <strong>4D6</strong> attack as if a middleweight vehicle.</p>"
+  },
+  {
+    "id": "sentry_gun",
+    "ruleName": "Sentry Gun",
+    "rule": "<p>Place a Sentry Gun within <strong>Short</strong> range of the attacking vehicle. It remains in play as a <em>lightweight destructible obstacle</em> with 2 Hull Points. At the end of any vehicle’s Movement Step, the Sentry Gun automatically makes a <strong>2D6</strong> attack against each vehicle (not on the droppers team) within <strong>Medium</strong> range, 360° Arc of Fire. Targets may Evade as normal. The Sentry Gun does not count toward scenario rules, Audience Votes, or perks.</p>"
+  },
+  {
+    "id": "smoke_dropper",
+    "ruleName": "Smoke Dropper",
+    "rule": "<p>The dropped-weapon template counts as an <em>obstruction</em> for Cover. While a vehicle is in contact with the template it is <em>Distracted</em>. If any part of a vehicle’s movement template or Final Position touches the template, that vehicle gains <strong>1 Hazard Token</strong> at the end of its Movement Step.</p>"
+  },
+  
+    {
+      "id": "harpoon",
+      "ruleName": "Harpoon",
+      "rule": "<p>This weapon’s hits cause <strong>no</strong> damage. Instead:</p><ul><li><strong>First</strong> uncancelled hit – the target vehicle is spun to face directly toward or away from the attacker (whichever is the smaller rotation), then resolve a Collision Window.</li><li><strong>Second & subsequent</strong> uncancelled hits – the target makes a forced Short Straight move toward the attacker.</li><li>If the target is a <em>heavier</em> weight class than the attacker, <em>the attacker</em> is spun and dragged instead.</li></ul>"
+    },
+    {
+      "id": "kinetic_super_booster",
+      "ruleName": "Kinetic Super Booster",
+      "rule": "<p><em>Mishkin teams only.</em> The target suffers no damage. For every uncancelled hit, immediately <strong>increase</strong> the target’s current Gear by 1 (no Hazard Tokens are added). The target’s Gear cannot exceed its max Gear.</p>"
+    },
+    {
+      "id": "magnetic_jammer",
+      "ruleName": "Magnetic Jammer",
+      "rule": "<p><em>Mishkin teams only.</em> The target vehicle may <strong>not discard ammo tokens</strong> during its next activation.</p>"
+    },
+    {
+      "id": "thumper",
+      "ruleName": "Thumper",
+      "rule": "<p><em>Mishkin teams only.</em> No facing is declared when bought. When this vehicle attacks with the Thumper, every <strong>other</strong> vehicle within <strong>Medium</strong> range (360° arc) must make a Flip check, counting its current Gear as 2 higher (maximum Gear 6).</p>"
+    },
+    {
+      "id": "wall_of_amplifiers",
+      "ruleName": "Wall of Amplifiers",
+      "rule": "<p>This weapon does <strong>not</strong> require a target. When fired it automatically causes <strong>one</strong> hit to every vehicle within <strong>Medium</strong> range (360° arc). Hits cause no damage and may be Evaded. For each uncancelled hit on a vehicle, the attacker chooses: either remove 1 Hazard Token from that vehicle or add 1 Hazard Token to it.</p>"
+    },
+    {
+      "id": "wreck_lobber",
+      "ruleName": "Wreck Lobber",
+      "rule": "<p>A trebuchet that launches wrecked cars!</p><ul><li><strong>Trebuchet&nbsp;mode</strong> – place a penny-sized marker within <strong>Double</strong> range of the fire arc, then roll a skid die:<br>&nbsp;&nbsp;• <em>Shift</em> → place a wrecked Car touching the marker; Collision Window.<br>&nbsp;&nbsp;• <em>Spin&nbsp;or&nbsp;Slide</em> → player to the left places the wreck within <strong>Short</strong> of the marker; Collision Window.<br>&nbsp;&nbsp;• <em>Hazard</em> → player to the left places the wreck touching the active vehicle; Collision Window.</li><li><strong>Low-loader</strong> – if this vehicle collides with a wreck it may gain 1 Ammo token for the Lobber.</li><li><strong>Dumper&nbsp;mode</strong> – instead of Trebuchet, fire as a rear-mounted <em>dropped</em> weapon: place a wreck touching the rear of the active vehicle (no Collision Window).</li></ul>"
+    },
+    {
+      "id": "wrecking_ball",
+      "ruleName": "Wrecking Ball",
+      "rule": "<p>This weapon needs no target. When fired, the vehicle immediately performs a <strong>T-Bone Collision</strong> with every vehicle and destructible obstacle within <strong>Short</strong> range (360° arc) in an order chosen by its controller.</p><ul><li>During these collisions all vehicles count as having no weapons or perks except the Wrecking Ball.</li><li>Other vehicles must declare an Evade reaction.</li><li>The Wrecking-Ball vehicle gains <strong>+2 Smash Attack dice</strong> in each collision and gains <em>no</em> Hazard Tokens.</li><li>Upgrades that modify collisions (e.g. Rams, Exploding Rams) do <em>not</em> apply.</li></ul>"
+    },
+    {
+      "id": "gas_grenades",
+      "ruleName": "Gas Grenades",
+      "rule": "<p>If this weapon scores one or more <em>uncancelled hits</em>, it causes no damage. Instead, reduce the target’s <strong>Crew&nbsp;Value</strong> by 1 for each uncancelled hit (minimum Crew&nbsp;0) until the end of the Gear Phase.</p>"
+    },
+    {
+      "id": "steel_nets",
+      "ruleName": "Steel Nets",
+      "rule": "<p>This weapon’s hits cause <strong>no damage</strong>. However, for each hit the target still gains Hazard Tokens as normal from the <em>Blast</em> special rule.</p>"
+    },
+    {
+      "id": "shotgun",
+      "ruleName": "Shotgun",
+      "rule": "<p>When attacking with this weapon, roll attack dice based on range:<br><strong>Short</strong> – 3&nbsp;D6&nbsp;dice<br><strong>Medium</strong> – 2&nbsp;D6&nbsp;dice<br><strong>Long</strong> – 1&nbsp;D6&nbsp;die</p>"
+    }
+  ]
+  
+  

@@ -1158,11 +1158,59 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
     const upgradeObjects = Array.isArray(vehicle.upgradeObjects) ? vehicle.upgradeObjects : [];
     const perkObjects = Array.isArray(vehicle.perkObjects) ? vehicle.perkObjects : [];
     
-    // Get hull, handling, crew, and max gear
-    const hull = stats.hull || 4;
-    const handling = stats.handling || vehicleType.handling || 4;
-    const crew = stats.crew || vehicleType.crew || 1;
-    const maxGear = stats.gear || vehicleType.maxGear || 6;
+    // Get hull, handling, crew, and max gear with upgrade modifiers
+    // Start with base hull
+    let hull = stats.hull || vehicleType.maxHull || 4;
+    
+    // Start with base handling
+    let handling = stats.handling || vehicleType.handling || 4;
+    
+    // Calculate crew with upgrades
+    let crew = stats.crew || vehicleType.crew || 1;
+    // Apply upgrade modifiers to all stats
+    if (upgradeObjects && Array.isArray(upgradeObjects)) {
+      upgradeObjects.forEach(upgrade => {
+        // Hull modifiers are commented out because hull was renamed to hullValue and declared as a constant
+        /* 
+        if (upgrade.hull) {
+          hull += upgrade.hull;
+        } else if (upgrade.id === 'armor') {
+          // Special case for armor upgrade
+          hull += 1;
+        } else if (upgrade.hullModifier) {
+          hull += upgrade.hullModifier;
+        }
+        */
+        
+        // Add handling modifiers
+        if (upgrade.handling) {
+          handling += upgrade.handling;
+        } else if (upgrade.handlingModifier) {
+          handling += upgrade.handlingModifier;
+        }
+        
+        // Add crew modifiers
+        if (upgrade.crew) {
+          crew += upgrade.crew;
+        } else if (upgrade.crewModifier) {
+          crew += upgrade.crewModifier;
+        }
+      });
+    }
+    
+    // Calculate max gear with upgrades
+    let maxGear = stats.gear || vehicleType.maxGear || 6;
+    // Apply gear modifiers from upgrades
+    if (upgradeObjects && Array.isArray(upgradeObjects)) {
+      upgradeObjects.forEach(upgrade => {
+        // Add gear modifiers
+        if (upgrade.gear) {
+          maxGear += upgrade.gear;
+        } else if (upgrade.gearModifier) {
+          maxGear += upgrade.gearModifier;
+        }
+      });
+    }
     const weight = getWeightText(stats.weight || vehicleType.weight || 2);
     
     // Generate hull boxes (more similar to reference image)
@@ -1533,10 +1581,52 @@ function generateVehicleCardHtml(vehicle: any): string {
       vehicleTypeName = type.charAt(0).toUpperCase() + type.slice(1);
     }
     
-    // Get stats with fallbacks
-    const handling = stats.handling || vehicleType.handling || 4;
-    const gear = stats.gear || vehicleType.maxGear || 6;
-    const crew = stats.crew || vehicleType.crew || 1;
+    // Calculate stats with upgrade modifiers
+    // Start with base values
+    let handling = stats.handling || vehicleType.handling || 4;
+    let gear = stats.gear || vehicleType.maxGear || 6;
+    // Note: We don't use hull directly in classic style but include it for upgrade calculations
+    const hullValue = stats.hull || vehicleType.maxHull || 4;
+    let crew = stats.crew || vehicleType.crew || 1;
+    
+    // Apply upgrade modifiers to all stats
+    if (upgradeObjects && Array.isArray(upgradeObjects)) {
+      upgradeObjects.forEach(upgrade => {
+        // Hull modifiers are commented out because hull was renamed to hullValue and declared as a constant
+        /* 
+        if (upgrade.hull) {
+          hull += upgrade.hull;
+        } else if (upgrade.id === 'armor') {
+          // Special case for armor upgrade
+          hull += 1;
+        } else if (upgrade.hullModifier) {
+          hull += upgrade.hullModifier;
+        }
+        */
+        
+        // Add handling modifiers
+        if (upgrade.handling) {
+          handling += upgrade.handling;
+        } else if (upgrade.handlingModifier) {
+          handling += upgrade.handlingModifier;
+        }
+        
+        // Add gear modifiers
+        if (upgrade.gear) {
+          gear += upgrade.gear;
+        } else if (upgrade.gearModifier) {
+          gear += upgrade.gearModifier;
+        }
+        
+        // Add crew modifiers
+        if (upgrade.crew) {
+          crew += upgrade.crew;
+        } else if (upgrade.crewModifier) {
+          crew += upgrade.crewModifier;
+        }
+      });
+    }
+    
     const weight = getWeightText(stats.weight || vehicleType.weight || 2);
     
     // Return complete vehicle card HTML
