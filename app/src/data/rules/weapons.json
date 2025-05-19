@@ -224,7 +224,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 8,
-    "specialRules": "AMMO 3, BLAST, SEE SPECIAL RULES",
+    "specialRules": "AMMO 3, BLAST, 125mm_cannon",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -236,7 +236,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 6,
-    "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, ELECTRICAL, arc_lightning_projector",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },
@@ -261,7 +261,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 10,
-    "specialRules": "AMMO 1, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, bfg",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -273,7 +273,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 3,
-    "specialRules": "SPLASH, SEE SPECIAL RULES",
+    "specialRules": "SPLASH",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -285,7 +285,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 3,
-    "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, ELECTRICAL, death_ray",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },
@@ -309,7 +309,7 @@
     "type": "weapon",
     "range": "Short",
     "attackDice": 3,
-    "specialRules": "SEE SPECIAL RULES",
+    "specialRules": "grabber_arm",
     "advanced": true,
     "source": "Gaslands Refueled"
   },
@@ -321,7 +321,7 @@
     "type": "weapon",
     "range": "Double",
     "attackDice": 3,
-    "specialRules": "AMMO 1, ELECTRICAL, SEE SPECIAL RULES",
+    "specialRules": "AMMO 1, ELECTRICAL, grav_gun",
     "advanced": true,
     "source": "Gaslands Refueled", "electrical":true
   },

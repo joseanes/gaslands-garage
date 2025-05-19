@@ -196,7 +196,38 @@
       "id": "turret_mounting",
       "ruleName": "Turret Mounting for Weapon",
       "rule": "<p>When buying a shooting weapon, you may pay <strong>three times</strong> its normal cost to make it <em>Turret-mounted</em>. A turret has a <strong>360° Arc of Fire</strong>.</p><p>Example: a front-mounted Minigun costs 5&nbsp;Cans; a Turret-mounted Minigun costs 15&nbsp;Cans.</p>"
+    },
+    {
+      "id": "125mm_cannon",
+      "ruleName": "125 mm Cannon",
+      "rule": "<p>A tank gun on a civilian ride! When this weapon is fired, the attacking vehicle immediately <strong>gains 2 Hazard Tokens</strong> if it is <em>not</em> a Tank.</p>"
+    },
+    {
+      "id": "arc_lightning_projector",
+      "ruleName": "Arc Lightning Projector",
+      "rule": "<p><em>Mishkin teams only.</em> After this weapon <strong>damages</strong> a target, the attacker must immediately attack another target within <strong>Short</strong> range and 360° of the <em>current</em> target (friendly vehicles are valid). The chain continues until a target takes no damage or no valid targets remain. A vehicle cannot be hit twice in the same Attack Step by the Arc Lightning Projector.</p>"
+    },
+    {
+      "id": "bfg_weapon",
+      "ruleName": "BFG",
+      "rule": "<p><em>Front-mounted only.</em> When this weapon is fired:</p><ol><li>The firing vehicle immediately makes a forced <strong>Medium Straight</strong> move <em>backwards</em>.</li><li>Its Gear is reduced to <strong>1</strong>.</li><li>It gains <strong>3 Hazard Tokens</strong>.</li></ol>"
+    },
+    {
+      "id": "death_ray",
+      "ruleName": "Death Ray",
+      "rule": "<p><em>Mishkin teams only.</em> If this weapon scores <strong>five&nbsp;or more</strong> uncancelled hits in one attack, the target vehicle is immediately <strong>removed from play</strong> (counts as Wrecked for Audience Votes, scenario rules, etc.) instead of taking damage.</p>"
+    },
+    {
+      "id": "grabber_arm",
+      "ruleName": "Grabber Arm",
+      "rule": "<p>If this vehicle attacks a vehicle of the <em>same weight or lighter</em> with the Grabber Arm and scores at least one uncancelled hit, the controller may place the target vehicle anywhere within <strong>Short</strong> of its original position, facing any direction. This movement triggers a Collision Window.</p>"
+    },
+    {
+      "id": "grav_gun",
+      "ruleName": "Grav Gun",
+      "rule": "<p><em>Mishkin teams only.</em> If this weapon scores one or more uncancelled hits, it causes no damage. Instead, the attacker chooses <strong>one</strong> effect on the target until the end of its next activation:</p><ul><li>Target counts as <strong>one weight class heavier</strong>, or</li><li>Target counts as <strong>one weight class lighter</strong>.</li></ul>"
     }
+    
   ]
   
   
