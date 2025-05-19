@@ -367,7 +367,7 @@
             <ul class="text-stone-600 dark:text-gray-200 text-sm ml-12 list-disc space-y-1 my-2">
               <li><strong>Classic:</strong> Traditional vehicle cards with detailed information</li>
               <li><strong>Dashboard:</strong> Vehicle dashboard view with visual hull/gear trackers</li>
-              <li><strong>Roster:</strong> Compact text-based format (like Battlescribe) for maximum information density</li>
+              <li><strong>Roster:</strong> Clean, compact format optimized for reference during gameplay</li>
             </ul>
 
             <!-- Print Description Options -->
