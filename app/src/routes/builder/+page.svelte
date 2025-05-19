@@ -246,7 +246,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		const newVehicle = {
 			id: newVehicleId,
 			type: vt.id,
-			name: `New ${vt.name}`,
+			name: `New Vehicle`,
 			weapons: [],
 			weaponFacings: {},
 			upgrades: [],
@@ -1212,6 +1212,13 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	async function printTeam() {
 		console.log("[printTeam] Print function called");
 		
+		// Debug: Check for extra crewmember upgrade in vehicles
+		vehicles.forEach((vehicle, index) => {
+			if (vehicle.upgrades.includes('extra_crewmember')) {
+				console.log(`[printTeam] Vehicle ${index} has Extra Crewmember upgrade`);
+			}
+		});
+		
 		// Check for vehicles again (defensive coding)
 		if (!vehicles || !Array.isArray(vehicles) || vehicles.length === 0) {
 			console.log("[printTeam] No vehicles to print");
@@ -1261,8 +1268,10 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				...v,
 				// Include calculated cost
 				cost: validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || 0,
-				// Include vehicle type details
+				// Include vehicle type details with special rules
 				vehicleType: vehicleTypes.find(vt => vt.id === v.type),
+				// Explicitly include special rules from the vehicle type for easier access
+				specialRules: vehicleTypes.find(vt => vt.id === v.type)?.specialRules || '',
 				// Include stats
 				stats: {
 					hull: calculateMaxHull(v),
@@ -1305,11 +1314,25 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				// Include full upgrade objects with names
 				upgradeObjects: v.upgrades.map(upgradeId => {
 					const upgrade = upgrades.find(u => u.id === upgradeId);
+					// Debug log for crew property
+					if (upgrade && upgrade.id === 'extra_crewmember') {
+						console.log('Found Extra Crewmember upgrade:', upgrade);
+						console.log('Crew property:', upgrade.crew);
+					}
 					return {
 						id: upgradeId,
 						name: upgrade?.name || upgradeId,
 						cost: upgrade?.cost || 0,
-						specialRules: upgrade?.specialRules || ''
+						specialRules: upgrade?.specialRules || '',
+						// Include all stat modifiers
+						crew: upgrade?.crew || 0,
+						crewModifier: upgrade?.crewModifier || 0,
+						hull: upgrade?.hull || 0,
+						hullModifier: upgrade?.hullModifier || 0,
+						handling: upgrade?.handling || 0,
+						handlingModifier: upgrade?.handlingModifier || 0,
+						gear: upgrade?.gear || 0,
+						gearModifier: upgrade?.gearModifier || 0
 					};
 				}),
 				// Include full perk objects with names

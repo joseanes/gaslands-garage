@@ -261,19 +261,43 @@
     
     // Weight classes
     function getVehicleWeight(vehicle) {
-        if (!vehicle) return 0;
+        if (!vehicle) return "Middleweight";
         const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
-        return vehicleType?.weight || 0;
+        return vehicleType?.weight || "Middleweight";
     }
     
     function getWeightDistribution() {
-        const weights = { 0: 0, 1: 0, 2: 0, 3: 0 };
+        // Use weight class names instead of numbers
+        const weights = { 
+            "Lightweight": 0, 
+            "Middleweight": 0, 
+            "Heavyweight": 0, 
+            "Massive": 0,
+            "Other": 0
+        };
         
         if (!vehicles || !vehicles.length) return weights;
         
         for (const vehicle of vehicles) {
             const weight = getVehicleWeight(vehicle);
-            weights[weight] = (weights[weight] || 0) + 1;
+            
+            // Handle string weights directly
+            if (typeof weight === 'string') {
+                if (weights[weight] !== undefined) {
+                    weights[weight]++;
+                } else {
+                    weights["Other"]++;
+                }
+            } 
+            // Fallback for legacy numeric weights
+            else if (typeof weight === 'number') {
+                // Map the old number values to the string weight classes
+                if (weight === 0) weights["Lightweight"]++;
+                else if (weight === 1) weights["Middleweight"]++;
+                else if (weight === 2) weights["Heavyweight"]++;
+                else if (weight === 3) weights["Massive"]++;
+                else weights["Other"]++;
+            }
         }
         
         return weights;
@@ -325,10 +349,10 @@
         
         // Weight suggestions
         const weights = getWeightDistribution();
-        if (weights[0] + weights[1] === 0) {
+        if (weights["Lightweight"] + weights["Middleweight"] === 0) {
             suggestions.push("Your team lacks lighter vehicles. Consider adding at least one lightweight vehicle for objectives.");
         }
-        if (weights[2] + weights[3] === 0) {
+        if (weights["Heavyweight"] + weights["Massive"] === 0) {
             suggestions.push("Your team has no heavyweight vehicles, which may be vulnerable in collisions.");
         }
         
@@ -556,31 +580,37 @@
             </div>
             
             <!-- Weight Class Distribution -->
-            {#if getWeightDistribution()[0] > 0 || 
-                getWeightDistribution()[1] > 0 || 
-                getWeightDistribution()[2] > 0 || 
-                getWeightDistribution()[3] > 0}
+            {#if getWeightDistribution()["Lightweight"] > 0 || 
+                getWeightDistribution()["Middleweight"] > 0 || 
+                getWeightDistribution()["Heavyweight"] > 0 || 
+                getWeightDistribution()["Massive"] > 0 ||
+                getWeightDistribution()["Other"] > 0}
                 <div class="mt-4">
                     <div class="text-xs text-stone-600 dark:text-gray-300 font-semibold mb-2">Weight Classes</div>
                     <div class="flex flex-wrap gap-2">
-                        {#if getWeightDistribution()[0] > 0}
+                        {#if getWeightDistribution()["Lightweight"] > 0}
                             <div class="py-1 px-2 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs">
-                                Lightweight: {getWeightDistribution()[0]}
+                                Lightweight: {getWeightDistribution()["Lightweight"]}
                             </div>
                         {/if}
-                        {#if getWeightDistribution()[1] > 0}
+                        {#if getWeightDistribution()["Middleweight"] > 0}
                             <div class="py-1 px-2 bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded text-xs">
-                                Middleweight: {getWeightDistribution()[1]}
+                                Middleweight: {getWeightDistribution()["Middleweight"]}
                             </div>
                         {/if}
-                        {#if getWeightDistribution()[2] > 0}
+                        {#if getWeightDistribution()["Heavyweight"] > 0}
                             <div class="py-1 px-2 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 rounded text-xs">
-                                Heavyweight: {getWeightDistribution()[2]}
+                                Heavyweight: {getWeightDistribution()["Heavyweight"]}
                             </div>
                         {/if}
-                        {#if getWeightDistribution()[3] > 0}
+                        {#if getWeightDistribution()["Massive"] > 0}
                             <div class="py-1 px-2 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-xs">
-                                Super-heavyweight: {getWeightDistribution()[3]}
+                                Massive: {getWeightDistribution()["Massive"]}
+                            </div>
+                        {/if}
+                        {#if getWeightDistribution()["Other"] > 0}
+                            <div class="py-1 px-2 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs">
+                                Other: {getWeightDistribution()["Other"]}
                             </div>
                         {/if}
                     </div>

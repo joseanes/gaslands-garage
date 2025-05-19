@@ -1255,9 +1255,11 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
     
     // Calculate crew with upgrades
     let crew = stats.crew || vehicleType.crew || 1;
+    console.log(`Initial crew for ${name}: ${crew}`);
     // Apply upgrade modifiers to all stats
     if (upgradeObjects && Array.isArray(upgradeObjects)) {
       upgradeObjects.forEach(upgrade => {
+        console.log(`Checking upgrade ${upgrade.name} for crew modifiers:`, upgrade);
         // Hull modifiers are commented out because hull was renamed to hullValue and declared as a constant
         /* 
         if (upgrade.hull) {
@@ -1280,8 +1282,10 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
         // Add crew modifiers
         if (upgrade.crew) {
           crew += upgrade.crew;
+          console.log(`Added ${upgrade.crew} crew from upgrade ${upgrade.name}, new total: ${crew}`);
         } else if (upgrade.crewModifier) {
           crew += upgrade.crewModifier;
+          console.log(`Added ${upgrade.crewModifier} crew from upgrade ${upgrade.name} (crewModifier), new total: ${crew}`);
         }
       });
     }
@@ -1439,6 +1443,15 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
       typeName
     ];
     
+    // Add any vehicle special rules
+    if (vehicle.specialRules) {
+      // Add special rules from the specialRules field
+      vehicleTypePerks.push(vehicle.specialRules);
+    } else if (vehicleType.specialRules) {
+      // Fallback to specialRules from the vehicleType
+      vehicleTypePerks.push(vehicleType.specialRules);
+    }
+    
     // Add any team-wide perks like "Thumpermonkey" or "Dynamo"
     if (perkObjects.length > 0) {
       const teamwidePerkNames = perkObjects.map(p => p.name || '').filter(Boolean);
@@ -1456,7 +1469,6 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
           <div class="vehicle-type-perks">${vehicleTypePerks.join(', ')}</div>
         </div>
         <div>
-          ${sponsorName}<br>
           <strong>${cost} cans</strong>
         </div>
       </div>
@@ -1676,6 +1688,7 @@ function generateVehicleCardHtml(vehicle: any): string {
     // Note: We don't use hull directly in classic style but include it for upgrade calculations
     const hullValue = stats.hull || vehicleType.maxHull || 4;
     let crew = stats.crew || vehicleType.crew || 1;
+    console.log(`Classic style - Initial crew for ${name}: ${crew}`);
     
     // Apply upgrade modifiers to all stats
     if (upgradeObjects && Array.isArray(upgradeObjects)) {
@@ -1709,8 +1722,10 @@ function generateVehicleCardHtml(vehicle: any): string {
         // Add crew modifiers
         if (upgrade.crew) {
           crew += upgrade.crew;
+          console.log(`Added ${upgrade.crew} crew from upgrade ${upgrade.name}, new total: ${crew}`);
         } else if (upgrade.crewModifier) {
           crew += upgrade.crewModifier;
+          console.log(`Added ${upgrade.crewModifier} crew from upgrade ${upgrade.name} (crewModifier), new total: ${crew}`);
         }
       });
     }
@@ -1768,13 +1783,20 @@ function generateVehicleCardHtml(vehicle: any): string {
 /**
  * Convert weight number to text
  */
-function getWeightText(weight: number): string {
+function getWeightText(weight: number | string): string {
+  // If it's a string, return as is
+  if (typeof weight === 'string') return weight;
+  
+  // For backward compatibility with numeric weights
+  // (This will only be used if any numeric weights remain in old data)
   switch(weight) {
-    case 1: return 'Light';
-    case 2: return 'Medium';
-    case 3: return 'Heavy';
-    case 4: return 'Massive';
-    default: return 'Medium';
+    case 0: return 'Lightweight';
+    case 1: return 'Middleweight';
+    case 2: return 'Heavyweight';
+    case 3: return 'Massive';
+    case 4: return 'Ultraheavy';
+    default:
+      return 'Middleweight';
   }
 }
 
@@ -2275,12 +2297,20 @@ function generateRosterHtml(data: {
         </div>`;
         
       // Add Vehicle Rules if available
-      if (vehicleRules && vehicleRules.length > 0 && showSpecialRules) {
+      // Add vehicle rules from the vehicleRules array OR the specialRules field
+      if ((vehicleRules && vehicleRules.length > 0 && showSpecialRules) || 
+          (vehicle.specialRules && showSpecialRules)) {
         vehiclesHtml += `<div class="rules-section">`;
         if (typeof vehicleRules === 'string') {
           vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicleRules}</div>`;
         } else if (Array.isArray(vehicleRules)) {
           vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicleRules.join(', ')}</div>`;
+        } else if (vehicle.specialRules) {
+          // Use the specialRules from the vehicle
+          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicle.specialRules}</div>`;
+        } else if (vehicle.vehicleType && vehicle.vehicleType.specialRules) {
+          // Fallback to specialRules from the vehicleType
+          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicle.vehicleType.specialRules}</div>`;
         }
         vehiclesHtml += `</div>`;
       }
