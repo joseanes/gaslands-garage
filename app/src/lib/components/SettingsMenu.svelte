@@ -346,11 +346,29 @@
                   Dashboard
                 </label>
               </div>
+              <div class="flex items-center">
+                <input
+                  type="radio"
+                  id="print-style-roster"
+                  name="print-style"
+                  value="roster"
+                  bind:group={printStyle}
+                  class="w-4 h-4 text-amber-600 bg-stone-100 dark:bg-gray-700 border-stone-300 dark:border-gray-600 focus:ring-amber-500"
+                />
+                <label for="print-style-roster" class="ml-3 text-stone-800 dark:text-white">
+                  Roster
+                </label>
+              </div>
               
             </div>
             <p class="text-stone-600 dark:text-gray-200 text-sm ml-8">
-              Choose your preferred print layout style.
+              Choose your preferred print layout style:
             </p>
+            <ul class="text-stone-600 dark:text-gray-200 text-sm ml-12 list-disc space-y-1 my-2">
+              <li><strong>Classic:</strong> Traditional vehicle cards with detailed information</li>
+              <li><strong>Dashboard:</strong> Vehicle dashboard view with visual hull/gear trackers</li>
+              <li><strong>Roster:</strong> Simple table-based format for maximum readability</li>
+            </ul>
 
             <!-- Print Description Options -->
             <div class="mt-4 border-t pt-4 border-amber-100 dark:border-amber-900/50">
