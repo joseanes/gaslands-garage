@@ -60,24 +60,30 @@ export function generatePrintableHtml(data: {
     vehicles.some(v => v && typeof v === 'object');
     
   if (!hasValidVehicles) {
-    console.error("[PrintService-new] No valid vehicles data in generatePrintableHtml:", data);
+    console.error("[PrintService] No valid vehicles data in generatePrintableHtml:", data);
   }
   
-  console.log("[PrintService-new] Generating HTML for vehicles with style:", printStyle, vehicles);
+  console.log("[PrintService] Generating HTML for vehicles with style:", printStyle, vehicles);
   
   // Ensure printStyle is a string and handle various dashboard naming conventions
   const style = String(printStyle || 'classic').toLowerCase().trim();
   
-  // Check if we should use Dashboard style - handle different naming variations
-  console.log("[PrintService-new] Using print style:", style);
-  console.log("[PrintService-new] Dashboard style check:", style.includes('dashboard'));
+  // Check which print style to use
+  console.log("[PrintService] Using print style:", style);
   
+  // Check for Dashboard style with various naming conventions
   if (style === 'dashboard_v2' || style === 'dashboard' || style.includes('dashboard')) {
-    console.log("[PrintService-new] Generating dashboard-style HTML");
+    console.log("[PrintService] Generating dashboard-style HTML");
     return generateDashboardHtml(data);
   }
   
-  console.log("[PrintService-new] Generating classic-style HTML");
+  // Check for Roster style (simple table format)
+  if (style === 'roster' || style.includes('roster')) {
+    console.log("[PrintService] Generating roster-style HTML");
+    return generateRosterHtml(data);
+  }
+  
+  console.log("[PrintService] Generating classic-style HTML");
   
   // Continue with Classic style
   
@@ -85,7 +91,7 @@ export function generatePrintableHtml(data: {
   let vehicleCardsHtml = '';
   if (vehicles && Array.isArray(vehicles)) {
     vehicles.forEach((vehicle, index) => {
-      console.log(`[PrintService-new] Processing vehicle ${index}:`, vehicle);
+      console.log(`[PrintService] Processing vehicle ${index}:`, vehicle);
       vehicleCardsHtml += generateVehicleCardHtml(vehicle);
     });
   } else {
@@ -752,7 +758,7 @@ function generateDashboardHtml(data: {
   }
   
   // Inspect what's in the data for debugging
-  console.log("[PrintService-new] Dashboard data:", {
+  console.log("[PrintService] Dashboard data:", {
     teamName,
     sponsorName,
     vehiclesLength: vehicles?.length,
@@ -1516,7 +1522,7 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
     </div>
     `;
   } catch (error) {
-    console.error("[PrintService-new] Error generating dashboard HTML:", error);
+    console.error("[PrintService] Error generating dashboard HTML:", error);
     return `<div class="dashboard-card">Error generating dashboard: ${error.message}</div>`;
   }
 }
@@ -1525,11 +1531,11 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
  * Generate HTML for a vehicle card
  */
 function generateVehicleCardHtml(vehicle: any): string {
-  console.log("[PrintService-new] Generating HTML for vehicle:", vehicle);
+  console.log("[PrintService] Generating HTML for vehicle:", vehicle);
   
   // Check if vehicle data is valid
   if (!vehicle) {
-    console.error("[PrintService-new] Invalid vehicle data:", vehicle);
+    console.error("[PrintService] Invalid vehicle data:", vehicle);
     return '<div class="vehicle-card">Error: Invalid vehicle data</div>';
   }
   
@@ -1754,7 +1760,7 @@ function generateVehicleCardHtml(vehicle: any): string {
     </div>
     `;
   } catch (error) {
-    console.error("[PrintService-new] Error generating vehicle card HTML:", error);
+    console.error("[PrintService] Error generating vehicle card HTML:", error);
     return `<div class="vehicle-card">Error generating vehicle card: ${error.message}</div>`;
   }
 }
@@ -2193,6 +2199,393 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
 }
 
 /**
+ * Generate HTML for Roster style printing - simple table format
+ */
+function generateRosterHtml(data: {
+  teamName: string;
+  totalCans: number;
+  maxCans: number;
+  sponsorName: string;
+  vehicles: any[];
+  sponsor?: any;
+  sponsorPerks?: any;
+  qrCode?: string;
+  showEquipmentDescriptions?: boolean;
+  showPerkDescriptions?: boolean;
+  showSpecialRules?: boolean;
+}): string {
+  const {
+    teamName,
+    totalCans,
+    maxCans,
+    sponsorName,
+    vehicles,
+    sponsor,
+    sponsorPerks,
+    qrCode,
+    showEquipmentDescriptions = true,
+    showPerkDescriptions = true,
+    showSpecialRules = true
+  } = data;
+  
+  // Helper function to safely get weapon, upgrade and perk names
+  const getNameFromItem = (item: any): string => {
+    if (!item) return 'Unknown';
+    return item.name || item.id || 'Unknown';
+  };
+  
+  // Generate HTML for roster style - simple table with equipment lists
+  let vehiclesHtml = '';
+  
+  if (vehicles && Array.isArray(vehicles)) {
+    vehicles.forEach((vehicle, index) => {
+      const {
+        id = 'unknown',
+        type = 'Car', 
+        name = 'Vehicle', 
+        cost = 0,
+        handling = 4,
+        maxGear = 6,
+        crew = 1,
+        hull = 4,
+        vehicleRules = [],
+        weapons = [],
+        upgrades = [],
+        perks = [],
+        weaponObjects = [],
+        upgradeObjects = [],
+        perkObjects = []
+      } = vehicle;
+      
+      // Get the vehicle stats
+      const htmlId = `vehicle-${id.replace(/[^a-zA-Z0-9]/g, '')}`;
+      
+      // Start vehicle section
+      vehiclesHtml += `
+      <div class="vehicle-roster-section">
+        <h3 class="vehicle-name">${name} (${type}) - ${cost} cans</h3>
+        
+        <!-- Vehicle stats row -->
+        <table class="roster-table stats-table">
+          <thead>
+            <tr>
+              <th>Handling</th>
+              <th>Max Gear</th>
+              <th>Crew</th>
+              <th>Hull</th>
+              <th>Weight</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${handling}</td>
+              <td>${maxGear}</td>
+              <td>${crew}</td>
+              <td>${hull}</td>
+              <td>${vehicle.weight || 'Medium'}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Weapons Table -->
+        <h4 class="equipment-header">Weapons</h4>
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Weapon</th>
+              <th>Facing</th>
+              <th>Attack Dice</th>
+              <th>Range</th>
+              <th>Special</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      // Add weapons rows
+      if (weaponObjects && weaponObjects.length > 0) {
+        weaponObjects.forEach(weapon => {
+          if (weapon) {
+            const facing = vehicle.weaponFacings && vehicle.weaponFacings[weapon.id] 
+              ? vehicle.weaponFacings[weapon.id] 
+              : 'Front';
+              
+            vehiclesHtml += `
+            <tr>
+              <td>${weapon.name || 'Unknown Weapon'}</td>
+              <td>${facing}</td>
+              <td>${weapon.attackDice || '-'}</td>
+              <td>${weapon.range || '-'}</td>
+              <td>${weapon.specialRules || ''}</td>
+            </tr>`;
+          }
+        });
+      } else if (weapons && weapons.length > 0) {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="5">Weapon details not available</td>
+        </tr>`;
+      } else {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="5">No weapons</td>
+        </tr>`;
+      }
+      
+      vehiclesHtml += `
+          </tbody>
+        </table>
+        
+        <!-- Upgrades Table -->
+        <h4 class="equipment-header">Upgrades</h4>
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Upgrade</th>
+              <th>Special Rules</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      // Add upgrades rows
+      if (upgradeObjects && upgradeObjects.length > 0) {
+        upgradeObjects.forEach(upgrade => {
+          if (upgrade) {
+            vehiclesHtml += `
+            <tr>
+              <td>${upgrade.name || 'Unknown Upgrade'}</td>
+              <td>${upgrade.specialRules || ''}</td>
+            </tr>`;
+          }
+        });
+      } else if (upgrades && upgrades.length > 0) {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="2">Upgrade details not available</td>
+        </tr>`;
+      } else {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="2">No upgrades</td>
+        </tr>`;
+      }
+      
+      vehiclesHtml += `
+          </tbody>
+        </table>
+        
+        <!-- Perks Table -->
+        <h4 class="equipment-header">Perks</h4>
+        <table class="roster-table">
+          <thead>
+            <tr>
+              <th>Perk</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      
+      // Add perks rows
+      if (perkObjects && perkObjects.length > 0) {
+        perkObjects.forEach(perk => {
+          if (perk) {
+            vehiclesHtml += `
+            <tr>
+              <td>${perk.name || 'Unknown Perk'}</td>
+              <td>${perk.text || ''}</td>
+            </tr>`;
+          }
+        });
+      } else if (perks && perks.length > 0) {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="2">Perk details not available</td>
+        </tr>`;
+      } else {
+        vehiclesHtml += `
+        <tr>
+          <td colspan="2">No perks</td>
+        </tr>`;
+      }
+      
+      vehiclesHtml += `
+          </tbody>
+        </table>
+      </div>`;
+      
+      // Add page break after each vehicle except the last one
+      if (index < vehicles.length - 1) {
+        vehiclesHtml += '<div class="page-break"></div>';
+      }
+    });
+  } else {
+    vehiclesHtml = '<p>No vehicles found</p>';
+  }
+  
+  // Generate the final HTML with CSS
+  return `<!DOCTYPE html>
+  <html>
+  <head>
+    <title>${teamName} - Gaslands Roster</title>
+    <meta charset="utf-8">
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.4;
+        color: #000;
+        background: #fff;
+        margin: 0;
+        padding: 15px;
+      }
+      
+      /* Print settings */
+      @media print {
+        @page {
+          size: auto;
+          margin: 10mm;
+        }
+        
+        body {
+          margin: 0;
+          padding: 10px;
+        }
+        
+        .page-break {
+          page-break-after: always;
+          height: 0;
+          display: block;
+        }
+        
+        button {
+          display: none !important;
+        }
+      }
+      
+      /* Header styles */
+      .roster-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin: 0 0 5px 0;
+        color: #000;
+      }
+      
+      .team-details {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      
+      /* Vehicle section styles */
+      .vehicle-roster-section {
+        margin-bottom: 30px;
+      }
+      
+      .vehicle-name {
+        font-size: 18px;
+        margin: 0 0 10px 0;
+        border-bottom: 1px solid #000;
+        padding-bottom: 5px;
+      }
+      
+      .equipment-header {
+        font-size: 16px;
+        margin: 15px 0 5px 0;
+      }
+      
+      /* Table styles */
+      .roster-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      
+      .roster-table th {
+        border: 1px solid #888;
+        background-color: #eee;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      
+      .roster-table td {
+        border: 1px solid #888;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      
+      .stats-table {
+        width: auto;
+        min-width: 50%;
+      }
+      
+      .stats-table th, .stats-table td {
+        text-align: center;
+      }
+      
+      /* QR code styles */
+      .qr-section {
+        text-align: center;
+        margin-top: 50px;
+        margin-bottom: 20px;
+      }
+      
+      .qr-code {
+        max-width: 150px;
+        height: auto;
+      }
+      
+      .qr-caption {
+        font-size: 14px;
+        margin-top: 10px;
+        color: #666;
+      }
+      
+      /* Footer styles */
+      .roster-footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="roster-header">
+      <div class="header-info">
+        <h1>${teamName}</h1>
+        <div class="team-details">Sponsor: ${sponsorName}</div>
+        <div class="team-details">Team Cost: ${totalCans} / ${maxCans} cans</div>
+      </div>
+    </div>
+    
+    <div class="roster-content">
+      ${vehiclesHtml}
+    </div>
+    
+    <div class="qr-section">
+      ${qrCode ?
+        `<img src="${qrCode}" class="qr-code" alt="QR Code for team">
+        <div class="qr-caption">Scan to load this team build</div>` :
+        ''
+      }
+    </div>
+    
+    <div class="roster-footer">
+      Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
+    </div>
+  </body>
+  </html>`;
+}
+
+/**
  * Main print function that generates and opens printable content in a new window
  */
 /**
@@ -2201,29 +2594,29 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
 export async function printTeamDashboard(draft: Draft): Promise<void> {
   // Validate draft before proceeding
   if (!draft) {
-    console.error("[PrintService-new] Draft is null or undefined in dashboard print");
+    console.error("[PrintService] Draft is null or undefined in dashboard print");
     alert("Unable to print: Missing team data");
     return;
   }
   
   if (!draft.vehicles || !Array.isArray(draft.vehicles) || draft.vehicles.length === 0) {
-    console.error("[PrintService-new] No vehicles in draft for dashboard print");
+    console.error("[PrintService] No vehicles in draft for dashboard print");
     alert("Please add at least one vehicle to your team before printing.");
     return;
   }
   
-  console.log("[PrintService-new] printTeamDashboard called with", draft.vehicles.length, "vehicles");
+  console.log("[PrintService] printTeamDashboard called with", draft.vehicles.length, "vehicles");
   
   // Add weaponAndUpgradeSpecialRules to vehicles for access in generateEquipmentDescriptionsHtml
   draft.vehicles.forEach(vehicle => {
     vehicle.draft = { weaponAndUpgradeSpecialRules: draft.weaponAndUpgradeSpecialRules };
   });
-  console.log("[PrintService-new] printTeamDashboard called");
-  console.log("[PrintService-new] Draft structure:", Object.keys(draft));
+  console.log("[PrintService] printTeamDashboard called");
+  console.log("[PrintService] Draft structure:", Object.keys(draft));
   
   try {
     // Log details of draft for debugging
-    console.log("[PrintService-new] Draft details:", {
+    console.log("[PrintService] Draft details:", {
       teamName: draft.teamName,
       sponsorName: draft.sponsorName,
       hasVehicles: Boolean(draft.vehicles),
@@ -2258,7 +2651,7 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
     };
     
     // Generate dashboard HTML
-    console.log("[PrintService-new] Generating dashboard HTML with data:", {
+    console.log("[PrintService] Generating dashboard HTML with data:", {
       teamName: printData.teamName,
       sponsorName: printData.sponsorName,
       vehicleCount: printData.vehicles.length,
@@ -2343,15 +2736,15 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
     setTimeout(() => {
       try {
         // Just make sure the content is fully loaded
-        console.log("[PrintService-new] Dashboard print window ready for user interaction");
+        console.log("[PrintService] Dashboard print window ready for user interaction");
       } catch (printError) {
-        console.error("[PrintService-new] Error during dashboard window preparation:", printError);
+        console.error("[PrintService] Error during dashboard window preparation:", printError);
         alert('Error preparing the print view. Please try again.');
       }
     }, 1000);
   } catch (error) {
-    console.error("[PrintService-new] Error in printTeamDashboard:", error);
-    console.error("[PrintService-new] Dashboard error details:", {
+    console.error("[PrintService] Error in printTeamDashboard:", error);
+    console.error("[PrintService] Dashboard error details:", {
       message: error.message,
       stack: error.stack,
       name: error.name,
@@ -2377,48 +2770,56 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
 export async function printTeam(printStyle: string, draft: Draft): Promise<void> {
   // Validate draft before proceeding
   if (!draft) {
-    console.error("[PrintService-new] Draft is null or undefined");
+    console.error("[PrintService] Draft is null or undefined");
     alert("Unable to print: Missing team data");
     return;
   }
   
   if (!draft.vehicles || !Array.isArray(draft.vehicles) || draft.vehicles.length === 0) {
-    console.error("[PrintService-new] No vehicles in draft");
+    console.error("[PrintService] No vehicles in draft");
     alert("Please add at least one vehicle to your team before printing.");
     return;
   }
   
-  console.log("[PrintService-new] Preparing to print team with style:", printStyle, "and", draft.vehicles.length, "vehicles");
+  console.log("[PrintService] Preparing to print team with style:", printStyle, "and", draft.vehicles.length, "vehicles");
   
   // Check if we should use the dashboard style - handle various naming variations
   const actualPrintStyle = String(printStyle || draft.printStyle || 'classic').toLowerCase().trim();
   
   if (actualPrintStyle === 'dashboard' || actualPrintStyle === 'dashboard_v2' || actualPrintStyle.includes('dashboard')) {
-    console.log("[PrintService-new] Redirecting to dashboard print style from:", { printStyle, draftPrintStyle: draft.printStyle });
+    console.log("[PrintService] Redirecting to dashboard print style from:", { printStyle, draftPrintStyle: draft.printStyle });
     // Make sure printStyle is set in the draft
     draft.printStyle = 'dashboard';
     return printTeamDashboard(draft);
   }
   
-  // Continue with classic style
-  console.log("[PrintService-new] printTeam called with style parameter:", printStyle);
-  console.log("[PrintService-new] Draft printStyle:", draft.printStyle);
-  console.log("[PrintService-new] Using classic style");
+  // Check for roster style
+  if (actualPrintStyle === 'roster' || actualPrintStyle.includes('roster')) {
+    console.log("[PrintService] Using roster print style");
+    // Continue with the regular printTeam function but use the roster style
+    draft.printStyle = 'roster';
+  } else {
+    // Continue with classic style
+    console.log("[PrintService] Using classic print style");
+    draft.printStyle = 'classic';
+  }
+  
+  console.log("[PrintService] printTeam called with style parameter:", printStyle);
 
   try {
     // Dump the draft data to console to debug vehicle data
-    console.log("[PrintService-new] Print data:", JSON.stringify(draft, null, 2));
+    console.log("[PrintService] Print data:", JSON.stringify(draft, null, 2));
 
     // Generate QR code
     let qrCode = null;
     try {
       // If the draft already has a QR code, use it
       if (draft.qrCode && typeof draft.qrCode === 'string' && draft.qrCode.startsWith('data:image/')) {
-        console.log("[PrintService-new] Using provided QR code from draft");
+        console.log("[PrintService] Using provided QR code from draft");
         qrCode = draft.qrCode;
       } else {
         // Generate a new QR code
-        console.log("[PrintService-new] Generating new QR code for draft with vehicles:", draft.vehicles.length);
+        console.log("[PrintService] Generating new QR code for draft with vehicles:", draft.vehicles.length);
 
         // Create a simplified version of the draft to encode with null checks
         const simpleDraft = {
@@ -2437,16 +2838,16 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
 
         // Generate the QR code using the simplified draft
         qrCode = await draftToDataURL(simpleDraft);
-        console.log("[PrintService-new] QR code generated, length:", qrCode?.length || 0);
+        console.log("[PrintService] QR code generated, length:", qrCode?.length || 0);
       }
 
       // Final validation
       if (!qrCode || typeof qrCode !== 'string' || !qrCode.startsWith('data:image/')) {
-        console.error("[PrintService-new] Invalid QR code generated:", qrCode?.substring(0, 30));
+        console.error("[PrintService] Invalid QR code generated:", qrCode?.substring(0, 30));
         qrCode = null;
       }
     } catch (qrError) {
-      console.error("[PrintService-new] Error generating QR code:", qrError);
+      console.error("[PrintService] Error generating QR code:", qrError);
       qrCode = null;
     }
 
@@ -2457,7 +2858,7 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
       draft.vehicles.some(v => v && typeof v === 'object');
       
     if (!hasValidVehicles) {
-      console.error("[PrintService-new] No valid vehicles found in draft data", draft.vehicles);
+      console.error("[PrintService] No valid vehicles found in draft data", draft.vehicles);
       alert('No vehicles found to print. Please add vehicles to your team.');
       return;
     }
@@ -2469,7 +2870,7 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     const showPerkDescriptions = draft.showPerkDescriptions !== undefined ?
       draft.showPerkDescriptions : true;
 
-    console.log("[PrintService-new] Print options:", {
+    console.log("[PrintService] Print options:", {
       showEquipmentDescriptions,
       showPerkDescriptions,
       printStyle
@@ -2494,8 +2895,8 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     
     // Make sure printStyle is passed correctly to the data
     printData.printStyle = printStyle;
-    console.log("[PrintService-new] Using print style for HTML generation:", printStyle);
-    console.log("[PrintService-new] Print data settings:", {
+    console.log("[PrintService] Using print style for HTML generation:", printStyle);
+    console.log("[PrintService] Print data settings:", {
       showEquipmentDescriptions: printData.showEquipmentDescriptions,
       showPerkDescriptions: printData.showPerkDescriptions,
       showSpecialRules: printData.showSpecialRules,
@@ -2507,14 +2908,14 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     const printHtml = generatePrintableHtml(printData);
     
     // Log the HTML for debugging
-    console.log("[PrintService-new] Generated HTML length:", printHtml.length);
-    console.log("[PrintService-new] Generated HTML contains dashboard:", printHtml.includes("dashboard-card"));
+    console.log("[PrintService] Generated HTML length:", printHtml.length);
+    console.log("[PrintService] Generated HTML contains dashboard:", printHtml.includes("dashboard-card"));
     
     // Open a new window for printing
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     
     if (!printWindow) {
-      console.error("[PrintService-new] Failed to open print window");
+      console.error("[PrintService] Failed to open print window");
       alert('Please allow popups to print your team');
       return;
     }
@@ -2536,19 +2937,19 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
     printWindow.document.close();
     
     // Debug the new window
-    console.log("[PrintService-new] Created print window with document length:", 
+    console.log("[PrintService] Created print window with document length:", 
       printWindow.document.documentElement.innerHTML.length);
     
     // Check for vehicle cards in the new window
     const vehicleCards = printWindow.document.querySelectorAll('.vehicle-card');
-    console.log("[PrintService-new] Vehicle cards in print window:", vehicleCards.length);
+    console.log("[PrintService] Vehicle cards in print window:", vehicleCards.length);
     
     // Print after a delay to ensure content is loaded
     setTimeout(() => {
       try {
         // Double check vehicle cards are present
         const vehicleCardsCheck = printWindow.document.querySelectorAll('.vehicle-card');
-        console.log("[PrintService-new] Vehicle cards before printing:", vehicleCardsCheck.length);
+        console.log("[PrintService] Vehicle cards before printing:", vehicleCardsCheck.length);
         
         // Add close button to the print window
         const closeButton = printWindow.document.createElement('button');
@@ -2678,14 +3079,14 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
         // We no longer automatically close the window
         // User must close it manually with the close button
       } catch (printError) {
-        console.error("[PrintService-new] Error during printing:", printError);
+        console.error("[PrintService] Error during printing:", printError);
         alert('Error during printing. Please try again.');
       }
     }, 1000); // Increased timeout for content loading
     
   } catch (error) {
-    console.error("[PrintService-new] Error in printTeam:", error);
-    console.error("[PrintService-new] Error details:", {
+    console.error("[PrintService] Error in printTeam:", error);
+    console.error("[PrintService] Error details:", {
       message: error.message,
       stack: error.stack,
       name: error.name,
