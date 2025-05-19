@@ -4,11 +4,10 @@
   import "../app.css";
   import "../dark-mode.css";
   import "../form-styles.css";
-  import "../print.css"; /* Print styles moved to separate file */
+  import "../print.css";
   import "../dark-override.css"; /* This must be imported last to override other styles */
   import "../inline-fixes.js"; /* JavaScript fixes for element heights */
-  /* Use the completely new print handler */
-  import "../print-new.js"; /* New standalone print handler */
+  import "../print-new.js"; /* Print handler */
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import AdUnit from '$lib/components/AdUnit.svelte';

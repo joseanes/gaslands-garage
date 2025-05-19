@@ -28,8 +28,8 @@ import SettingsMenu from '$lib/components/SettingsMenu.svelte';
 	import VehicleCard from '$lib/components/VehicleCard.svelte';
 	import Coach from '$lib/components/Coach.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
-	// Using new print approach - fixed import to avoid module collision with the function name
-	import { printTeam as printServiceFunc, printTeamDashboard } from '$lib/components/printing/PrintService-new';
+	// Import print functions - we alias printTeam to avoid name collision with local function
+	import { printTeam as printServiceFunc, printTeamDashboard } from '$lib/components/printing/PrintService';
 	import { user, signInWithGoogle } from '$lib/firebase';
 import { getUserSettings, saveUserSettings, DEFAULT_SETTINGS } from '$lib/services/settings';
 import { saveTeam, getUserTeams } from '$lib/services/team';
