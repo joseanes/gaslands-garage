@@ -2234,9 +2234,44 @@ function generateRosterHtml(data: {
     return item.name || item.id || 'Unknown';
   };
   
-  // Generate HTML for roster style - simple table with equipment lists
-  let vehiclesHtml = '';
+  // Generate HTML for roster style - compact, Battlescribe-like output
+  let rosterText = '';
   
+  // Calculate total team cost
+  const calculatedCost = vehicles?.reduce((sum, v) => sum + (v.cost || 0), 0) || 0;
+  
+  // Create the header section
+  rosterText += `+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GASLANDS TEAM ROSTER: ${teamName}
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+* Sponsor: ${sponsorName}
+* Team Cost: ${calculatedCost} cans (${totalCans} / ${maxCans})
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+`;
+  
+  // Process Sponsor Perks if available
+  if (sponsorPerks) {
+    // First show the sponsor's perks classes
+    const perksClasses = sponsorPerks.perksClasses || [];
+    if (perksClasses.length > 0) {
+      rosterText += `SPONSOR PERK CLASSES\n* ${perksClasses.join(', ')}\n\n`;
+    }
+    
+    // Then show sponsor-specific perks
+    const sponsorPerksList = sponsorPerks.sponsorPerksList || [];
+    if (sponsorPerksList.length > 0 && showPerkDescriptions) {
+      rosterText += 'SPONSOR PERKS\n';
+      sponsorPerksList.forEach((perk: any) => {
+        if (perk && perk.name) {
+          rosterText += `* ${perk.name}${perk.level ? ` (Level ${perk.level})` : ''}: ${perk.text || ''}\n`;
+        }
+      });
+      rosterText += '\n';
+    }
+  }
+
+  // Create vehicle sections
   if (vehicles && Array.isArray(vehicles)) {
     vehicles.forEach((vehicle, index) => {
       const {
@@ -2248,6 +2283,7 @@ function generateRosterHtml(data: {
         maxGear = 6,
         crew = 1,
         hull = 4,
+        weight = 'Medium',
         vehicleRules = [],
         weapons = [],
         upgrades = [],
@@ -2257,171 +2293,117 @@ function generateRosterHtml(data: {
         perkObjects = []
       } = vehicle;
       
-      // Get the vehicle stats
-      const htmlId = `vehicle-${id.replace(/[^a-zA-Z0-9]/g, '')}`;
+      // VEHICLE HEADER
+      rosterText += `==========================================================
+VEHICLE: ${name} [${type}] - ${cost} cans
+==========================================================
+* Handling: ${handling} | Max Gear: ${maxGear} | Crew: ${crew} | Hull: ${hull} | Weight: ${weight}
+`;
       
-      // Start vehicle section
-      vehiclesHtml += `
-      <div class="vehicle-roster-section">
-        <h3 class="vehicle-name">${name} (${type}) - ${cost} cans</h3>
-        
-        <!-- Vehicle stats row -->
-        <table class="roster-table stats-table">
-          <thead>
-            <tr>
-              <th>Handling</th>
-              <th>Max Gear</th>
-              <th>Crew</th>
-              <th>Hull</th>
-              <th>Weight</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>${handling}</td>
-              <td>${maxGear}</td>
-              <td>${crew}</td>
-              <td>${hull}</td>
-              <td>${vehicle.weight || 'Medium'}</td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <!-- Weapons Table -->
-        <h4 class="equipment-header">Weapons</h4>
-        <table class="roster-table">
-          <thead>
-            <tr>
-              <th>Weapon</th>
-              <th>Facing</th>
-              <th>Attack Dice</th>
-              <th>Range</th>
-              <th>Special</th>
-            </tr>
-          </thead>
-          <tbody>`;
+      // Add Vehicle Rules if available
+      if (vehicleRules && vehicleRules.length > 0 && showSpecialRules) {
+        if (typeof vehicleRules === 'string') {
+          rosterText += `* Vehicle Rules: ${vehicleRules}\n`;
+        } else if (Array.isArray(vehicleRules)) {
+          rosterText += `* Vehicle Rules: ${vehicleRules.join(', ')}\n`;
+        }
+      }
       
-      // Add weapons rows
+      rosterText += '\n';
+      
+      // WEAPONS SECTION
       if (weaponObjects && weaponObjects.length > 0) {
+        rosterText += 'WEAPONS\n';
         weaponObjects.forEach(weapon => {
           if (weapon) {
             const facing = vehicle.weaponFacings && vehicle.weaponFacings[weapon.id] 
               ? vehicle.weaponFacings[weapon.id] 
               : 'Front';
-              
-            vehiclesHtml += `
-            <tr>
-              <td>${weapon.name || 'Unknown Weapon'}</td>
-              <td>${facing}</td>
-              <td>${weapon.attackDice || '-'}</td>
-              <td>${weapon.range || '-'}</td>
-              <td>${weapon.specialRules || ''}</td>
-            </tr>`;
+            
+            rosterText += `* ${weapon.name || 'Unknown'} [${facing}]`;
+            
+            // Add weapon details
+            const details = [];
+            if (weapon.attackDice && weapon.attackDice !== '-') details.push(`Attack: ${weapon.attackDice}`);
+            if (weapon.range && weapon.range !== '-') details.push(`Range: ${weapon.range}`);
+            if (weapon.cost) details.push(`${weapon.cost} cans`);
+            
+            if (details.length > 0) {
+              rosterText += ` (${details.join(', ')})`;
+            }
+            
+            // Add special rules if they exist and are enabled
+            if (weapon.specialRules && showEquipmentDescriptions) {
+              rosterText += `\n  - Special: ${weapon.specialRules}`;
+            }
+            
+            rosterText += '\n';
           }
         });
-      } else if (weapons && weapons.length > 0) {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="5">Weapon details not available</td>
-        </tr>`;
-      } else {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="5">No weapons</td>
-        </tr>`;
+        rosterText += '\n';
       }
       
-      vehiclesHtml += `
-          </tbody>
-        </table>
-        
-        <!-- Upgrades Table -->
-        <h4 class="equipment-header">Upgrades</h4>
-        <table class="roster-table">
-          <thead>
-            <tr>
-              <th>Upgrade</th>
-              <th>Special Rules</th>
-            </tr>
-          </thead>
-          <tbody>`;
-      
-      // Add upgrades rows
+      // UPGRADES SECTION
       if (upgradeObjects && upgradeObjects.length > 0) {
+        rosterText += 'UPGRADES\n';
         upgradeObjects.forEach(upgrade => {
           if (upgrade) {
-            vehiclesHtml += `
-            <tr>
-              <td>${upgrade.name || 'Unknown Upgrade'}</td>
-              <td>${upgrade.specialRules || ''}</td>
-            </tr>`;
+            rosterText += `* ${upgrade.name || 'Unknown Upgrade'}`;
+            
+            // Add cost if available
+            if (upgrade.cost) {
+              rosterText += ` (${upgrade.cost} cans)`;
+            }
+            
+            // Add special rules if they exist and are enabled
+            if (upgrade.specialRules && showEquipmentDescriptions) {
+              rosterText += `\n  - Special: ${upgrade.specialRules}`;
+            }
+            
+            rosterText += '\n';
           }
         });
-      } else if (upgrades && upgrades.length > 0) {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="2">Upgrade details not available</td>
-        </tr>`;
-      } else {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="2">No upgrades</td>
-        </tr>`;
+        rosterText += '\n';
       }
       
-      vehiclesHtml += `
-          </tbody>
-        </table>
-        
-        <!-- Perks Table -->
-        <h4 class="equipment-header">Perks</h4>
-        <table class="roster-table">
-          <thead>
-            <tr>
-              <th>Perk</th>
-              <th>Description</th>
-            </tr>
-          </thead>
-          <tbody>`;
-      
-      // Add perks rows
+      // PERKS SECTION
       if (perkObjects && perkObjects.length > 0) {
+        rosterText += 'PERKS\n';
         perkObjects.forEach(perk => {
           if (perk) {
-            vehiclesHtml += `
-            <tr>
-              <td>${perk.name || 'Unknown Perk'}</td>
-              <td>${perk.text || ''}</td>
-            </tr>`;
+            rosterText += `* ${perk.name || 'Unknown Perk'}`;
+            
+            if (perk.level) {
+              rosterText += ` (Level ${perk.level})`;
+            }
+            
+            // Add descriptions if enabled
+            if (perk.text && showPerkDescriptions) {
+              rosterText += `\n  - ${perk.text}`;
+            }
+            
+            rosterText += '\n';
           }
         });
-      } else if (perks && perks.length > 0) {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="2">Perk details not available</td>
-        </tr>`;
-      } else {
-        vehiclesHtml += `
-        <tr>
-          <td colspan="2">No perks</td>
-        </tr>`;
+        rosterText += '\n';
       }
       
-      vehiclesHtml += `
-          </tbody>
-        </table>
-      </div>`;
-      
-      // Add page break after each vehicle except the last one
+      // Add an extra line between vehicles
       if (index < vehicles.length - 1) {
-        vehiclesHtml += '<div class="page-break"></div>';
+        rosterText += '\n';
       }
     });
   } else {
-    vehiclesHtml = '<p>No vehicles found</p>';
+    rosterText += 'No vehicles found\n';
   }
   
-  // Generate the final HTML with CSS
+  // Add disclaimer at the end
+  rosterText += `
+--------------------------------------------------------------
+Generated by Gaslands Garage (gaslandsgarage.com) on ${new Date().toLocaleDateString()}
+--------------------------------------------------------------`;
+  
+  // Generate the final HTML with monospace text style
   return `<!DOCTYPE html>
   <html>
   <head>
@@ -2429,8 +2411,10 @@ function generateRosterHtml(data: {
     <meta charset="utf-8">
     <style>
       body {
-        font-family: Arial, Helvetica, sans-serif;
-        line-height: 1.4;
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.3;
+        white-space: pre-wrap;
         color: #000;
         background: #fff;
         margin: 0;
@@ -2441,18 +2425,12 @@ function generateRosterHtml(data: {
       @media print {
         @page {
           size: auto;
-          margin: 10mm;
+          margin: 15mm 10mm;
         }
         
         body {
           margin: 0;
-          padding: 10px;
-        }
-        
-        .page-break {
-          page-break-after: always;
-          height: 0;
-          display: block;
+          padding: 0;
         }
         
         button {
@@ -2460,127 +2438,36 @@ function generateRosterHtml(data: {
         }
       }
       
-      /* Header styles */
-      .roster-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #000;
-        padding-bottom: 10px;
+      .roster-text {
+        white-space: pre-wrap;
+        font-family: 'Courier New', Courier, monospace;
       }
       
-      h1 {
-        font-size: 24px;
-        margin: 0 0 5px 0;
-        color: #000;
-      }
-      
-      .team-details {
-        font-size: 16px;
-        margin-bottom: 5px;
-      }
-      
-      /* Vehicle section styles */
-      .vehicle-roster-section {
-        margin-bottom: 30px;
-      }
-      
-      .vehicle-name {
-        font-size: 18px;
-        margin: 0 0 10px 0;
-        border-bottom: 1px solid #000;
-        padding-bottom: 5px;
-      }
-      
-      .equipment-header {
-        font-size: 16px;
-        margin: 15px 0 5px 0;
-      }
-      
-      /* Table styles */
-      .roster-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 10px;
-        font-size: 14px;
-      }
-      
-      .roster-table th {
-        border: 1px solid #888;
-        background-color: #eee;
-        padding: 6px 10px;
-        text-align: left;
-      }
-      
-      .roster-table td {
-        border: 1px solid #888;
-        padding: 6px 10px;
-        text-align: left;
-      }
-      
-      .stats-table {
-        width: auto;
-        min-width: 50%;
-      }
-      
-      .stats-table th, .stats-table td {
+      /* QR code container */
+      .qr-container {
         text-align: center;
-      }
-      
-      /* QR code styles */
-      .qr-section {
-        text-align: center;
-        margin-top: 50px;
-        margin-bottom: 20px;
+        margin-top: 30px;
+        page-break-inside: avoid;
       }
       
       .qr-code {
-        max-width: 150px;
+        max-width: 120px;
         height: auto;
-      }
-      
-      .qr-caption {
-        font-size: 14px;
-        margin-top: 10px;
-        color: #666;
-      }
-      
-      /* Footer styles */
-      .roster-footer {
-        margin-top: 30px;
-        text-align: center;
-        font-size: 12px;
-        color: #666;
-        border-top: 1px solid #ccc;
-        padding-top: 10px;
       }
     </style>
   </head>
   <body>
-    <div class="roster-header">
-      <div class="header-info">
-        <h1>${teamName}</h1>
-        <div class="team-details">Sponsor: ${sponsorName}</div>
-        <div class="team-details">Team Cost: ${totalCans} / ${maxCans} cans</div>
-      </div>
+    <div class="roster-text">
+${rosterText}
     </div>
     
-    <div class="roster-content">
-      ${vehiclesHtml}
-    </div>
-    
-    <div class="qr-section">
-      ${qrCode ?
-        `<img src="${qrCode}" class="qr-code" alt="QR Code for team">
-        <div class="qr-caption">Scan to load this team build</div>` :
-        ''
-      }
-    </div>
-    
-    <div class="roster-footer">
-      Generated by Gaslands Garage on ${new Date().toLocaleDateString()}
-    </div>
+    ${qrCode ?
+      `<div class="qr-container">
+        <img src="${qrCode}" class="qr-code" alt="QR Code for team">
+        <div>Scan to load this team</div>
+      </div>` :
+      ''
+    }
   </body>
   </html>`;
 }
