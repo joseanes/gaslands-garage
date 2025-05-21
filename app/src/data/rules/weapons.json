@@ -90,33 +90,7 @@
     "specialRules": "BLAST, ONE-SHOT",
     "source": "Gaslands Refueled"
   },
-  {
-    "id": "homing_missile",
-    "name": "Homing Missile",
-    "cost": 6,
-    "slots": 4,
-    "type": "weapon",
-    "facing": "front",
-    "range": "Double",
-    "attackDice": 3,
-    "specialRules": "HOMING, BLAST, ONE-SHOT",
-    "advanced": true,
-    "source": "Gaslands Refueled"
-  },
-  {
-    "id": "homing_rockets",
-    "name": "Homing Rockets",
-    "cost": 6,
-    "slots": 4,
-    "type": "weapon",
-    "facing": "front",
-    "range": "Double",
-    "attackDice": 3,
-    "specialRules": "BURST, HOMING, BLAST, ONE-SHOT",
-    "advanced": true,
-    "unique": true,
-    "source": "Gaslands Refueled"
-  },
+
 
   {
     "id": "caltrop_dropper",

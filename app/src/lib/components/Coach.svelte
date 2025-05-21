@@ -338,7 +338,8 @@
         const totalWeapons = Object.values(ranges).reduce((a, b) => a + b, 0);
         
         if (totalWeapons > 0) {
-            if (ranges.long === 0) {
+            // Only suggest long-range weapons if team has neither long-range nor double-range weapons
+            if (ranges.long === 0 && ranges.double === 0) {
                 suggestions.push("Your team lacks long-range weapons. Consider adding a harpoon or rockets for range advantage.");
             }
             

@@ -1484,6 +1484,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 									document.documentElement.classList.remove('dark-mode');
 								}
 							}
+							
+							// Calculate total cans after loading all team data
+							totalCans = calculateTotalCansDirectly();
+							
+							// Run validation to ensure everything is properly updated
+							validateSponsorRestrictions();
 						} catch (error) {
 							console.error('[Event] Error setting team data manually:', error);
 						}
@@ -1736,6 +1742,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						darkMode = draftData.darkMode;
 					}
 					
+					// Calculate and update totalCans after loading the team
+					totalCans = calculateTotalCansDirectly();
+					
+					// Run validation to make sure everything is properly updated
+					validateSponsorRestrictions();
+					
 					// Close the try block
 					} catch (error) {
 						console.error("Error importing draft:", error);
@@ -1825,6 +1837,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				darkMode = draft.darkMode;
 			}
 			
+			// Calculate and update totalCans after loading the team
+			totalCans = calculateTotalCansDirectly();
+			
+			// Run validation to make sure everything is properly updated
+			validateSponsorRestrictions();
+			
 			importString = '';
 			showImportModal = false;
 		} else {
@@ -1863,6 +1881,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				if (imported.darkMode !== undefined) {
 					darkMode = imported.darkMode;
 				}
+				
+				// Calculate and update totalCans after loading the team
+				totalCans = calculateTotalCansDirectly();
+				
+				// Run validation to make sure everything is properly updated
+				validateSponsorRestrictions();
 			}
 		}
 	}
