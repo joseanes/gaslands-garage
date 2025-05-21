@@ -1458,6 +1458,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 							
 							if (event.detail.teamName) {
 								teamName = event.detail.teamName;
+								// Also update window.teamName for cross-component access
+								if (typeof window !== 'undefined') {
+									console.log("Setting window.teamName from event:", event.detail.teamName);
+									window.teamName = event.detail.teamName;
+								}
 							}
 							
 							if (Array.isArray(event.detail.vehicles)) {
@@ -1625,8 +1630,26 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			window.printWithRulesCheck = printWithRulesCheck;
 			window.openTeamsModalFn = () => { 
 				// Make sure teamName is updated in the window object before opening modal
+				console.log("Setting window.teamName to:", teamName);
 				window.teamName = teamName;
-				showTeamsModal = true; 
+				
+				// Create a custom DOM event to ensure that other components can get the current team name
+				try {
+					const teamNameEvent = new CustomEvent('gaslands-team-name-update', {
+						detail: { teamName: teamName },
+						bubbles: true
+					});
+					document.dispatchEvent(teamNameEvent);
+					console.log("Dispatched team name update event with:", teamName);
+				} catch (e) {
+					console.error("Error dispatching team name event:", e);
+				}
+				
+				// Force a quick timeout to ensure the value is set before the modal opens
+				setTimeout(() => {
+					console.log("Opening teams modal with window.teamName:", window.teamName);
+					showTeamsModal = true;
+				}, 10);
 			};
 
 			// Expose showExperimentalFeatures for the menu visibility
@@ -1735,6 +1758,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 					// Import team name if available
 					if (draftData.teamName) {
 						teamName = draftData.teamName;
+						// Also update window.teamName for cross-component access
+						if (typeof window !== 'undefined') {
+							console.log("Setting window.teamName from draft data:", draftData.teamName);
+							window.teamName = draftData.teamName;
+						}
 					}
 
 					// Import maxCans if available
@@ -1830,6 +1858,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			// Import team name if available
 			if (draftData.teamName) {
 				teamName = draft.teamName;
+				// Also update window.teamName for cross-component access
+				if (typeof window !== 'undefined') {
+					console.log("Setting window.teamName from draft:", draft.teamName);
+					window.teamName = draft.teamName;
+				}
 			}
 			
 			// Import maxCans if available
@@ -1875,6 +1908,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				// Import team name if available
 				if (imported.teamName) {
 					teamName = imported.teamName;
+					// Also update window.teamName for cross-component access
+					if (typeof window !== 'undefined') {
+						console.log("Setting window.teamName from imported team:", imported.teamName);
+						window.teamName = imported.teamName;
+					}
 				}
 				
 				// Import maxCans if available

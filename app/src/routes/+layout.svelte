@@ -47,8 +47,27 @@
         console.log("Functions not available, will proceed anyway");
       }
       
-      // Directly open the Teams modal in the layout
-      showTeamsModal = true;
+      // Get the team name from the builder page if possible
+      try {
+        // Try to find the team name input directly
+        const teamNameInput = document.querySelector('input[placeholder="Team Name"]');
+        if (teamNameInput && teamNameInput.value) {
+          window.teamName = teamNameInput.value;
+          console.log("Got team name from input field:", window.teamName);
+        }
+      } catch (e) {
+        console.error("Error getting team name directly:", e);
+      }
+      
+      // Use the window.openTeamsModalFn if available (to ensure team name is set properly)
+      if (typeof window.openTeamsModalFn === 'function') {
+        console.log("Using window.openTeamsModalFn to ensure team name is updated");
+        window.openTeamsModalFn();
+      } else {
+        // Fallback to directly opening the modal if the function isn't available
+        console.log("Fallback: Directly opening the Teams modal in the layout");
+        showTeamsModal = true;
+      }
     } else {
       alert('Team management requires the builder page. Please use on the builder page.');
     }
@@ -930,11 +949,61 @@
   {@const draftValue = window.currentDraftFn ? window.currentDraftFn() : null}
   {@const _ = console.log('Opening Teams Modal with draft:', draftValue)}
   {@const __ = console.log('importDraftFn exists:', typeof window.importDraftFn === 'function')}
-  {@const ___ = console.log('Current teamName:', window.teamName)}
+  
+  <!-- Get team name from any possible source -->
+  {@const teamNameFromInput = (() => {
+    try {
+      const input = document.querySelector('input[placeholder="Team Name"]');
+      return input && input.value ? input.value : null;
+    } catch(e) {
+      console.error("Error finding team name input:", e);
+      return null;
+    }
+  })()}
+  
+  {@const ___ = console.log('Team name from sources - window:', window.teamName, 'input:', teamNameFromInput, 'draft:', draftValue?.teamName)}
+  
+  <!-- Ensure teamName is available for TeamsModal using best available source -->
+  {@const ____ = (() => {
+    // If window.teamName is missing or empty, try to set it from best available source
+    if (!window.teamName || window.teamName.trim() === '') {
+      if (teamNameFromInput) {
+        window.teamName = teamNameFromInput;
+        console.log('Setting window.teamName from input field:', window.teamName);
+      } else if (draftValue && draftValue.teamName) {
+        window.teamName = draftValue.teamName;
+        console.log('Setting window.teamName from draftValue:', window.teamName);
+      }
+    }
+    return null;
+  })()}
 
+  {@const bestTeamName = (() => {
+      // Try to get the best team name from available sources
+      if (typeof window.teamName === 'string' && window.teamName.trim() !== '') {
+        return window.teamName;
+      }
+      if (teamNameFromInput) {
+        return teamNameFromInput;
+      }
+      if (draftValue && draftValue.teamName) {
+        return draftValue.teamName;
+      }
+      try {
+        const input = document.querySelector('input[aria-label="Team Name"]');
+        if (input && input.value) {
+          return input.value;
+        }
+      } catch (e) {
+        console.error("Error getting team name from input:", e);
+      }
+      return "My Gaslands Team";
+    })()}
+  
   <TeamsModal
     bind:showModal={showTeamsModal}
-    currentDraft={draftValue}
+    currentDraft={{...draftValue, teamName: bestTeamName}}
+    teamName={bestTeamName} 
     importDraft={(draft) => {
       console.log("importDraft prop called with:", JSON.stringify(draft, null, 2));
       

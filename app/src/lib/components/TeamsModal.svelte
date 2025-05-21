@@ -9,6 +9,9 @@
   export let currentDraft;
   export let importDraft;
   
+  // Add explicit teamName prop that can be passed directly
+  export let teamName = ""; // Allow direct passing of team name
+  
   let isLoading = false;
   let isSaving = false;
   let deletingTeamId = null;
@@ -26,21 +29,63 @@
     if (showModal && !previousModalState) {
       // Modal was just opened
       console.log("Modal opened with currentDraft:", currentDraft);
+      console.log("window.teamName available:", typeof window !== 'undefined' ? window.teamName : 'window not defined');
       
-      // Get the team name directly from window.teamName if available, or from currentDraft
+      // Get the team name from multiple sources, prioritized
       if (typeof window !== 'undefined') {
         try {
-          if (typeof window.teamName === 'string') {
-            newTeamName = window.teamName;
-            console.log("Got team name from window:", newTeamName);
-          } else if (currentDraft && currentDraft.teamName) {
+          // First check if the teamName prop was provided directly (highest priority)
+          if (teamName && teamName.trim() !== '') {
+            newTeamName = teamName;
+            console.log("Got team name from direct prop:", newTeamName);
+          }
+          // Then check currentDraft (second priority)
+          else if (currentDraft && currentDraft.teamName) {
             newTeamName = currentDraft.teamName;
             console.log("Got team name from currentDraft:", newTeamName);
-          } else {
-            // Set a default team name if none exists
-            newTeamName = "My Gaslands Team";
-            console.log("Using default team name");
           }
+          // Try window.teamName third
+          else if (typeof window.teamName === 'string' && window.teamName.trim() !== '') {
+            newTeamName = window.teamName;
+            console.log("Got team name from window:", newTeamName);
+          }
+          // Try to find team name in the DOM as the fourth option
+          else {
+            try {
+              // Try specific selector for the team name input
+              const teamNameInput = document.querySelector('input[aria-label="Team Name"]');
+              if (teamNameInput && teamNameInput.value) {
+                newTeamName = teamNameInput.value;
+                console.log("Got team name from DOM input field (aria-label):", newTeamName);
+                // Also set window.teamName for future reference
+                window.teamName = newTeamName;
+              }
+              // Fallback to placeholder attribute
+              else {
+                const altTeamNameInput = document.querySelector('input[placeholder*="Team Name"]');
+                if (altTeamNameInput && altTeamNameInput.value) {
+                  newTeamName = altTeamNameInput.value;
+                  console.log("Got team name from DOM input field (placeholder):", newTeamName);
+                  // Also set window.teamName for future reference
+                  window.teamName = newTeamName;
+                }
+                // Last resort - use default
+                else {
+                  newTeamName = "My Gaslands Team";
+                  console.log("Using default team name, couldn't find name anywhere");
+                }
+              }
+            } catch (domError) {
+              console.error("Error finding team name in DOM:", domError);
+              newTeamName = "My Gaslands Team";
+            }
+          }
+          
+          // Debug output to help understand what's happening
+          console.log("Final newTeamName value:", newTeamName);
+          console.log("window.teamName value:", window.teamName);
+          console.log("currentDraft?.teamName value:", currentDraft?.teamName);
+          
         } catch (e) {
           console.error("Error getting team name:", e);
           // Set a default team name if there's an error
@@ -50,6 +95,46 @@
     }
     previousModalState = showModal;
   }
+  
+  // Add onMount to try getting team name directly when the modal is mounted
+  onMount(() => {
+    // When the modal is opened, immediately try to get the team name from the input field 
+    if (typeof document !== 'undefined') {
+      // Add event listener for the custom team name update event
+      const handleTeamNameUpdate = (event) => {
+        if (event.detail && event.detail.teamName) {
+          newTeamName = event.detail.teamName;
+          console.log("Got team name from custom event:", newTeamName);
+        }
+      };
+      
+      // Add the event listener
+      document.addEventListener('gaslands-team-name-update', handleTeamNameUpdate);
+      
+      // Use a slight delay to ensure DOM is available and window.teamName has been set
+      if (showModal) {
+        setTimeout(() => {
+          try {
+            // Look specifically for the team name input
+            const teamNameInput = document.querySelector('input[aria-label="Team Name"]');
+            if (teamNameInput && teamNameInput.value && teamNameInput.value.trim() !== '') {
+              newTeamName = teamNameInput.value;
+              console.log("onMount: Got team name directly from DOM input:", newTeamName);
+            } else {
+              console.log("onMount: Couldn't find team name input in DOM or it was empty");
+            }
+          } catch (e) {
+            console.error("onMount: Error getting team name from DOM:", e);
+          }
+        }, 50);
+      }
+      
+      // Clean up the event listener when the component is destroyed
+      return () => {
+        document.removeEventListener('gaslands-team-name-update', handleTeamNameUpdate);
+      };
+    }
+  });
   
   async function loadUserTeams() {
     if (!$user) {
@@ -152,7 +237,7 @@
               }
             }
             
-            // Look for weapon, upgrade, and perk lists
+            // Look for weapon elements
             const weaponElements = card.querySelectorAll('.weapon-item, [data-weapon-id]');
             if (weaponElements && weaponElements.length > 0) {
               for (const element of weaponElements) {
@@ -160,6 +245,30 @@
                 const weaponId = element.dataset.weaponId || element.id;
                 if (weaponId) {
                   vehicle.weapons.push(weaponId);
+                }
+              }
+            }
+            
+            // Look for upgrade elements
+            const upgradeElements = card.querySelectorAll('.upgrade-item, [data-upgrade-id]');
+            if (upgradeElements && upgradeElements.length > 0) {
+              for (const element of upgradeElements) {
+                // Try to extract upgrade ID from data attribute or class
+                const upgradeId = element.dataset.upgradeId || element.id;
+                if (upgradeId) {
+                  vehicle.upgrades.push(upgradeId);
+                }
+              }
+            }
+            
+            // Look for perk elements
+            const perkElements = card.querySelectorAll('.perk-item, [data-perk-id]');
+            if (perkElements && perkElements.length > 0) {
+              for (const element of perkElements) {
+                // Try to extract perk ID from data attribute or class
+                const perkId = element.dataset.perkId || element.id;
+                if (perkId) {
+                  vehicle.perks.push(perkId);
                 }
               }
             }
