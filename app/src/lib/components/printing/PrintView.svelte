@@ -130,6 +130,7 @@
                     <tr>
                       <td class="item-name">{weaponObj?.name || weaponId}</td>
                       <td class="item-facing">{facing}</td>
+                      <td class="item-range">{weaponObj?.range || 'Short'}</td>
                       <td class="item-attack">{weaponObj?.attackDice || '-'}{weaponObj?.attackDice ? 'D' : ''}</td>
                     </tr>
                   {/each}
