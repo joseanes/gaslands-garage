@@ -230,6 +230,13 @@
     width: 60px;
   }
   
+  .item-range {
+    text-align: center;
+    font-style: italic;
+    padding: 2px 4px;
+    width: 70px;
+  }
+  
   .item-attack {
     text-align: right;
     font-weight: bold;
