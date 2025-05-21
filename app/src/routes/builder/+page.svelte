@@ -1623,7 +1623,11 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			window.importBuild = importBuild;
 			window.printTeam = printTeam;
 			window.printWithRulesCheck = printWithRulesCheck;
-			window.openTeamsModalFn = () => { showTeamsModal = true; };
+			window.openTeamsModalFn = () => { 
+				// Make sure teamName is updated in the window object before opening modal
+				window.teamName = teamName;
+				showTeamsModal = true; 
+			};
 
 			// Expose showExperimentalFeatures for the menu visibility
 			Object.defineProperty(window, 'showExperimentalFeatures', {

@@ -930,6 +930,7 @@
   {@const draftValue = window.currentDraftFn ? window.currentDraftFn() : null}
   {@const _ = console.log('Opening Teams Modal with draft:', draftValue)}
   {@const __ = console.log('importDraftFn exists:', typeof window.importDraftFn === 'function')}
+  {@const ___ = console.log('Current teamName:', window.teamName)}
 
   <TeamsModal
     bind:showModal={showTeamsModal}
