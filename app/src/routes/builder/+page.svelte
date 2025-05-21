@@ -1466,14 +1466,44 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 							}
 							
 							if (Array.isArray(event.detail.vehicles)) {
-								// Process vehicles - this is partial since we need to rebuild the vehicle UI
-								vehicles = event.detail.vehicles.map(v => ({
-									...v,
-									// Ensure these arrays always exist
-									weapons: Array.isArray(v.weapons) ? v.weapons : [],
-									upgrades: Array.isArray(v.upgrades) ? v.upgrades : [],
-									perks: Array.isArray(v.perks) ? v.perks : []
-								}));
+								// Process vehicles with additional logging for debugging
+								const processedVehicles = event.detail.vehicles.map(v => {
+									// Create a safe vehicle object with all required arrays
+									const safeVehicle = {
+										...v,
+										weapons: Array.isArray(v.weapons) ? [...v.weapons] : [],
+										upgrades: Array.isArray(v.upgrades) ? [...v.upgrades] : [],
+										perks: Array.isArray(v.perks) ? [...v.perks] : []
+									};
+									
+									// Log for debugging
+									console.log(`Loading vehicle from event:
+										- ID: ${safeVehicle.id}
+										- Weapons: ${safeVehicle.weapons.join(', ')}
+										- Upgrades: ${safeVehicle.upgrades.join(', ')}
+										- Perks: ${safeVehicle.perks.join(', ')}`);
+									
+									// Add any perks from upgrades
+									const allPerks = [...safeVehicle.perks];
+									safeVehicle.upgrades.forEach(upgradeId => {
+										const upgradeObj = upgrades.find(u => u.id === upgradeId);
+										if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+											upgradeObj.perks.forEach(perkId => {
+												if (!allPerks.includes(perkId)) {
+													allPerks.push(perkId);
+												}
+											});
+										}
+									});
+									
+									return {
+										...safeVehicle,
+										perks: allPerks
+									};
+								});
+								
+								// Update the vehicles array
+								vehicles = processedVehicles;
 							}
 							
 							// Update maxCans if specified
@@ -1729,31 +1759,47 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						// Set sponsor ID
 						sponsorId = draftData.sponsor;
 						
-						// Process imported vehicles to ensure perks from upgrades are included
+						// Process imported vehicles to ensure they have all required properties
 						const processedVehicles = draftData.vehicles.map(vehicle => {
-						// Start with the vehicle's explicit perks
-						const allPerks = [...vehicle.perks];
-						
-						// Add any perks from the vehicle's upgrades
-						vehicle.upgrades.forEach(upgradeId => {
-							const upgradeObj = upgrades.find(u => u.id === upgradeId);
-							if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
-								upgradeObj.perks.forEach(perkId => {
-									if (!allPerks.includes(perkId)) {
-										allPerks.push(perkId);
-									}
-								});
-							}
+							console.log("Processing vehicle:", vehicle);
+							
+							// Make sure the vehicle has all required arrays
+							const safeVehicle = {
+								...vehicle,
+								weapons: Array.isArray(vehicle.weapons) ? [...vehicle.weapons] : [],
+								upgrades: Array.isArray(vehicle.upgrades) ? [...vehicle.upgrades] : [],
+								perks: Array.isArray(vehicle.perks) ? [...vehicle.perks] : []
+							};
+							
+							// Start with the vehicle's explicit perks
+							const allPerks = [...safeVehicle.perks];
+							
+							// Add any perks from the vehicle's upgrades
+							safeVehicle.upgrades.forEach(upgradeId => {
+								const upgradeObj = upgrades.find(u => u.id === upgradeId);
+								if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
+									upgradeObj.perks.forEach(perkId => {
+										if (!allPerks.includes(perkId)) {
+											allPerks.push(perkId);
+										}
+									});
+								}
+							});
+							
+							// Log what we're loading for debugging
+							console.log(`Loaded vehicle ${safeVehicle.id} with:
+								- Weapons: ${safeVehicle.weapons.join(', ')}
+								- Upgrades: ${safeVehicle.upgrades.join(', ')}
+								- Perks: ${allPerks.join(', ')}`);
+							
+							// Return the vehicle with possibly updated perks
+							return {
+								...safeVehicle,
+								perks: allPerks
+							};
 						});
 						
-						// Return the vehicle with possibly updated perks
-						return {
-							...vehicle,
-							perks: allPerks
-						};
-					});
-					
-					vehicles = processedVehicles;
+						vehicles = processedVehicles;
 
 					// Import team name if available
 					if (draftData.teamName) {
@@ -1829,13 +1875,21 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		if (draft) {
 			sponsorId = draft.sponsor;
 			
-			// Process imported vehicles to ensure perks from upgrades are included
+			// Process imported vehicles to ensure they have all required properties and perks from upgrades are included
 			const processedVehicles = (draft.vehicles as Veh[]).map(vehicle => {
+				// Make sure the vehicle has all required arrays
+				const safeVehicle = {
+					...vehicle,
+					weapons: Array.isArray(vehicle.weapons) ? [...vehicle.weapons] : [],
+					upgrades: Array.isArray(vehicle.upgrades) ? [...vehicle.upgrades] : [],
+					perks: Array.isArray(vehicle.perks) ? [...vehicle.perks] : []
+				};
+				
 				// Start with the vehicle's explicit perks
-				const allPerks = [...vehicle.perks];
+				const allPerks = [...safeVehicle.perks];
 				
 				// Add any perks from the vehicle's upgrades
-				vehicle.upgrades.forEach(upgradeId => {
+				safeVehicle.upgrades.forEach(upgradeId => {
 					const upgradeObj = upgrades.find(u => u.id === upgradeId);
 					if (upgradeObj && upgradeObj.perks && Array.isArray(upgradeObj.perks)) {
 						upgradeObj.perks.forEach(perkId => {
@@ -1846,9 +1900,15 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 					}
 				});
 				
+				// Log what we're loading for debugging
+				console.log(`Loaded vehicle ${safeVehicle.id} with:
+					- Weapons: ${safeVehicle.weapons.join(', ')}
+					- Upgrades: ${safeVehicle.upgrades.join(', ')}
+					- Perks: ${allPerks.join(', ')}`);
+				
 				// Return the vehicle with possibly updated perks
 				return {
-					...vehicle,
+					...safeVehicle,
 					perks: allPerks
 				};
 			});

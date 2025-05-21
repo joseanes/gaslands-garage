@@ -237,38 +237,98 @@
               }
             }
             
-            // Look for weapon elements
-            const weaponElements = card.querySelectorAll('.weapon-item, [data-weapon-id]');
+            // Try different ways to find weapons, upgrades, and perks
+            // Use wider selectors with multiple ways to identify these items
+            
+            // Look for weapon elements - try different query selectors
+            const weaponElements = card.querySelectorAll('.weapon-item, [data-weapon-id], [data-item-type="weapon"], .weapon');
             if (weaponElements && weaponElements.length > 0) {
               for (const element of weaponElements) {
-                // Try to extract weapon ID from data attribute or class
-                const weaponId = element.dataset.weaponId || element.id;
-                if (weaponId) {
+                // Try to extract weapon ID from data attribute, class, or id
+                const weaponId = element.dataset.weaponId || 
+                                 element.dataset.itemId || 
+                                 element.id || 
+                                 element.getAttribute('data-id') ||
+                                 element.textContent?.trim();
+                                 
+                if (weaponId && !vehicle.weapons.includes(weaponId)) {
                   vehicle.weapons.push(weaponId);
+                  console.log(`Found weapon: ${weaponId}`);
                 }
               }
             }
             
-            // Look for upgrade elements
-            const upgradeElements = card.querySelectorAll('.upgrade-item, [data-upgrade-id]');
+            // Look for upgrade elements - try different query selectors
+            const upgradeElements = card.querySelectorAll('.upgrade-item, [data-upgrade-id], [data-item-type="upgrade"], .upgrade');
             if (upgradeElements && upgradeElements.length > 0) {
               for (const element of upgradeElements) {
-                // Try to extract upgrade ID from data attribute or class
-                const upgradeId = element.dataset.upgradeId || element.id;
-                if (upgradeId) {
+                // Try to extract upgrade ID from data attribute, class, or id
+                const upgradeId = element.dataset.upgradeId || 
+                                  element.dataset.itemId || 
+                                  element.id || 
+                                  element.getAttribute('data-id') ||
+                                  element.textContent?.trim();
+                                  
+                if (upgradeId && !vehicle.upgrades.includes(upgradeId)) {
                   vehicle.upgrades.push(upgradeId);
+                  console.log(`Found upgrade: ${upgradeId}`);
                 }
               }
             }
             
-            // Look for perk elements
-            const perkElements = card.querySelectorAll('.perk-item, [data-perk-id]');
+            // Look for perk elements - try different query selectors
+            const perkElements = card.querySelectorAll('.perk-item, [data-perk-id], [data-item-type="perk"], .perk');
             if (perkElements && perkElements.length > 0) {
               for (const element of perkElements) {
-                // Try to extract perk ID from data attribute or class
-                const perkId = element.dataset.perkId || element.id;
-                if (perkId) {
+                // Try to extract perk ID from data attribute, class, or id
+                const perkId = element.dataset.perkId || 
+                               element.dataset.itemId || 
+                               element.id || 
+                               element.getAttribute('data-id') ||
+                               element.textContent?.trim();
+                               
+                if (perkId && !vehicle.perks.includes(perkId)) {
                   vehicle.perks.push(perkId);
+                  console.log(`Found perk: ${perkId}`);
+                }
+              }
+            }
+            
+            // Also try to find item lists with common elements
+            const itemLists = card.querySelectorAll('.weapon-list, .upgrade-list, .perk-list, .items-list');
+            if (itemLists && itemLists.length > 0) {
+              for (const list of itemLists) {
+                // Check all children for data attributes or IDs
+                const items = list.querySelectorAll('*');
+                for (const item of items) {
+                  // Try to determine the item type
+                  let itemType = 'unknown';
+                  if (list.classList.contains('weapon-list') || item.classList.contains('weapon')) {
+                    itemType = 'weapon';
+                  } else if (list.classList.contains('upgrade-list') || item.classList.contains('upgrade')) {
+                    itemType = 'upgrade';
+                  } else if (list.classList.contains('perk-list') || item.classList.contains('perk')) {
+                    itemType = 'perk';
+                  } else if (item.dataset.itemType) {
+                    itemType = item.dataset.itemType;
+                  }
+                  
+                  // Get the item ID
+                  const itemId = item.dataset.id || item.dataset.itemId || item.id || item.textContent?.trim();
+                  
+                  // Add to appropriate array if valid
+                  if (itemId) {
+                    if (itemType === 'weapon' && !vehicle.weapons.includes(itemId)) {
+                      vehicle.weapons.push(itemId);
+                      console.log(`Found weapon in list: ${itemId}`);
+                    } else if (itemType === 'upgrade' && !vehicle.upgrades.includes(itemId)) {
+                      vehicle.upgrades.push(itemId);
+                      console.log(`Found upgrade in list: ${itemId}`);
+                    } else if (itemType === 'perk' && !vehicle.perks.includes(itemId)) {
+                      vehicle.perks.push(itemId);
+                      console.log(`Found perk in list: ${itemId}`);
+                    }
+                  }
                 }
               }
             }
@@ -305,7 +365,36 @@
           if (window.vehicles && Array.isArray(window.vehicles) && window.vehicles.length > 0) {
             console.log("Found window.vehicles, using that instead of DOM extraction");
             vehicles.length = 0; // Clear the array
-            window.vehicles.forEach(v => vehicles.push(JSON.parse(JSON.stringify(v))));
+            
+            // Deep clone each vehicle to avoid reference issues
+            window.vehicles.forEach(v => {
+              // Ensure each vehicle has the required properties
+              const vehicleClone = JSON.parse(JSON.stringify(v));
+              
+              // Make sure arrays exist
+              if (!Array.isArray(vehicleClone.weapons)) {
+                console.warn(`Vehicle ${vehicleClone.id || 'unknown'} is missing weapons array, adding empty array`);
+                vehicleClone.weapons = [];
+              }
+              
+              if (!Array.isArray(vehicleClone.upgrades)) {
+                console.warn(`Vehicle ${vehicleClone.id || 'unknown'} is missing upgrades array, adding empty array`);
+                vehicleClone.upgrades = [];
+              }
+              
+              if (!Array.isArray(vehicleClone.perks)) {
+                console.warn(`Vehicle ${vehicleClone.id || 'unknown'} is missing perks array, adding empty array`);
+                vehicleClone.perks = [];
+              }
+              
+              // Log what we're saving
+              console.log(`Saving vehicle with ID ${vehicleClone.id}: ${vehicleClone.weapons.length} weapons, ${vehicleClone.upgrades.length} upgrades, ${vehicleClone.perks.length} perks`);
+              console.log(`Weapons: ${vehicleClone.weapons.join(', ')}`);
+              console.log(`Upgrades: ${vehicleClone.upgrades.join(', ')}`);
+              console.log(`Perks: ${vehicleClone.perks.join(', ')}`);
+              
+              vehicles.push(vehicleClone);
+            });
           }
           
           if (window.sponsorId) {
