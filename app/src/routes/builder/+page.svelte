@@ -1306,6 +1306,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 						id: weaponId,
 						name: weapon?.name || weaponId,
 						facing: v.weaponFacings?.[weaponId] || weapon?.facing || 'front',
+						range: weapon?.range || 'Short',
 						attackDice: weapon?.attackDice || '-',
 						cost: weapon?.cost || 0,
 						specialRules: weapon?.specialRules || ''
