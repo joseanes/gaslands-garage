@@ -44,7 +44,10 @@
     
     // Now we can safely access the props
     $: if (vehicleRules) {
-        console.log("VehicleCard received vehicleRules:", vehicleRules.length);
+        // Validate vehicleRules is an array with proper data
+        if (!Array.isArray(vehicleRules) || vehicleRules.length === 0) {
+            console.warn("VehicleCard received empty or invalid vehicleRules");
+        }
     }
 
     // Local state for hazard tokens that can be immediately updated
@@ -384,20 +387,51 @@
     
     function getVehicleRuleDetails(ruleName: string) {
         if (!ruleName) return null;
+        if (!Array.isArray(vehicleRules) || vehicleRules.length === 0) {
+            return null;
+        }
 
         // Clean the ruleName to handle potential variations
         const cleanedRuleName = ruleName.trim();
-
-        // Try to find exact match first
-        const exactMatch = vehicleRules.find(rule => rule.ruleName === cleanedRuleName);
-        if (exactMatch) return exactMatch;
-
-        // If no exact match, try case-insensitive match
-        const caseInsensitiveMatch = vehicleRules.find(rule =>
-            rule.ruleName.toLowerCase() === cleanedRuleName.toLowerCase());
-        if (caseInsensitiveMatch) return caseInsensitiveMatch;
         
-        // If still no match, return null
+        // First check if rules might be using ruleName for matching
+        // This is the case if the first rule doesn't have an id field
+        const firstRule = vehicleRules[0];
+        const usingRuleNameForMatching = firstRule && !firstRule.id;
+        
+        if (usingRuleNameForMatching) {
+            // Primary match by ruleName directly since id isn't available
+            const directMatch = vehicleRules.find(rule => 
+                rule.ruleName && rule.ruleName.toUpperCase() === cleanedRuleName.toUpperCase());
+            if (directMatch) return directMatch;
+            
+            // Try fuzzy match with ruleName
+            const fuzzyMatch = vehicleRules.find(rule => 
+                rule.ruleName && rule.ruleName.toUpperCase().includes(cleanedRuleName.toUpperCase()));
+            if (fuzzyMatch) return fuzzyMatch;
+        } else {
+            // Standard flow when id field is present
+            
+            // Try exact match first using id field
+            const exactMatch = vehicleRules.find(rule => rule.id === cleanedRuleName);
+            if (exactMatch) return exactMatch;
+    
+            // If no exact match, try case-insensitive match on id
+            const caseInsensitiveMatch = vehicleRules.find(rule =>
+                rule.id && rule.id.toLowerCase() === cleanedRuleName.toLowerCase());
+            if (caseInsensitiveMatch) return caseInsensitiveMatch;
+            
+            // If still no match, try matching by ruleName field
+            const ruleNameMatch = vehicleRules.find(rule => 
+                rule.ruleName && rule.ruleName.toUpperCase() === cleanedRuleName.toUpperCase());
+            if (ruleNameMatch) return ruleNameMatch;
+            
+            // Last resort - try fuzzy match with ruleName field 
+            const fuzzyMatch = vehicleRules.find(rule => 
+                rule.ruleName && rule.ruleName.toUpperCase().includes(cleanedRuleName.toUpperCase()));
+            if (fuzzyMatch) return fuzzyMatch;
+        }
+        
         return null;
     }
 
@@ -789,7 +823,7 @@
                         {#each specialRules as ruleName}
                             {@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
                             <div class="text-sm py-1 border-b border-stone-200 dark:border-gray-700">
-                                <span class="font-bold text-stone-700 dark:text-gray-300">{ruleName.trim()}</span>
+                                <span class="font-bold text-stone-700 dark:text-gray-300">{ruleDetails?.ruleName || ruleName.trim()}</span>
                                 {#if ruleDetails}
                                     <div class="text-xs text-stone-500 dark:text-gray-400">{@html ruleDetails.rule}</div>
                                 {:else}
@@ -1249,7 +1283,7 @@
                                 {@const ruleDetails = getVehicleRuleDetails(ruleName.trim())}
                                 <li class="bg-stone-50 dark:bg-gray-700 px-3 py-3">
                                     <div class="flex-1">
-                                        <b><span class="text-stone-700 dark:text-gray-200 font-bold block mb-1">{ruleName.trim()}</span></b>
+                                        <b><span class="text-stone-700 dark:text-gray-200 font-bold block mb-1">{ruleDetails?.ruleName || ruleName.trim()}</span></b>
                                         {#if ruleDetails}
                                             <div class="text-stone-500 dark:text-gray-400 text-sm mt-1">{@html ruleDetails.rule}</div>
                                         {:else}

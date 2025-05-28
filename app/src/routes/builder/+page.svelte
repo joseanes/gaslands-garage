@@ -697,11 +697,21 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	}
 
 	function addPerk(vehicleId: string, perkId: string) {
+		// Check if the vehicle already has this perk
+		const vehicle = vehicles.find(v => v.id === vehicleId);
+		if (vehicle && vehicle.perks.includes(perkId)) {
+			alert('This vehicle already has this perk. Vehicles cannot have duplicate perks.');
+			return;
+		}
+		
 		vehicles = vehicles.map(v =>
 			v.id === vehicleId ?
 			{ ...v, perks: [...v.perks, perkId] } :
 			v
 		);
+		
+		// Immediately recalculate total cans for display
+		totalCans = calculateTotalCansDirectly();
 		
 		// Manual trigger validation update to ensure costs are recalculated
 		setTimeout(() => updateValidation(), 0);
@@ -713,6 +723,9 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			{ ...v, perks: v.perks.filter((_, idx) => idx !== perkIndex) } :
 			v
 		);
+		
+		// Immediately recalculate total cans for display
+		totalCans = calculateTotalCansDirectly();
 		
 		// Manual trigger validation update to ensure costs are recalculated
 		setTimeout(() => updateValidation(), 0);
@@ -825,7 +838,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	}
 
 	function getVehicleRuleDetails(ruleName: string) {
-		return vehicleRules.find(rule => rule.ruleName === ruleName);
+		return vehicleRules.find(rule => rule.id === ruleName);
 	}
 
 	// Hazard token management
@@ -1266,8 +1279,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 			// Add vehicle data with more details including full objects
 			vehicles: vehicles.map(v => ({
 				...v,
-				// Include calculated cost
-				cost: validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || 0,
+				// Include calculated cost - use validation if available, otherwise calculate directly
+				cost: validation.vehicleReports.find(r => r.vehicleId === v.id)?.cans || calculateVehicleCost(v),
 				// Include vehicle type details with special rules
 				vehicleType: vehicleTypes.find(vt => vt.id === v.type),
 				// Explicitly include special rules from the vehicle type for easier access
@@ -2722,9 +2735,12 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 	// Get available perks for the current sponsor
 	$: currentSponsor = sponsors.find(s => s.id === sponsorId);
 
-	// Filter perks based on class match (perksClasses)
+	// Filter perks based on class match (perksClasses) - only class perks, not sponsor perks
 	$: classPerksList = enableSponsorships
 		? perks.filter(p => {
+			// Only include perks that have empty sponsor field (class perks)
+			if (p.sponsor && p.sponsor.trim() !== '') return false;
+			
 			// If sponsor has perksClasses and the perk has a class, do normal filtering
 			if (currentSponsor?.perksClasses?.length > 0 && p.class) {
 				return currentSponsor.perksClasses.some(
@@ -2750,8 +2766,8 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 
 	$: sponsorPerksList = enableSponsorships && currentSponsor
 		? perks.filter(p => {
-			// If the perk has a sponsor field, match it against the current sponsor
-			if (p.sponsor) {
+			// Only include perks that have a non-empty sponsor field (sponsor-specific perks)
+			if (p.sponsor && p.sponsor.trim() !== '') {
 				const perkSponsorLower = p.sponsor.toLowerCase();
 				const sponsorIdLower = currentSponsor.id.toLowerCase();
 				const sponsorNameLower = currentSponsor.name.toLowerCase();
@@ -2768,8 +2784,10 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 		})
 		: [];
 
-	// All available perks (used for vehicles), filtered by electrical restrictions
-	$: availablePerks = [...classPerksList, ...sponsorPerksList].filter(perk => {
+	// Available perks for vehicle selection (only class perks, not sponsor-specific perks)
+	$: availablePerks = classPerksList.filter(perk => {
+		// Only include class perks (sponsor field should be empty)
+		if (perk.sponsor && perk.sponsor.trim() !== '') return false;
 		// Filter by electrical property
 		if (perk.electrical && !(currentSponsor?.electrical)) return false;
 		return true;
@@ -3013,7 +3031,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
 				<div class="flex items-center justify-between w-full gap-4">
 					<div class="flex items-center gap-4">
 						<b class="text-base font-bold whitespace-nowrap">Cans: </b>
-						<span class="font-extrabold text-amber-700 dark:text-amber-300 text-lg md:text-xl">{totalCans || 0}</span>
+						<span class="font-extrabold text-amber-700 dark:text-amber-300 text-lg md:text-xl">{totalCans || calculateTotalCansDirectly()}</span>
 						<span class="text-lg font-bold text-amber-700 dark:text-amber-300">/</span>
 						<input
 							type="number"

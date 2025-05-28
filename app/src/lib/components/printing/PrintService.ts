@@ -21,6 +21,53 @@ export function checkRulesAcknowledgment(
 }
 
 /**
+ * Calculate total team cost from vehicles data
+ */
+function calculateTotalCost(vehicles: any[]): number {
+  if (!vehicles || !Array.isArray(vehicles)) return 0;
+  
+  let totalCost = 0;
+  
+  vehicles.forEach(vehicle => {
+    if (!vehicle) return;
+    
+    // Add vehicle base cost
+    if (vehicle.vehicleObj && vehicle.vehicleObj.baseCost) {
+      totalCost += vehicle.vehicleObj.baseCost;
+    }
+    
+    // Add weapon costs
+    if (vehicle.weaponObjects && Array.isArray(vehicle.weaponObjects)) {
+      vehicle.weaponObjects.forEach(weapon => {
+        if (weapon && weapon.cost) {
+          totalCost += weapon.cost;
+        }
+      });
+    }
+    
+    // Add upgrade costs
+    if (vehicle.upgradeObjects && Array.isArray(vehicle.upgradeObjects)) {
+      vehicle.upgradeObjects.forEach(upgrade => {
+        if (upgrade && upgrade.cost) {
+          totalCost += upgrade.cost;
+        }
+      });
+    }
+    
+    // Add perk costs
+    if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
+      vehicle.perkObjects.forEach(perk => {
+        if (perk && perk.cost) {
+          totalCost += perk.cost;
+        }
+      });
+    }
+  });
+  
+  return totalCost;
+}
+
+/**
  * Generates a printable HTML string from the data
  */
 export function generatePrintableHtml(data: {
@@ -52,6 +99,9 @@ export function generatePrintableHtml(data: {
     showSpecialRules = true,
     printStyle = 'classic'
   } = data;
+  
+  // Calculate actual total cost if the passed totalCans is 0 or invalid
+  const actualTotalCans = totalCans || calculateTotalCost(vehicles);
   
   // Check if vehicles exist and are valid
   const hasValidVehicles = vehicles && 
@@ -170,7 +220,7 @@ export function generatePrintableHtml(data: {
         if (perk && perk.name) {
           sponsorPerksHtml += `
           <li>
-            <div class="perk-name">${perk.name} ${perk.level ? `(Level ${perk.level})` : ''}</div>
+            <div class="perk-name">${perk.name}</div>
             <div class="perk-text">${perk.text || ''}</div>
           </li>`;
         }
@@ -193,7 +243,7 @@ export function generatePrintableHtml(data: {
         if (perk && perk.name) {
           sponsorPerksHtml += `
           <li>
-            <div class="perk-name">${perk.name} ${perk.level ? `(Level ${perk.level})` : ''}</div>
+            <div class="perk-name">${perk.name}</div>
             <div class="perk-text">${perk.text || ''}</div>
           </li>`;
         }
@@ -637,7 +687,7 @@ export function generatePrintableHtml(data: {
     <div class="print-header">
       <h1>${teamName}</h1>
       <div class="team-info">
-        <div>Total: ${totalCans} / ${maxCans} cans</div>
+        <div>Total: ${actualTotalCans} / ${maxCans} cans</div>
         <div>Sponsor: ${sponsorName}</div>
       </div>
     </div>
@@ -732,6 +782,9 @@ function generateDashboardHtml(data: {
     showSpecialRules = true,
     printStyle = 'classic'
   } = data;
+  
+  // Calculate actual total cost if the passed totalCans is 0 or invalid
+  const actualTotalCans = totalCans || calculateTotalCost(vehicles);
   
   // Get sponsor description if available
   let sponsorDescription = '';
@@ -1043,94 +1096,6 @@ function generateDashboardHtml(data: {
         flex-grow: 1;
       }
     </style>
-    <script>
-    // Add listener to run after page loads
-    window.addEventListener('DOMContentLoaded', function() {
-      console.log('Dashboard window loaded - adding controls');
-      
-      // Add buttons manually via script
-      var buttonsDiv = document.createElement('div');
-      buttonsDiv.className = 'print-buttons';
-      buttonsDiv.style.position = 'fixed';
-      buttonsDiv.style.top = '10px';
-      buttonsDiv.style.right = '10px';
-      buttonsDiv.style.zIndex = '1000';
-      buttonsDiv.style.display = 'flex';
-      buttonsDiv.style.gap = '10px';
-      
-      // Print button
-      var printBtn = document.createElement('button');
-      printBtn.innerHTML = 'Print';
-      printBtn.className = 'print-button print-button-print';
-      printBtn.style.padding = '8px 16px';
-      printBtn.style.border = 'none';
-      printBtn.style.borderRadius = '4px';
-      printBtn.style.fontWeight = 'bold';
-      printBtn.style.cursor = 'pointer';
-      printBtn.style.fontSize = '14px';
-      printBtn.style.backgroundColor = '#2563eb';
-      printBtn.style.color = 'white';
-      printBtn.onclick = function() { window.print(); };
-      
-      // Close button
-      var closeBtn = document.createElement('button');
-      closeBtn.innerHTML = 'Close Window';
-      closeBtn.className = 'print-button print-button-close';
-      closeBtn.style.padding = '8px 16px';
-      closeBtn.style.border = 'none';
-      closeBtn.style.borderRadius = '4px';
-      closeBtn.style.fontWeight = 'bold';
-      closeBtn.style.cursor = 'pointer';
-      closeBtn.style.fontSize = '14px';
-      closeBtn.style.backgroundColor = '#d97706';
-      closeBtn.style.color = 'white';
-      closeBtn.onclick = function() { window.close(); };
-      
-      // Add settings button
-      var settingsBtn = document.createElement('button');
-      settingsBtn.innerHTML = 'Change Print Settings';
-      settingsBtn.className = 'print-button print-button-settings';
-      settingsBtn.style.padding = '8px 16px';
-      settingsBtn.style.border = 'none';
-      settingsBtn.style.borderRadius = '4px';
-      settingsBtn.style.fontWeight = 'bold';
-      settingsBtn.style.cursor = 'pointer';
-      settingsBtn.style.fontSize = '14px';
-      settingsBtn.style.backgroundColor = '#047857'; // Green
-      settingsBtn.style.color = 'white';
-      settingsBtn.onclick = function() {
-        // The most direct approach - set a local storage item that the main window will check
-        try {
-          // Create a timestamp to ensure the event is detected
-          const timestamp = new Date().getTime();
-          localStorage.setItem('openPrintSettings', timestamp.toString());
-          console.log("Set localStorage flag to open print settings");
-          
-          // Also try to call the function directly if available
-          if (window.opener && typeof window.opener.openSettings === 'function') {
-            try {
-              window.opener.openSettings('print');
-            } catch (e) {
-              console.error("Error calling openSettings directly:", e);
-            }
-          }
-        } catch (err) {
-          console.error("Error setting localStorage:", err);
-        }
-        
-        // Close the print window
-        window.close();
-      };
-      
-      // Add buttons to div
-      buttonsDiv.appendChild(printBtn);
-      buttonsDiv.appendChild(settingsBtn);
-      buttonsDiv.appendChild(closeBtn);
-      
-      // Add div to document
-      document.body.appendChild(buttonsDiv);
-    });
-    </script>
   </head>
   <body>
     <!-- Sponsor Header -->
@@ -1140,7 +1105,7 @@ function generateDashboardHtml(data: {
         <div class="sponsor-description">${sponsorDescription}</div>
       </div>
       <div style="text-align: right;">
-        <div class="sponsor-name">${totalCans} / ${maxCans} cans</div>
+        <div class="sponsor-name">${actualTotalCans} / ${maxCans} cans</div>
         <div class="sponsor-description">Total team cost</div>
       </div>
     </div>
@@ -1239,7 +1204,40 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
     const vehicleType = vehicle.vehicleType || {};
     const typeName = vehicleType.name || 'Car';
     const stats = vehicle.stats || {};
-    const cost = vehicle.cost || 0;
+    
+    // Calculate cost - use provided cost or calculate from components
+    let cost = vehicle.cost || 0;
+    if (!cost || cost === 0) {
+      // Fallback: calculate cost from vehicle type + weapons + upgrades
+      cost = (vehicleType.baseCost || 0);
+      
+      // Add weapon costs
+      if (Array.isArray(vehicle.weaponObjects)) {
+        vehicle.weaponObjects.forEach(weapon => {
+          if (weapon && weapon.cost) {
+            cost += weapon.cost;
+          }
+        });
+      }
+      
+      // Add upgrade costs
+      if (Array.isArray(vehicle.upgradeObjects)) {
+        vehicle.upgradeObjects.forEach(upgrade => {
+          if (upgrade && upgrade.cost) {
+            cost += upgrade.cost;
+          }
+        });
+      }
+      
+      // Add perk costs
+      if (Array.isArray(vehicle.perkObjects)) {
+        vehicle.perkObjects.forEach(perk => {
+          if (perk && perk.cost) {
+            cost += perk.cost;
+          }
+        });
+      }
+    }
     
     // Get lists of weapons, upgrades, and perks
     const weaponObjects = Array.isArray(vehicle.weaponObjects) ? vehicle.weaponObjects : [];
@@ -1443,13 +1441,16 @@ function generateVehicleDashboardHtml(vehicle: any, sponsorName: string): string
       typeName
     ];
     
-    // Add any vehicle special rules
-    if (vehicle.specialRules) {
-      // Add special rules from the specialRules field
-      vehicleTypePerks.push(vehicle.specialRules);
-    } else if (vehicleType.specialRules) {
-      // Fallback to specialRules from the vehicleType
-      vehicleTypePerks.push(vehicleType.specialRules);
+    // Add any vehicle special rules with readable names
+    let specialRulesString = vehicle.specialRules || vehicleType?.specialRules;
+    if (specialRulesString) {
+      const rules = specialRulesString.split(',').map(rule => rule.trim());
+      const readableRuleNames = rules.map(ruleId => {
+        // Find the rule details using the id but display the readable ruleName
+        const ruleDetails = vehicle.vehicleRules?.find(r => r.id === ruleId);
+        return ruleDetails?.ruleName || ruleId;
+      });
+      vehicleTypePerks.push(...readableRuleNames);
     }
     
     // Add any team-wide perks like "Thumpermonkey" or "Dynamo"
@@ -2158,27 +2159,35 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
   const specialRulesMap = new Map();
   
   vehicles.forEach(vehicle => {
-    // Get the vehicle type object (which contains the specialRules string)
-    const vehicleType = vehicle.vehicleType || {};
+    // Get special rules from either the vehicle directly or the vehicle type
+    const specialRulesString = vehicle.specialRules || vehicle.vehicleType?.specialRules;
     
-    if (vehicleType && vehicleType.specialRules) {
+    if (specialRulesString) {
       // Split the comma-separated rules
-      const rulesArray = vehicleType.specialRules.split(',').map(rule => rule.trim());
+      const rulesArray = specialRulesString.split(',').map(rule => rule.trim());
       
       rulesArray.forEach(ruleName => {
         if (!specialRulesMap.has(ruleName)) {
           // Find rule description if it exists
           let ruleDescription = 'Description not available';
+          let ruleDetails = null;
+          
+          console.log(`[DEBUG PrintService] Looking for rule: "${ruleName}"`);
+          console.log(`[DEBUG PrintService] vehicle.vehicleRules exists:`, !!vehicle.vehicleRules);
+          console.log(`[DEBUG PrintService] vehicle.vehicleRules length:`, vehicle.vehicleRules?.length || 0);
+          console.log(`[DEBUG PrintService] First rule:`, vehicle.vehicleRules?.[0]);
           
           if (vehicle.vehicleRules && Array.isArray(vehicle.vehicleRules)) {
-            // First, try with exact case matching
-            let ruleDetails = vehicle.vehicleRules.find(r => r.ruleName === ruleName);
+            // First, try with exact case matching using id
+            ruleDetails = vehicle.vehicleRules.find(r => r.id === ruleName);
+            console.log(`[DEBUG PrintService] Exact match:`, ruleDetails);
             
-            // If not found, try case-insensitive matching
+            // If not found, try case-insensitive matching using id
             if (!ruleDetails) {
               ruleDetails = vehicle.vehicleRules.find(r => 
-                r.ruleName.toLowerCase() === ruleName.toLowerCase()
+                r.id && r.id.toLowerCase() === ruleName.toLowerCase()
               );
+              console.log(`[DEBUG PrintService] Case-insensitive match:`, ruleDetails);
             }
             
             // If found and has rule text, use it
@@ -2186,12 +2195,19 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
               ruleDescription = ruleDetails.rule;
             }
             
-            // Debug info
-            console.log(`[PrintService] Looking for rule ${ruleName}, found: ${Boolean(ruleDetails)}`);
+            // Debug info for troubleshooting
+            if (!ruleDetails) {
+              console.warn(`[PrintService] No rule found for "${ruleName}"`);
+            }
+          } else {
+            console.log(`[DEBUG PrintService] vehicleRules not available or not array`);
           }
           
+          // Use the readable ruleName for display, but keep the original name for matching
+          const displayName = ruleDetails?.ruleName || ruleName;
+          
           specialRulesMap.set(ruleName, {
-            name: ruleName,
+            name: displayName,
             description: ruleDescription
           });
         }
@@ -2218,6 +2234,96 @@ function generateVehicleSpecialRulesHtml(vehicles: any[]): string {
   });
   
   return rulesHtml || '<tr><td colspan="2">No special rules available</td></tr>';
+}
+
+/**
+ * Generate HTML for roster perks section - only purchased and sponsor perks
+ */
+function generateRosterPerksHtml(vehicles: any[], sponsorPerks: any): string {
+  const perkMap = new Map();
+  
+  // Collect purchased perks from all vehicles
+  if (vehicles && Array.isArray(vehicles)) {
+    vehicles.forEach(vehicle => {
+      if (vehicle.perkObjects && Array.isArray(vehicle.perkObjects)) {
+        vehicle.perkObjects.forEach((perk: any) => {
+          if (perk && perk.name && !perkMap.has(perk.name)) {
+            perkMap.set(perk.name, {
+              name: perk.name,
+              text: perk.text || 'No description available',
+              type: 'purchased'
+            });
+          }
+        });
+      }
+    });
+  }
+  
+  // Add sponsor-specific perks
+  let sponsorPerksCount = 0;
+  if (sponsorPerks && sponsorPerks.sponsorPerksList && Array.isArray(sponsorPerks.sponsorPerksList)) {
+    sponsorPerks.sponsorPerksList.forEach((perk: any) => {
+      if (perk && perk.name && !perkMap.has(perk.name)) {
+        perkMap.set(perk.name, {
+          name: perk.name,
+          text: perk.text || 'No description available',
+          type: 'sponsor'
+        });
+        sponsorPerksCount++;
+      }
+    });
+  }
+  
+  // If no perks to show, return empty string
+  if (perkMap.size === 0) {
+    return '';
+  }
+  
+  // Generate HTML
+  let html = `
+  <div class="sponsor-perks-section" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+    <h3 style="margin: 0 0 10px 0; font-size: 14pt; color: #333;">Team Perks</h3>`;
+  
+  // Show sponsor perks first
+  if (sponsorPerksCount > 0) {
+    html += `
+    <div style="margin-bottom: 15px;">
+      <h4 style="margin: 0 0 8px 0; font-size: 11pt; color: #666;">Sponsor Perks (Automatic)</h4>`;
+    
+    perkMap.forEach(perk => {
+      if (perk.type === 'sponsor') {
+        html += `
+        <div style="margin-bottom: 8px; padding: 8px; background-color: #fff; border-radius: 3px; border-left: 3px solid #d97706;">
+          <div style="font-weight: bold; font-size: 10pt; color: #333;">${perk.name}</div>
+          <div style="font-size: 9pt; color: #666; margin-top: 2px;">${perk.text}</div>
+        </div>`;
+      }
+    });
+    
+    html += `</div>`;
+  }
+  
+  // Show purchased perks
+  const purchasedPerks = Array.from(perkMap.values()).filter(perk => perk.type === 'purchased');
+  if (purchasedPerks.length > 0) {
+    html += `
+    <div>
+      <h4 style="margin: 0 0 8px 0; font-size: 11pt; color: #666;">Purchased Perks</h4>`;
+    
+    purchasedPerks.forEach(perk => {
+      html += `
+      <div style="margin-bottom: 8px; padding: 8px; background-color: #fff; border-radius: 3px; border-left: 3px solid #10b981;">
+        <div style="font-weight: bold; font-size: 10pt; color: #333;">${perk.name}</div>
+        <div style="font-size: 9pt; color: #666; margin-top: 2px;">${perk.text}</div>
+      </div>`;
+    });
+    
+    html += `</div>`;
+  }
+  
+  html += `</div>`;
+  
+  return html;
 }
 
 /**
@@ -2249,6 +2355,9 @@ function generateRosterHtml(data: {
     showPerkDescriptions = true,
     showSpecialRules = true
   } = data;
+  
+  // Calculate actual total cost if the passed totalCans is 0 or invalid
+  const actualTotalCans = totalCans || calculateTotalCost(vehicles);
   
   // Helper function to safely get weapon, upgrade and perk names
   const getNameFromItem = (item: any): string => {
@@ -2296,23 +2405,23 @@ function generateRosterHtml(data: {
           <div class="stat"><span class="stat-label">Weight</span> ${weight}</div>
         </div>`;
         
-      // Add Vehicle Rules if available
-      // Add vehicle rules from the vehicleRules array OR the specialRules field
-      if ((vehicleRules && vehicleRules.length > 0 && showSpecialRules) || 
-          (vehicle.specialRules && showSpecialRules)) {
-        vehiclesHtml += `<div class="rules-section">`;
-        if (typeof vehicleRules === 'string') {
-          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicleRules}</div>`;
-        } else if (Array.isArray(vehicleRules)) {
-          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicleRules.join(', ')}</div>`;
-        } else if (vehicle.specialRules) {
-          // Use the specialRules from the vehicle
-          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicle.specialRules}</div>`;
-        } else if (vehicle.vehicleType && vehicle.vehicleType.specialRules) {
-          // Fallback to specialRules from the vehicleType
-          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${vehicle.vehicleType.specialRules}</div>`;
+      // Add Vehicle Rules if available (only rules specific to this vehicle type)
+      if (showSpecialRules) {
+        let rulesText = '';
+        
+        // Get vehicle-specific special rules only
+        if (vehicle.vehicleType && vehicle.vehicleType.specialRules && typeof vehicle.vehicleType.specialRules === 'string' && vehicle.vehicleType.specialRules.trim()) {
+          rulesText = vehicle.vehicleType.specialRules.trim();
+        } else if (vehicle.specialRules && typeof vehicle.specialRules === 'string' && vehicle.specialRules.trim()) {
+          rulesText = vehicle.specialRules.trim();
         }
-        vehiclesHtml += `</div>`;
+        
+        // Only add the rules section if this vehicle type has specific rules
+        if (rulesText) {
+          vehiclesHtml += `<div class="rules-section">`;
+          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${rulesText}</div>`;
+          vehiclesHtml += `</div>`;
+        }
       }
       
       // WEAPONS SECTION
@@ -2398,13 +2507,7 @@ function generateRosterHtml(data: {
         perkObjects.forEach(perk => {
           if (perk) {
             vehiclesHtml += `<li>
-              <span class="equipment-name">${perk.name || 'Unknown Perk'}`;
-            
-            if (perk.level) {
-              vehiclesHtml += ` (Level ${perk.level})`;
-            }
-            
-            vehiclesHtml += `</span>`;
+              <span class="equipment-name">${perk.name || 'Unknown Perk'}</span>`;
             
             // Add descriptions if enabled
             if (perk.text && showPerkDescriptions) {
@@ -2642,13 +2745,16 @@ function generateRosterHtml(data: {
       <h1>${teamName}</h1>
       <div class="team-info">
         <div>Sponsor: ${sponsorName}</div>
-        <div>Team Cost: ${totalCans} / ${maxCans} cans</div>
+        <div>Team Cost: ${actualTotalCans} / ${maxCans} cans</div>
       </div>
     </div>
     
     <div class="roster-content">
       ${vehiclesHtml}
     </div>
+    
+    <!-- Team Perks Section for Roster Style -->
+    ${generateRosterPerksHtml(vehicles, sponsorPerks)}
     
     <div class="qr-section">
       ${qrCode ?
@@ -2664,9 +2770,6 @@ function generateRosterHtml(data: {
   </html>`;
 }
 
-/**
- * Main print function that generates and opens printable content in a new window
- */
 /**
  * Print team in Dashboard style - separate function for clarity
  */
@@ -2767,49 +2870,8 @@ export async function printTeamDashboard(draft: Draft): Promise<void> {
     
     printWindow.document.close();
     
-    // Add print and close buttons
-    const closeButton = printWindow.document.createElement('button');
-    closeButton.innerHTML = 'Close Window';
-    closeButton.style.position = 'fixed';
-    closeButton.style.top = '10px';
-    closeButton.style.right = '10px';
-    closeButton.style.padding = '8px 16px';
-    closeButton.style.backgroundColor = '#d97706';
-    closeButton.style.color = 'white';
-    closeButton.style.border = 'none';
-    closeButton.style.borderRadius = '4px';
-    closeButton.style.cursor = 'pointer';
-    closeButton.style.zIndex = '1000';
-    closeButton.style.fontWeight = 'bold';
-    
-    // Add event listener to close button
-    closeButton.addEventListener('click', function() {
-      printWindow.close();
-    });
-    
-    // Add a print button as well
-    const printButton = printWindow.document.createElement('button');
-    printButton.innerHTML = 'Print';
-    printButton.style.position = 'fixed';
-    printButton.style.top = '10px';
-    printButton.style.right = '140px';
-    printButton.style.padding = '8px 16px';
-    printButton.style.backgroundColor = '#2563eb'; // Blue
-    printButton.style.color = 'white';
-    printButton.style.border = 'none';
-    printButton.style.borderRadius = '4px';
-    printButton.style.cursor = 'pointer';
-    printButton.style.zIndex = '1000';
-    printButton.style.fontWeight = 'bold';
-    
-    // Add event listener to print button
-    printButton.addEventListener('click', function() {
-      printWindow.print();
-    });
-    
-    // Add elements to the document
-    printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
-    printWindow.document.body.insertBefore(printButton, printWindow.document.body.firstChild);
+    // Add unified print buttons
+    addPrintButtons(printWindow);
     
     // No longer auto-printing
     setTimeout(() => {
@@ -3030,127 +3092,8 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
         const vehicleCardsCheck = printWindow.document.querySelectorAll('.vehicle-card');
         console.log("[PrintService] Vehicle cards before printing:", vehicleCardsCheck.length);
         
-        // Add close button to the print window
-        const closeButton = printWindow.document.createElement('button');
-        closeButton.innerHTML = 'Close Window';
-        closeButton.style.position = 'fixed';
-        closeButton.style.top = '10px';
-        closeButton.style.right = '10px';
-        closeButton.style.padding = '8px 16px';
-        closeButton.style.backgroundColor = '#d97706';
-        closeButton.style.color = 'white';
-        closeButton.style.border = 'none';
-        closeButton.style.borderRadius = '4px';
-        closeButton.style.cursor = 'pointer';
-        closeButton.style.zIndex = '1000';
-        closeButton.style.fontWeight = 'bold';
-        
-        // Add event listener to close button
-        closeButton.addEventListener('click', function() {
-          printWindow.close();
-        });
-        
-        // Add a print button as well
-        const printButton = printWindow.document.createElement('button');
-        printButton.innerHTML = 'Print';
-        printButton.style.position = 'fixed';
-        printButton.style.top = '10px';
-        printButton.style.right = '140px'; // Position next to close button
-        printButton.style.padding = '8px 16px';
-        printButton.style.backgroundColor = '#2563eb'; // Blue
-        printButton.style.color = 'white';
-        printButton.style.border = 'none';
-        printButton.style.borderRadius = '4px';
-        printButton.style.cursor = 'pointer';
-        printButton.style.zIndex = '1000';
-        printButton.style.fontWeight = 'bold';
-        
-        // Add event listener to print button
-        printButton.addEventListener('click', function() {
-          printWindow.print();
-        });
-        
-        // Add a button to open print settings
-        const settingsButton = printWindow.document.createElement('button');
-        settingsButton.innerHTML = 'Change Print Settings';
-        settingsButton.style.position = 'fixed';
-        settingsButton.style.top = '10px';
-        settingsButton.style.right = '140px'; // Position between print and close
-        settingsButton.style.padding = '8px 16px';
-        settingsButton.style.backgroundColor = '#047857'; // Green
-        settingsButton.style.color = 'white';
-        settingsButton.style.border = 'none';
-        settingsButton.style.borderRadius = '4px';
-        settingsButton.style.cursor = 'pointer';
-        settingsButton.style.zIndex = '1000';
-        settingsButton.style.fontWeight = 'bold';
-
-        // Add event listener to settings button - close this window and open print settings
-        settingsButton.addEventListener('click', function() {
-            // The most direct approach - set a local storage item that the main window will check
-            try {
-                // Create a timestamp to ensure the event is detected
-                const timestamp = new Date().getTime();
-                localStorage.setItem('openPrintSettings', timestamp.toString());
-                console.log("Set localStorage flag to open print settings");
-                
-                // Also try to call the function directly if available
-                if (window.opener && typeof window.opener.openSettings === 'function') {
-                    try {
-                        window.opener.openSettings('print');
-                    } catch (e) {
-                        console.error("Error calling openSettings directly:", e);
-                    }
-                }
-            } catch (err) {
-                console.error("Error setting localStorage:", err);
-            }
-            
-            // Close the print window
-            printWindow.close();
-        });
-
-        /* MAIL BUTTON - TEMPORARILY DISABLED
-        // Add a mail button to email the page
-        const mailButton = printWindow.document.createElement('button');
-        mailButton.innerHTML = 'Mail this printout';
-        mailButton.style.position = 'fixed';
-        mailButton.style.top = '10px';
-        mailButton.style.right = '560px'; // Leftmost button
-        mailButton.style.padding = '8px 16px';
-        mailButton.style.backgroundColor = '#6366f1'; // Indigo
-        mailButton.style.color = 'white';
-        mailButton.style.border = 'none';
-        mailButton.style.borderRadius = '4px';
-        mailButton.style.cursor = 'pointer';
-        mailButton.style.zIndex = '1000';
-        mailButton.style.fontWeight = 'bold';
-        
-        // Add event listener to mail button
-        mailButton.addEventListener('click', function() {
-            // Create mail body with team info
-            const teamName = draft.teamName || 'Gaslands Team';
-            const sponsor = draft.sponsorName || 'No Sponsor';
-            const mailSubject = `Gaslands Team: ${teamName} (${sponsor})`;
-            const mailBody = `Check out my Gaslands team:\n\n${teamName}\nSponsor: ${sponsor}\nTotal: ${draft.totalCans || 0}/${draft.maxCans || 50} cans\n\nCreate your own team at https://www.GaslandsGarage.com`;
-            
-            // Open default mail client
-            window.location.href = `mailto:?subject=${encodeURIComponent(mailSubject)}&body=${encodeURIComponent(mailBody)}`;
-        });
-        */
-
-        // Update button positions to avoid overlapping
-        // Mail button is disabled for now
-        printButton.style.right = '320px'; // Left button - more space to avoid overlap
-        settingsButton.style.right = '140px'; // Middle button 
-        closeButton.style.right = '10px'; // Right button
-
-        // Add elements to the document
-        printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
-        printWindow.document.body.insertBefore(settingsButton, printWindow.document.body.firstChild);
-        printWindow.document.body.insertBefore(printButton, printWindow.document.body.firstChild);
-        // Mail button is disabled for now
-        // printWindow.document.body.insertBefore(mailButton, printWindow.document.body.firstChild);
+        // Add unified print buttons (Print, Change Print Settings, Close Window)
+        addPrintButtons(printWindow);
         
         // We no longer automatically open the print dialog
         // The user can use the Print button if they want to print
@@ -3187,35 +3130,16 @@ export async function printTeam(printStyle: string, draft: Draft): Promise<void>
 }
 
 /**
- * Add print and close buttons to the print window
+ * Add standard print buttons to any print window - unified across all print styles
+ * Order: Print (blue), Change Print Settings (green), Close Window (orange)
  */
 function addPrintButtons(printWindow: Window): void {
-  // Add close button to the print window
-  const closeButton = printWindow.document.createElement('button');
-  closeButton.innerHTML = 'Close Window';
-  closeButton.style.position = 'fixed';
-  closeButton.style.top = '10px';
-  closeButton.style.right = '10px';
-  closeButton.style.padding = '8px 16px';
-  closeButton.style.backgroundColor = '#d97706';
-  closeButton.style.color = 'white';
-  closeButton.style.border = 'none';
-  closeButton.style.borderRadius = '4px';
-  closeButton.style.cursor = 'pointer';
-  closeButton.style.zIndex = '1000';
-  closeButton.style.fontWeight = 'bold';
-  
-  // Add event listener to close button
-  closeButton.addEventListener('click', function() {
-    printWindow.close();
-  });
-  
-  // Add a print button as well
+  // Create Print button (blue, leftmost)
   const printButton = printWindow.document.createElement('button');
   printButton.innerHTML = 'Print';
   printButton.style.position = 'fixed';
   printButton.style.top = '10px';
-  printButton.style.right = '140px'; // Position next to close button
+  printButton.style.right = '340px'; // Leftmost
   printButton.style.padding = '8px 16px';
   printButton.style.backgroundColor = '#2563eb'; // Blue
   printButton.style.color = 'white';
@@ -3224,19 +3148,59 @@ function addPrintButtons(printWindow: Window): void {
   printButton.style.cursor = 'pointer';
   printButton.style.zIndex = '1000';
   printButton.style.fontWeight = 'bold';
-  
-  // Add event listener to print button
   printButton.addEventListener('click', function() {
     printWindow.print();
   });
   
-  // Update button positions to avoid overlapping
-  printButton.style.right = '150px'; // Left button
-  closeButton.style.right = '10px'; // Right button
+  // Create Change Print Settings button (green, middle)
+  const settingsButton = printWindow.document.createElement('button');
+  settingsButton.innerHTML = 'Change Print Settings';
+  settingsButton.style.position = 'fixed';
+  settingsButton.style.top = '10px';
+  settingsButton.style.right = '150px'; // Middle
+  settingsButton.style.padding = '8px 16px';
+  settingsButton.style.backgroundColor = '#047857'; // Green
+  settingsButton.style.color = 'white';
+  settingsButton.style.border = 'none';
+  settingsButton.style.borderRadius = '4px';
+  settingsButton.style.cursor = 'pointer';
+  settingsButton.style.zIndex = '1000';
+  settingsButton.style.fontWeight = 'bold';
+  settingsButton.addEventListener('click', function() {
+    try {
+      const timestamp = new Date().getTime();
+      localStorage.setItem('openPrintSettings', timestamp.toString());
+      if (window.opener && typeof window.opener.openSettings === 'function') {
+        window.opener.openSettings('print');
+      }
+    } catch (err) {
+      console.error("Error setting localStorage:", err);
+    }
+    printWindow.close();
+  });
   
-  // Add elements to the document
-  printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
+  // Create Close Window button (orange, rightmost)
+  const closeButton = printWindow.document.createElement('button');
+  closeButton.innerHTML = 'Close Window';
+  closeButton.style.position = 'fixed';
+  closeButton.style.top = '10px';
+  closeButton.style.right = '10px'; // Rightmost
+  closeButton.style.padding = '8px 16px';
+  closeButton.style.backgroundColor = '#d97706'; // Orange
+  closeButton.style.color = 'white';
+  closeButton.style.border = 'none';
+  closeButton.style.borderRadius = '4px';
+  closeButton.style.cursor = 'pointer';
+  closeButton.style.zIndex = '1000';
+  closeButton.style.fontWeight = 'bold';
+  closeButton.addEventListener('click', function() {
+    printWindow.close();
+  });
+  
+  // Add buttons to document in order
   printWindow.document.body.insertBefore(printButton, printWindow.document.body.firstChild);
+  printWindow.document.body.insertBefore(settingsButton, printWindow.document.body.firstChild);
+  printWindow.document.body.insertBefore(closeButton, printWindow.document.body.firstChild);
 }
 
 /**

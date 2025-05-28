@@ -1,76 +1,92 @@
 [
   {
-    "ruleName": "UPPERS",
+    "id": "UPPERS",
+    "ruleName": "Uppers",
     "rule": "<p>If this vehicle is involved in a Collision in which both vehicles declare an Evade, both vehicles must declare a single change Gear up immediately after the Collision is resolved (gaining a Hazard Token as normal). If either vehicle is already at its max Gear, the change of Gear does not affect that vehicle's current Gear, but that vehicle does gain a Hazard Token.</p>"
   },
   {
-    "ruleName": "DOWNERS",
+    "id": "DOWNERS",
+    "ruleName": "Downers",
     "rule": "<p>When this vehicle is involved in a Collision during its activation in which it declares a Smash Attack, the target vehicle does not gain any Hazard Tokens from the Collision and instead discards 2 Hazard Tokens. Then reduce the target vehicle's Crew Value by 1 until the end of the Gear Phase.</p>"
   },
   {
-    "ruleName": "FULL THROTTLE",
+    "id": "FULL THROTTLE",
+    "ruleName": "Full Throttle",
     "rule": "<p>This vehicle considers the Long Straight movement template to be permitted in any Gear. The Long Straight is not considered either Hazardous or Trivial in any Gear.</p>"
   },
   {
-    "ruleName": "PIVOT",
+    "id": "PIVOT",
+    "ruleName": "Pivot",
     "rule": "<p>At the start of this vehicle's activation, if this vehicle's current Gear is 1, this vehicle may make a pivot about its centre to face any direction. This pivot cannot cause a Collision and cannot leave this vehicle touching an obstruction.</p>"
   },
   {
-    "ruleName": "JET ENGINE",
+    "id": "JET ENGINE",
+    "ruleName": "Jet Engine",
     "rule": "<p>A vehicle with a jet engine counts as having a Nitro Booster with infinite ammo tokens. This means this vehicle automatically Explodes when it is Wrecked. A vehicle with a jet engine must use Nitro Booster every time it activates.</p>"
   },
   {
-    "ruleName": "AIRBORNE",
+    "id": "AIRBORNE",
+    "ruleName": "Airborne",
     "rule": "<p>This vehicle ignores non-tall obstructions, dropped weapons, and terrain at all times, except when checking for Cover, and when targeting other vehicles in its Attack Step.<br>Other vehicles ignore this vehicle at all times, except that other vehicles may target this vehicle during their Attack Steps. This vehicle cannot be involved in Collisions.</p>"
   },
   {
-    "ruleName": "AIRWOLF",
+    "id": "AIRWOLF",
+    "ruleName": "Airwolf",
     "rule": "<p>At the start of this vehicle's activation, this vehicle may gain 2 Hazard Tokens to make a single pivot about its centre point, up to 90 degrees.</p>"
   },
   {
-    "ruleName": "BOMBS AWAY",
+    "id": "BOMBS AWAY",
+    "ruleName": "Bombs Away",
     "rule": "<p>When purchasing weapons for this vehicle, this vehicle may count dropped weapons as requiring 0 build slots. This vehicle may attack with any number of dropped weapons in a single Attack Step.</p>"
   },
   {
-    "ruleName": "INFURIATING JINGLE",
+    "id": "INFURIATING JINGLE",
+    "ruleName": "Infuriating Jingle",
     "rule": "<p>Vehicles that target this vehicle with a Smash Attack during a Collision gain no Hazard Tokens during step 6 of the Collision resolution.</p>"
   },
   {
-    "ruleName": "ALL TERRAIN",
+    "id": "ALL TERRAIN",
+    "ruleName": "All Terrain",
     "rule": "<p>This vehicle may ignore the penalties for rough and treacherous surfaces.</p>"
   },
   {
-    "ruleName": "UP AND OVER",
+    "id": "UP AND OVER",
+    "ruleName": "Up and Over",
     "rule": "<p>During this vehicle's Movement Step, after resolving a Collision with an obstruction of a lower weight class, this vehicle may declare that it is going \"Up and Over\". If it does, it may ignore the obstruction for the remainder of its Movement Step, as it drives right over the top of it. This vehicle cannot use this ability to ignore another vehicle with the Up and Over special rule.</p>"
   },
   {
-    "ruleName": "TURRET",
+    "id": "TURRET",
+    "ruleName": "Turret",
     "rule": "<p>This vehicle may count one weapon as turret-mounted without paying for the upgrade.</p>"
   },
   {
-    "ruleName": "ROLL CAGE",
+    "id": "ROLL CAGE",
+    "ruleName": "Roll Cage",
     "rule": "<p>When this vehicle suffers a flip, this vehicle may choose to ignore 2 hits received from the flip.</p>"
   },
   {
-    "ruleName": "SLIP AWAY",
+    "id": "SLIP AWAY",
+    "ruleName": "Slip Away",
     "rule": "<p>If this vehicle is targeted with a tailgate or T-Bone Smash Attach, and this vehicle declares an Evade as its reaction, this vehicle may perform a free activation immediately after the active vehicle completes its activation.</p><p>Ths free activation does not count as the vehicle's activation this Gear Phase.</p>"
   },
   {
-    "ruleName": "TANKER_ANCHOR",
+    "id": "TANKER_ANCHOR",
+    "ruleName": "Tanker Anchor",
     "rule": "<p>At the start of its activation, a Ponderous vehicle may gain 1 Hazard Token to skip its Movement Step. The massive vehicle may then increase its current Gear by 1.</p>"
   },
   {
-    "ruleName": "SLIDES",
+    "id": "SLIDES",
+    "ruleName": "Slides",
     "rule": "<p>When a Ponderous vehicle resolves a Slide result, it must ignore the Slide template: do not place it. Each Slide result provides a Hazard Token as normal.</p>"
   },
   {
-    "ruleName": "WIPEOUTS",
+    "id": "WIPEOUTS",
+    "ruleName": "Wipeouts",
     "rule": "When a Ponderous vehicle suffers a Wipeout, the player to the left does not pivot it during the final step of the Wipeout process. Leave it in its current orientation.\n\nWAR RIG WIPEOUT\nWhen a War Rig suffers a Wipeout, a failed Flip check results in a Jackknife, rather than a Flip (because it is Articulated), and it doesn't get pivoted at the end of the Wipeout (because it is Ponderous)."
   },
   {
-    "ruleName": "PILEDRIVER_ATTACK",
+    "id": "PILEDRIVER_ATTACK",
+    "ruleName": "Piledriver Attack",
     "rule": "During this vehicle's Movement Step, when this vehicle collides with another vehicle of a lighter weight-class, it may declare a Piledriver Attack as its reaction. A Piledriver Attack counts as a Smash Attack in all regards, and also includes an additional effect.\nIf a vehicle is targeted with a Piledriver Attack, after resolving the Collision, the controller of the vehicle that made the Piledriver Attack may place the target vehicle anywhere within Short range of the target vehicle's original position, then pivot the target vehicle to face any direction, such that it does not collide with the active vehicle again during this Movement Step.\nIf the War Rig has a Ram on the appropriate facing, the piledriver attack does benefit from the Ram's special rules."
   }
-  
-
 ]
