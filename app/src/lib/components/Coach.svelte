@@ -8,6 +8,7 @@
     export let weapons = [];
     export let upgrades = [];
     export let perks = [];
+    export let vehicleRules = []; // Add vehicleRules prop
     export let currentSponsor = null;
     export let totalCans = 0;
     export let maxCans = 50;
@@ -305,20 +306,29 @@
     
     // Special abilities
     function getSpecialRules() {
-        const specialRules = new Set();
+        const specialRules = new Map(); // Use Map to store id -> ruleName pairs
         
         if (!vehicles || !vehicles.length) return [];
         
         for (const vehicle of vehicles) {
             const vehicleType = vehicleTypes.find(vt => vt.id === vehicle.type);
             if (vehicleType?.specialRules) {
-                vehicleType.specialRules.split(',').forEach(rule => {
-                    specialRules.add(rule.trim());
+                vehicleType.specialRules.split(',').forEach(ruleId => {
+                    const trimmedId = ruleId.trim();
+                    // Find the rule details to get the human-readable name
+                    const ruleDetails = vehicleRules.find(r => r.id === trimmedId);
+                    if (ruleDetails) {
+                        specialRules.set(trimmedId, ruleDetails.ruleName);
+                    } else {
+                        // Fallback to the ID if no rule found
+                        specialRules.set(trimmedId, trimmedId);
+                    }
                 });
             }
         }
         
-        return Array.from(specialRules);
+        // Return just the human-readable names
+        return Array.from(specialRules.values());
     }
     
     // Coach suggestions

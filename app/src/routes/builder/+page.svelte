@@ -3328,6 +3328,7 @@ let showSpecialRules = true; // Whether to show vehicle special rules in printou
         {weapons}
         {upgrades}
         {perks}
+        {vehicleRules}
         currentSponsor={currentSponsor}
         {totalCans}
         {maxCans}

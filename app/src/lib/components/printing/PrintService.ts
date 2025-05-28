@@ -2382,6 +2382,7 @@ function generateRosterHtml(data: {
         hull = 4,
         weight = 'Medium',
         vehicleRules = [],
+        vehicleType = null,
         weapons = [],
         upgrades = [],
         perks = [],
@@ -2390,11 +2391,14 @@ function generateRosterHtml(data: {
         perkObjects = []
       } = vehicle;
       
+      // Get the display name for the vehicle type
+      const vehicleTypeName = vehicleType?.name || type;
+      
       // Start vehicle section
       vehiclesHtml += `
       <div class="vehicle-section">
         <div class="vehicle-header">
-          <h3>${name} <span class="vehicle-type">${type}</span> <span class="vehicle-cost">${cost} cans</span></h3>
+          <h3>${name} <span class="vehicle-type">${vehicleTypeName}</span> <span class="vehicle-cost">${cost} cans</span></h3>
         </div>
         
         <div class="stats-row">
@@ -2408,6 +2412,7 @@ function generateRosterHtml(data: {
       // Add Vehicle Rules if available (only rules specific to this vehicle type)
       if (showSpecialRules) {
         let rulesText = '';
+        let rulesList = [];
         
         // Get vehicle-specific special rules only
         if (vehicle.vehicleType && vehicle.vehicleType.specialRules && typeof vehicle.vehicleType.specialRules === 'string' && vehicle.vehicleType.specialRules.trim()) {
@@ -2416,10 +2421,27 @@ function generateRosterHtml(data: {
           rulesText = vehicle.specialRules.trim();
         }
         
+        // Parse the rules and look up their human-readable names
+        if (rulesText && vehicle.vehicleRules && Array.isArray(vehicle.vehicleRules)) {
+          const ruleIds = rulesText.split(',').map(r => r.trim());
+          for (const ruleId of ruleIds) {
+            const ruleDetails = vehicle.vehicleRules.find(r => r.id === ruleId);
+            if (ruleDetails && ruleDetails.ruleName) {
+              rulesList.push(ruleDetails.ruleName);
+            } else {
+              // Fallback to the ID if no rule found
+              rulesList.push(ruleId);
+            }
+          }
+        } else if (rulesText) {
+          // Fallback to displaying the raw text if vehicleRules not available
+          rulesList = [rulesText];
+        }
+        
         // Only add the rules section if this vehicle type has specific rules
-        if (rulesText) {
+        if (rulesList.length > 0) {
           vehiclesHtml += `<div class="rules-section">`;
-          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${rulesText}</div>`;
+          vehiclesHtml += `<div class="vehicle-rules">Vehicle Rules: ${rulesList.join(', ')}</div>`;
           vehiclesHtml += `</div>`;
         }
       }
