@@ -82,8 +82,11 @@ cd app && pnpm check:watch
 # Run tests
 cd app && pnpm test
 
-# Lint code
-cd app && pnpm lint
+# Run tests in watch mode
+cd app && pnpm test:watch
+
+# Run tests with coverage
+cd app && pnpm test:coverage
 ```
 
 ### Building for Production
@@ -94,6 +97,16 @@ cd app && pnpm build
 
 # Preview the production build
 cd app && pnpm preview
+```
+
+### Firebase Deployment
+
+```bash
+# Deploy Firestore security rules
+cd app && node deploy-firebase-rules.mjs
+
+# Or using Firebase CLI directly:
+firebase deploy --only firestore:rules --project=gaslandsgarage-74ce6
 ```
 
 ### Infrastructure Deployment (AWS)
@@ -114,16 +127,19 @@ cd infra && npx cdk diff
 - **Frontend**: [Svelte](https://svelte.dev) and [SvelteKit](https://kit.svelte.dev)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com)
 - **Validation**: [Zod](https://github.com/colinhacks/zod) for type validation
+- **Testing**: [Vitest](https://vitest.dev/) for unit testing
 - **Infrastructure**: [AWS CDK](https://aws.amazon.com/cdk/) for deployment
-- **Data Storage**: [Firebase](https://firebase.google.com) for user data and teams
+- **Data Storage**: [Firebase](https://firebase.google.com) for user data and teams (Project: gaslandsgarage-74ce6)
 - **Authentication**: Firebase Authentication
 
 ## 🔑 Key Components
 
-- **Rules Data**: JSON files define game rules (vehicles.json, weapons.json, perks.json, sponsor/*.json)
+- **Rules Data**: JSON files define game rules (vehicles.json, weapons.json, perks.json, vehicleRules.json, sponsor/*.json)
 - **Validation Logic**: Functions to validate team builds against game rules
 - **Draft Encoding**: Functions to encode/decode team builds for sharing (via URLs or QR codes)
 - **Builder UI**: Svelte components for the team builder interface
+- **Print Service**: Multiple print formats (Vehicle Cards, Roster, Dashboard) for physical game reference
+- **Coach Component**: AI-powered team analysis providing combat effectiveness metrics and optimization suggestions
 
 ## 📜 License
 

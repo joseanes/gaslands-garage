@@ -42,6 +42,15 @@ cd app && pnpm check
 
 # Watch mode type checking
 cd app && pnpm check:watch
+
+# Run tests
+cd app && pnpm test
+
+# Run tests in watch mode
+cd app && pnpm test:watch
+
+# Run tests with coverage
+cd app && pnpm test:coverage
 ```
 
 ### Building and Deployment
@@ -52,6 +61,11 @@ cd app && pnpm build
 
 # Preview the production build
 cd app && pnpm preview
+
+# Deploy Firebase rules
+cd app && node deploy-firebase-rules.mjs
+# Or using Firebase CLI directly:
+firebase deploy --only firestore:rules --project=gaslandsgarage-74ce6
 
 # Build the infrastructure
 cd infra && pnpm build
@@ -70,23 +84,36 @@ The application uses:
 1. **Svelte/SvelteKit** for the frontend UI
 2. **Zod** for data validation and type checking
 3. **Tailwind CSS** for styling
-4. **AWS CDK** for infrastructure deployment
+4. **Firebase** for authentication and data storage (Firestore)
+5. **AWS CDK** for infrastructure deployment
+6. **Vitest** for testing
 
 Key components:
 
-- **Rules Data**: JSON files define game rules (vehicles.json, weapons.json, perks.json, sponsor/*.json)
+- **Rules Data**: JSON files define game rules (vehicles.json, weapons.json, perks.json, sponsor/*.json, vehicleRules.json)
 - **Validation Logic**: Functions to validate team builds against game rules
 - **Draft Encoding**: Functions to encode/decode team builds for sharing (via URLs or QR codes)
 - **Builder UI**: Svelte components for the team builder interface
+- **Print Service**: Multiple print formats for physical game reference
+- **Coach Component**: AI-powered team analysis and suggestions
+- **Firebase Services**: User authentication and team storage
 
 Data flow:
 1. User selects sponsor and adds vehicles with weapons/perks
 2. Frontend validates build using the validation logic
 3. Builds can be exported as encoded strings and shared via URL or QR code
+4. Authenticated users can save/load teams via Firestore
 
 ## Important Files
 
 - `app/src/routes/builder/+page.svelte`: Main team builder UI
 - `app/src/lib/validate/index.ts`: Core validation logic
+- `app/src/lib/validate/calc.ts`: Cost calculation functions
+- `app/src/lib/validate/checks.ts`: Rule validation checks
 - `app/src/data/rules/*.json`: Game rule definitions
 - `app/src/lib/draft/io.ts`: Draft encoding/decoding functions
+- `app/src/lib/components/printing/PrintService.ts`: Print functionality
+- `app/src/lib/components/Coach.svelte`: Team analysis component
+- `app/src/lib/firebase.ts`: Firebase configuration
+- `app/src/lib/services/`: Firebase service implementations
+- `app/firestore.rules`: Security rules for Firestore
